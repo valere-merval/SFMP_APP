@@ -8,17 +8,27 @@ import { getJson } from './src/api';
 import {
   auditLog as auditFallback,
   bookingCards as bookingFallback,
+  contextualMessages as contextualFallback,
+  demandPeaks as demandPeaksFallback,
   eventCards as eventFallback,
+  heatmaps as heatmapsFallback,
   mobilityCards as mobilityFallback,
   operationMetrics as operationsFallback,
   organizations as organizationsFallback,
+  roadmap as roadmapFallback,
+  routeAdaptations as routeAdaptationsFallback,
   users as usersFallback,
   type AuditCard,
   type BookingCard,
+  type ContextualMessageView,
+  type DemandPeakView,
   type EventCard,
+  type HeatmapView,
   type MobilityCard,
   type MetricCard,
   type OrgCard,
+  type RoadmapView,
+  type RouteAdaptationView,
   type UserCard,
 } from './src/demo';
 import type { LiveData } from './src/types';
@@ -50,6 +60,11 @@ const initialData: LiveData = {
   organizations: organizationsFallback,
   users: usersFallback,
   audit: auditFallback,
+  roadmap: roadmapFallback,
+  heatmaps: heatmapsFallback,
+  demandPeaks: demandPeaksFallback,
+  routeAdaptations: routeAdaptationsFallback,
+  contextualMessages: contextualFallback,
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -63,6 +78,11 @@ type AppData = {
   organizations: OrgCard[];
   users: UserCard[];
   audit: AuditCard[];
+  roadmap: RoadmapView[];
+  heatmaps: HeatmapView[];
+  demandPeaks: DemandPeakView[];
+  routeAdaptations: RouteAdaptationView[];
+  contextualMessages: ContextualMessageView[];
 };
 
 function App(): React.JSX.Element {
@@ -73,7 +93,7 @@ function App(): React.JSX.Element {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [events, mobility, bookings, operations, organizations, users, audit] = await Promise.all([
+      const [events, mobility, bookings, operations, organizations, users, audit, roadmapRemote, heatmapsRemote, peaksRemote, routesRemote, contextualRemote] = await Promise.all([
         getJson('/api/v1/events', eventFallback),
         getJson('/api/v1/mobility/options', mobilityFallback),
         getJson('/api/v1/bookings', bookingFallback),
@@ -81,9 +101,14 @@ function App(): React.JSX.Element {
         getJson('/api/v1/admin/organizations', organizationsFallback),
         getJson('/api/v1/identity/users', usersFallback),
         getJson('/api/v1/audit/entries', auditFallback),
+        getJson('/api/v1/platform/roadmap', roadmapFallback),
+        getJson('/api/v1/crowd/heatmaps', heatmapsFallback),
+        getJson('/api/v1/crowd/peaks', demandPeaksFallback),
+        getJson('/api/v1/mobility/routes', routeAdaptationsFallback),
+        getJson('/api/v1/notifications/contextual', contextualFallback),
       ]);
       if (cancelled) return;
-      setData({ events, mobility, bookings, operations, organizations, users, audit });
+      setData({ events, mobility, bookings, operations, organizations, users, audit, roadmap: roadmapRemote, heatmaps: heatmapsRemote, demandPeaks: peaksRemote, routeAdaptations: routesRemote, contextualMessages: contextualRemote });
     }
     load();
     return () => { cancelled = true; };

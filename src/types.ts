@@ -1,4 +1,4 @@
-import type { AuditCard, BookingCard, EventCard, MobilityCard, MetricCard, OrgCard, UserCard } from './demo';
+import type { AuditCard, BookingCard, ContextualMessageView, DemandPeakView, EventCard, HeatmapView, MobilityCard, MetricCard, OrgCard, RoadmapView, RouteAdaptationView, UserCard } from './demo';
 
 export type LiveData = {
   events: EventCard[];
@@ -8,4 +8,9 @@ export type LiveData = {
   organizations: OrgCard[];
   users: UserCard[];
   audit: AuditCard[];
+  roadmap: RoadmapView[];
+  heatmaps: HeatmapView[];
+  demandPeaks: DemandPeakView[];
+  routeAdaptations: RouteAdaptationView[];
+  contextualMessages: ContextualMessageView[];
 };

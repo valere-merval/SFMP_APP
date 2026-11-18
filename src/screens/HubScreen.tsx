@@ -1,12 +1,10 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
-import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
 import { type LiveData } from '../types';
 import { Card, MiniCard, Pill, PrimaryButton, Row, SecondaryButton, Stat, styles } from '../ui';
 
 export function HubScreen({ data }: { data: LiveData }) {
   const hero = useMemo(() => data.events[0], [data.events]);
-  const venue = `${hero.venue}, ${hero.city}`;
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -51,20 +49,25 @@ export function HubScreen({ data }: { data: LiveData }) {
           ))}
         </Card>
 
-        <Card title="Stadium perimeter gates" subtitle="Wayfinding" wide>
-          <View style={styles.mapPanel}>
-            <View style={styles.mapOverlay}>
-              <Text style={styles.cardTitle}>Gate 34 · East Hub</Text>
-              <Text style={styles.muted}>Walk 3 min from the fan zone. Queue time: 8 min.</Text>
-            </View>
-            <View style={styles.mapDot1} />
-            <View style={styles.mapDot2} />
-            <View style={styles.mapDot3} />
-          </View>
-          <View style={styles.ctaRow}>
-            <PrimaryButton label="Open in Google Maps" onPress={() => openGoogleMapsSearch(venue)} />
-            <SecondaryButton label="View directions" onPress={() => openGoogleMapsDirections(venue, 'Madrid city center')} />
-          </View>
+        <Card title="Delivery roadmap" subtitle="Versions" wide>
+          {data.roadmap.map((item) => (
+            <Row key={item.version} leftTitle={`${item.version} · ${item.title}`} leftSubtitle={item.features.join(' • ')} rightTitle={item.features.length.toString()} rightSubtitle="Features" />
+          ))}
+        </Card>
+
+        <Card title="Intelligence feed" subtitle="Version 3">
+          {data.heatmaps.map((item) => (
+            <Row key={item.zone} leftTitle={item.zone} leftSubtitle={`${item.intensity} · ${item.trend}`} rightTitle={item.recommendation} rightSubtitle="Heatmap" />
+          ))}
+          {data.demandPeaks.map((item) => (
+            <Row key={item.window} leftTitle={item.window} leftSubtitle={item.level} rightTitle={item.action} rightSubtitle="Peak" />
+          ))}
+        </Card>
+
+        <Card title="Contextual messages" subtitle="Adaptive comms">
+          {data.contextualMessages.map((item) => (
+            <Row key={item.message} leftTitle={item.audience} leftSubtitle={`${item.channel} · ${item.timing}`} rightTitle={item.message} rightSubtitle="Message" />
+          ))}
         </Card>
       </ScrollView>
     </SafeAreaView>
