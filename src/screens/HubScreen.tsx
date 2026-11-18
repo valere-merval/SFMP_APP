@@ -1,10 +1,25 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { postJson } from '../api';
 import { type LiveData } from '../types';
 import { Card, MiniCard, Pill, PrimaryButton, Row, SecondaryButton, Stat, styles } from '../ui';
 
 export function HubScreen({ data }: { data: LiveData }) {
   const hero = useMemo(() => data.events[0], [data.events]);
+  const [briefing, setBriefing] = useState<{ model: string; summary: string; confidence: string; recommendations: string[] } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const generateBriefing = async () => {
+    setLoading(true);
+    const result = await postJson('/api/v1/intelligence/analyze', { focus: 'matchday demand and routing', context: 'Madrid stadium operations, traffic, gates, and post-match departures' }, {
+      model: 'local-fallback',
+      summary: 'AI briefing will appear here once the backend AI key is configured.',
+      confidence: '88%',
+      recommendations: ['Pre-position shuttles', 'Prioritize crowded corridors', 'Push targeted notifications'],
+    });
+    setBriefing(result);
+    setLoading(false);
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -77,6 +92,24 @@ export function HubScreen({ data }: { data: LiveData }) {
           {data.insights.map((item) => (
             <Row key={item.model} leftTitle={`${item.model} · ${item.confidence}`} leftSubtitle={item.insight} rightTitle={item.action} rightSubtitle="AI" />
           ))}
+        </Card>
+
+        <Card title="AI briefing" subtitle="OpenAI / fallback">
+          <View style={styles.cardBody}>
+            {briefing ? (
+              <>
+                <Row leftTitle={`${briefing.model} · ${briefing.confidence}`} leftSubtitle={briefing.summary} rightTitle="Live" rightSubtitle="AI" />
+                {briefing.recommendations.map((item) => (
+                  <Row key={item} leftTitle={item} leftSubtitle="Recommendation" rightTitle="Action" rightSubtitle="AI" />
+                ))}
+              </>
+            ) : (
+              <Row leftTitle="Generate an AI briefing" leftSubtitle="Use OpenAI gpt-5.3-mini when OPENAI_API_KEY is configured. Falls back locally otherwise." rightTitle={loading ? 'Running...' : 'Ready'} rightSubtitle="AI" />
+            )}
+          </View>
+          <View style={styles.ctaRow}>
+            <PrimaryButton label={loading ? 'Analyzing...' : 'Generate AI briefing'} onPress={generateBriefing} />
+          </View>
         </Card>
 
         <Card title="Contextual messages" subtitle="Adaptive comms">
