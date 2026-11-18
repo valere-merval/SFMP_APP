@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export function Card({ title, subtitle, children, wide = false }: { title: string; subtitle: string; children: React.ReactNode; wide?: boolean }) {
   return (
@@ -74,6 +74,14 @@ export function SecondaryButton({ label, onPress }: { label: string; onPress: ()
   );
 }
 
+export function Input({ value, onChangeText, placeholder, secureTextEntry = false }: { value: string; onChangeText: (v: string) => void; placeholder: string; secureTextEntry?: boolean }) {
+  return <TextInput value={value} onChangeText={onChangeText} placeholder={placeholder} secureTextEntry={secureTextEntry} placeholderTextColor="#94a3b8" style={styles.input} autoCapitalize="none" />;
+}
+
+export function ErrorText({ children }: { children: React.ReactNode }) {
+  return <Text style={styles.errorText}>{children}</Text>;
+}
+
 export const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f6f8fc' },
   container: { padding: 18, gap: 14, backgroundColor: '#f6f8fc' },
@@ -102,6 +110,8 @@ export const styles = StyleSheet.create({
   primaryButtonText: { color: '#fff', fontWeight: '700' },
   secondaryButton: { backgroundColor: '#eef2ff', paddingVertical: 14, paddingHorizontal: 16, borderRadius: 14 },
   secondaryButtonText: { color: '#1d3fb3', fontWeight: '700' },
+  input: { borderWidth: 1, borderColor: '#dbe4ff', backgroundColor: '#fff', color: '#172033', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12 },
+  errorText: { color: '#b91c1c', fontWeight: '700' },
   grid2: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   miniCard: { flexBasis: '48%', flexGrow: 1, padding: 14, borderRadius: 18, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e6eaf0', gap: 4 },
   miniCardTitle: { color: '#101b2d', fontSize: 15, fontWeight: '800' },

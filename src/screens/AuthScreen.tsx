@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
-import { Bullet, Card, PrimaryButton, SecondaryButton, styles } from '../ui';
+import { login } from '../api';
+import { Bullet, Card, ErrorText, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
 
 export function AuthScreen({ onContinue }: { onContinue: () => void }) {
+  const [username, setUsername] = useState('fan@sfmp.local');
+  const [password, setPassword] = useState('fan123');
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    try {
+      setError(null);
+      await login(username, password);
+      onContinue();
+    } catch {
+      setError('Invalid credentials. Try fan@sfmp.local / fan123, ops@sfmp.local / ops123, or admin@sfmp.local / admin123.');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -14,10 +29,12 @@ export function AuthScreen({ onContinue }: { onContinue: () => void }) {
           </Text>
         </View>
         <Card title="Continue into the platform" subtitle="Secure access">
-          <Text style={styles.muted}>A real auth provider can plug into this screen later.</Text>
+          <Input placeholder="Username" value={username} onChangeText={setUsername} />
+          <Input placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+          {error ? <ErrorText>{error}</ErrorText> : null}
           <View style={styles.ctaRow}>
-            <PrimaryButton label="Continue" onPress={onContinue} />
-            <SecondaryButton label="Use guest mode" onPress={onContinue} />
+            <PrimaryButton label="Sign in" onPress={submit} />
+            <SecondaryButton label="Guest mode" onPress={onContinue} />
           </View>
         </Card>
         <Card title="What you get" subtitle="Overview">
