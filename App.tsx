@@ -9,26 +9,32 @@ import {
   auditLog as auditFallback,
   bookingCards as bookingFallback,
   contextualMessages as contextualFallback,
+  consents as consentsFallback,
   demandPeaks as demandPeaksFallback,
   eventCards as eventFallback,
   heatmaps as heatmapsFallback,
+  insights as insightsFallback,
   mobilityCards as mobilityFallback,
   operationMetrics as operationsFallback,
   organizations as organizationsFallback,
   roadmap as roadmapFallback,
   routeAdaptations as routeAdaptationsFallback,
+  traffic as trafficFallback,
   users as usersFallback,
   type AuditCard,
   type BookingCard,
+  type ConsentView,
   type ContextualMessageView,
   type DemandPeakView,
   type EventCard,
   type HeatmapView,
+  type InsightView,
   type MobilityCard,
   type MetricCard,
   type OrgCard,
   type RoadmapView,
   type RouteAdaptationView,
+  type TrafficView,
   type UserCard,
 } from './src/demo';
 import type { LiveData } from './src/types';
@@ -65,6 +71,9 @@ const initialData: LiveData = {
   demandPeaks: demandPeaksFallback,
   routeAdaptations: routeAdaptationsFallback,
   contextualMessages: contextualFallback,
+  traffic: trafficFallback,
+  consents: consentsFallback,
+  insights: insightsFallback,
 };
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -83,6 +92,9 @@ type AppData = {
   demandPeaks: DemandPeakView[];
   routeAdaptations: RouteAdaptationView[];
   contextualMessages: ContextualMessageView[];
+  traffic: TrafficView[];
+  consents: ConsentView[];
+  insights: InsightView[];
 };
 
 function App(): React.JSX.Element {
@@ -93,7 +105,7 @@ function App(): React.JSX.Element {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [events, mobility, bookings, operations, organizations, users, audit, roadmapRemote, heatmapsRemote, peaksRemote, routesRemote, contextualRemote] = await Promise.all([
+      const [events, mobility, bookings, operations, organizations, users, audit, roadmapRemote, heatmapsRemote, peaksRemote, routesRemote, contextualRemote, trafficRemote, consentsRemote, insightsRemote] = await Promise.all([
         getJson('/api/v1/events', eventFallback),
         getJson('/api/v1/mobility/options', mobilityFallback),
         getJson('/api/v1/bookings', bookingFallback),
@@ -106,9 +118,12 @@ function App(): React.JSX.Element {
         getJson('/api/v1/crowd/peaks', demandPeaksFallback),
         getJson('/api/v1/mobility/routes', routeAdaptationsFallback),
         getJson('/api/v1/notifications/contextual', contextualFallback),
+        getJson('/api/v1/traffic/conditions', trafficFallback),
+        getJson('/api/v1/gps/consents', consentsFallback),
+        getJson('/api/v1/intelligence/insights', insightsFallback),
       ]);
       if (cancelled) return;
-      setData({ events, mobility, bookings, operations, organizations, users, audit, roadmap: roadmapRemote, heatmaps: heatmapsRemote, demandPeaks: peaksRemote, routeAdaptations: routesRemote, contextualMessages: contextualRemote });
+      setData({ events, mobility, bookings, operations, organizations, users, audit, roadmap: roadmapRemote, heatmaps: heatmapsRemote, demandPeaks: peaksRemote, routeAdaptations: routesRemote, contextualMessages: contextualRemote, traffic: trafficRemote, consents: consentsRemote, insights: insightsRemote });
     }
     load();
     return () => { cancelled = true; };

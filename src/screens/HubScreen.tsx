@@ -64,6 +64,21 @@ export function HubScreen({ data }: { data: LiveData }) {
           ))}
         </Card>
 
+        <Card title="Traffic and consent" subtitle="Version 2">
+          {data.traffic.map((item) => (
+            <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={`${item.status} · ${item.impact}`} rightTitle={item.recommendation} rightSubtitle="Traffic" />
+          ))}
+          {data.consents.map((item) => (
+            <Row key={item.source} leftTitle={item.source} leftSubtitle={item.lastUpdated} rightTitle={item.status} rightSubtitle="Consent" />
+          ))}
+        </Card>
+
+        <Card title="Model insights" subtitle="ML predictions">
+          {data.insights.map((item) => (
+            <Row key={item.model} leftTitle={`${item.model} · ${item.confidence}`} leftSubtitle={item.insight} rightTitle={item.action} rightSubtitle="AI" />
+          ))}
+        </Card>
+
         <Card title="Contextual messages" subtitle="Adaptive comms">
           {data.contextualMessages.map((item) => (
             <Row key={item.message} leftTitle={item.audience} leftSubtitle={`${item.channel} · ${item.timing}`} rightTitle={item.message} rightSubtitle="Message" />
