@@ -1,8 +1,10 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
-import { Card, Pill, styles } from '../ui';
+import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
+import { Card, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 
 export function WayfindingScreen() {
+  const venue = 'Santiago Bernabéu, Madrid';
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -21,6 +23,10 @@ export function WayfindingScreen() {
             <View style={styles.routeNodeStart} />
             <View style={styles.routeNodeMid} />
             <View style={styles.routeNodeEnd} />
+          </View>
+          <View style={styles.ctaRow}>
+            <PrimaryButton label="Open in Google Maps" onPress={() => openGoogleMapsSearch(venue)} />
+            <SecondaryButton label="View directions" onPress={() => openGoogleMapsDirections(venue, 'Madrid city center')} />
           </View>
         </Card>
         <Card title="Route filters" subtitle="Search">

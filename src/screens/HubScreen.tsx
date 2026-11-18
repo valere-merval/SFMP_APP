@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
 import { type LiveData } from '../types';
 import { Card, MiniCard, Pill, PrimaryButton, Row, SecondaryButton, Stat, styles } from '../ui';
 
 export function HubScreen({ data }: { data: LiveData }) {
   const hero = useMemo(() => data.events[0], [data.events]);
+  const venue = `${hero.venue}, ${hero.city}`;
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -58,6 +60,10 @@ export function HubScreen({ data }: { data: LiveData }) {
             <View style={styles.mapDot1} />
             <View style={styles.mapDot2} />
             <View style={styles.mapDot3} />
+          </View>
+          <View style={styles.ctaRow}>
+            <PrimaryButton label="Open in Google Maps" onPress={() => openGoogleMapsSearch(venue)} />
+            <SecondaryButton label="View directions" onPress={() => openGoogleMapsDirections(venue, 'Madrid city center')} />
           </View>
         </Card>
       </ScrollView>
