@@ -1,49 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { StatusBar, useColorScheme } from 'react-native';
 import { NavigationContainer, type NavigatorScreenParams } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { getJson } from './src/api';
-import {
-  auditLog as auditFallback,
-  bookingCards as bookingFallback,
-  contextualMessages as contextualFallback,
-  consents as consentsFallback,
-  demandPeaks as demandPeaksFallback,
-  eventCards as eventFallback,
-  heatmaps as heatmapsFallback,
-  insights as insightsFallback,
-  mobilityCards as mobilityFallback,
-  operationMetrics as operationsFallback,
-  organizations as organizationsFallback,
-  roadmap as roadmapFallback,
-  routeAdaptations as routeAdaptationsFallback,
-  traffic as trafficFallback,
-  users as usersFallback,
-  type AuditCard,
-  type BookingCard,
-  type ConsentView,
-  type ContextualMessageView,
-  type DemandPeakView,
-  type EventCard,
-  type HeatmapView,
-  type InsightView,
-  type MobilityCard,
-  type MetricCard,
-  type OrgCard,
-  type RoadmapView,
-  type RouteAdaptationView,
-  type TrafficView,
-  type UserCard,
-} from './src/demo';
-import type { LiveData } from './src/types';
+import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { login } from './src/api';
+import { fetchCatalog } from './src/catalog';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { HubScreen } from './src/screens/HubScreen';
 import { JourneyScreen } from './src/screens/JourneyScreen';
 import { PassScreen } from './src/screens/PassScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { WayfindingScreen } from './src/screens/WayfindingScreen';
+import type { LiveData } from './src/types';
+
+const fonts = {
+  tab: 'Poppins-SemiBold',
+};
 
 type RootStackParamList = {
   Auth: undefined;
@@ -58,75 +33,77 @@ type TabParamList = {
   Profile: undefined;
 };
 
-const initialData: LiveData = {
-  events: eventFallback,
-  mobility: mobilityFallback,
-  bookings: bookingFallback,
-  operations: operationsFallback,
-  organizations: organizationsFallback,
-  users: usersFallback,
-  audit: auditFallback,
-  roadmap: roadmapFallback,
-  heatmaps: heatmapsFallback,
-  demandPeaks: demandPeaksFallback,
-  routeAdaptations: routeAdaptationsFallback,
-  contextualMessages: contextualFallback,
-  traffic: trafficFallback,
-  consents: consentsFallback,
-  insights: insightsFallback,
+type CatalogShellState = {
+  catalog: LiveData | null;
+  catalogLoading: boolean;
+  catalogError: string | null;
+  onRetryCatalog: () => void;
 };
+
+const CatalogShellContext = createContext<CatalogShellState | null>(null);
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
-type AppData = {
-  events: EventCard[];
-  mobility: MobilityCard[];
-  bookings: BookingCard[];
-  operations: MetricCard[];
-  organizations: OrgCard[];
-  users: UserCard[];
-  audit: AuditCard[];
-  roadmap: RoadmapView[];
-  heatmaps: HeatmapView[];
-  demandPeaks: DemandPeakView[];
-  routeAdaptations: RouteAdaptationView[];
-  contextualMessages: ContextualMessageView[];
-  traffic: TrafficView[];
-  consents: ConsentView[];
-  insights: InsightView[];
-};
+function useCatalogShell() {
+  const value = useContext(CatalogShellContext);
+  if (!value) {
+    throw new Error('Catalog shell context is missing');
+  }
+
+  return value;
+}
+
+function HubRoute() {
+  const { catalog, catalogLoading, catalogError, onRetryCatalog } = useCatalogShell();
+  return <HubScreen data={catalog} loading={catalogLoading} error={catalogError} onRetryCatalog={onRetryCatalog} />;
+}
+
+function JourneyRoute() {
+  const { catalog, catalogLoading } = useCatalogShell();
+  return <JourneyScreen data={catalog} loading={catalogLoading} />;
+}
+
+function ProfileRoute() {
+  const { catalog, catalogLoading } = useCatalogShell();
+  return <ProfileScreen data={catalog} loading={catalogLoading} />;
+}
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const [signedIn, setSignedIn] = useState(false);
-  const [data, setData] = useState<AppData>(initialData);
+  const [catalog, setCatalog] = useState<LiveData | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+
+  const loadCatalog = useCallback(async () => {
+    setCatalogLoading(true);
+    setCatalogError(null);
+    try {
+      const nextCatalog = await fetchCatalog();
+      setCatalog(nextCatalog);
+    } catch {
+      setCatalog(null);
+      setCatalogError('Live backend catalog unavailable.');
+    } finally {
+      setCatalogLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      const [events, mobility, bookings, operations, organizations, users, audit, roadmapRemote, heatmapsRemote, peaksRemote, routesRemote, contextualRemote, trafficRemote, consentsRemote, insightsRemote] = await Promise.all([
-        getJson('/api/v1/events', eventFallback),
-        getJson('/api/v1/mobility/options', mobilityFallback),
-        getJson('/api/v1/bookings', bookingFallback),
-        getJson('/api/v1/operations/summary', operationsFallback),
-        getJson('/api/v1/admin/organizations', organizationsFallback),
-        getJson('/api/v1/identity/users', usersFallback),
-        getJson('/api/v1/audit/entries', auditFallback),
-        getJson('/api/v1/platform/roadmap', roadmapFallback),
-        getJson('/api/v1/crowd/heatmaps', heatmapsFallback),
-        getJson('/api/v1/crowd/peaks', demandPeaksFallback),
-        getJson('/api/v1/mobility/routes', routeAdaptationsFallback),
-        getJson('/api/v1/notifications/contextual', contextualFallback),
-        getJson('/api/v1/traffic/conditions', trafficFallback),
-        getJson('/api/v1/gps/consents', consentsFallback),
-        getJson('/api/v1/intelligence/insights', insightsFallback),
-      ]);
-      if (cancelled) return;
-      setData({ events, mobility, bookings, operations, organizations, users, audit, roadmap: roadmapRemote, heatmaps: heatmapsRemote, demandPeaks: peaksRemote, routeAdaptations: routesRemote, contextualMessages: contextualRemote, traffic: trafficRemote, consents: consentsRemote, insights: insightsRemote });
+    if (!signedIn) {
+      setCatalog(null);
+      setCatalogError(null);
+      setCatalogLoading(false);
+      return;
     }
-    load();
-    return () => { cancelled = true; };
+
+    loadCatalog();
+  }, [loadCatalog, signedIn]);
+
+  const handleLogin = useCallback(async (username: string, password: string) => {
+    await login(username, password);
+    setSignedIn(true);
   }, []);
 
   return (
@@ -135,9 +112,9 @@ function App(): React.JSX.Element {
       <NavigationContainer>
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
           {!signedIn ? (
-            <RootStack.Screen name="Auth">{() => <AuthScreen onContinue={() => setSignedIn(true)} />}</RootStack.Screen>
+            <RootStack.Screen name="Auth">{() => <AuthScreen onContinue={handleLogin} />}</RootStack.Screen>
           ) : (
-            <RootStack.Screen name="App">{() => <MainTabs data={data} />}</RootStack.Screen>
+            <RootStack.Screen name="App">{() => <MainTabs catalog={catalog} catalogLoading={catalogLoading} catalogError={catalogError} onRetryCatalog={loadCatalog} />}</RootStack.Screen>
           )}
         </RootStack.Navigator>
       </NavigationContainer>
@@ -145,15 +122,61 @@ function App(): React.JSX.Element {
   );
 }
 
-function MainTabs({ data }: { data: AppData }) {
+function MainTabs({
+  catalog,
+  catalogLoading,
+  catalogError,
+  onRetryCatalog,
+}: CatalogShellState) {
+  const shellValue = {
+    catalog,
+    catalogLoading,
+    catalogError,
+    onRetryCatalog,
+  };
+
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false, tabBarLabelStyle: { fontSize: 11, fontWeight: '700' }, tabBarActiveTintColor: '#2457e6' }}>
-      <Tab.Screen name="Hub">{() => <HubScreen data={data} />}</Tab.Screen>
-      <Tab.Screen name="Wayfinding">{() => <WayfindingScreen />}</Tab.Screen>
-      <Tab.Screen name="Journey">{() => <JourneyScreen data={data} />}</Tab.Screen>
-      <Tab.Screen name="Pass">{() => <PassScreen />}</Tab.Screen>
-      <Tab.Screen name="Profile">{() => <ProfileScreen data={data} />}</Tab.Screen>
-    </Tab.Navigator>
+    <CatalogShellContext.Provider value={shellValue}>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarActiveTintColor: '#2457e6',
+          tabBarInactiveTintColor: '#7183a1',
+          tabBarLabelStyle: { fontFamily: fonts.tab, fontSize: 11, marginBottom: 2 },
+          tabBarStyle: {
+            borderTopWidth: 1,
+            borderTopColor: '#dbe4ff',
+            backgroundColor: '#ffffff',
+            height: 64,
+            paddingTop: 8,
+            paddingBottom: 8,
+          },
+          // eslint-disable-next-line react/no-unstable-nested-components
+          tabBarIcon: ({ color, size }) => {
+            switch (route.name) {
+              case 'Hub':
+                return <Ionicons name="grid-outline" color={color} size={size} />;
+              case 'Wayfinding':
+                return <Feather name="map" color={color} size={size} />;
+              case 'Journey':
+                return <Feather name="navigation" color={color} size={size} />;
+              case 'Pass':
+                return <Ionicons name="ticket-outline" color={color} size={size} />;
+              case 'Profile':
+                return <Feather name="user" color={color} size={size} />;
+              default:
+                return null;
+            }
+          },
+        })}
+      >
+        <Tab.Screen name="Hub" component={HubRoute} />
+        <Tab.Screen name="Wayfinding" component={WayfindingScreen} />
+        <Tab.Screen name="Journey" component={JourneyRoute} />
+        <Tab.Screen name="Pass" component={PassScreen} />
+        <Tab.Screen name="Profile" component={ProfileRoute} />
+      </Tab.Navigator>
+    </CatalogShellContext.Provider>
   );
 }
 

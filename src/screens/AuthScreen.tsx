@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, Text, View } from 'react-native';
-import { login } from '../api';
-import { Bullet, Card, ErrorText, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
+import Feather from 'react-native-vector-icons/Feather';
+import { Bullet, Card, ErrorText, Input, PrimaryButton, styles } from '../ui';
 
-export function AuthScreen({ onContinue }: { onContinue: () => void }) {
-  const [username, setUsername] = useState('fan@sfmp.local');
-  const [password, setPassword] = useState('fan123');
+export function AuthScreen({ onContinue }: { onContinue: (username: string, password: string) => Promise<void> }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const submit = async () => {
     try {
       setError(null);
-      await login(username, password);
-      onContinue();
+      await onContinue(username, password);
     } catch {
-      setError('Invalid credentials. Try fan@sfmp.local / fan123, ops@sfmp.local / ops123, or admin@sfmp.local / admin123.');
+      setError('Sign-in failed. Use backend-issued credentials and try again.');
     }
   };
 
@@ -24,18 +23,17 @@ export function AuthScreen({ onContinue }: { onContinue: () => void }) {
         <View style={styles.header}>
           <Text style={styles.kicker}>SMART FAN MOBILITY</Text>
           <Text style={styles.title}>Sign in to matchday mobility</Text>
-          <Text style={styles.subtitle}>
-            Use your fan account, operator account or admin account to access the right journey.
-          </Text>
+          <Text style={styles.subtitle}>Authenticate against the backend to load live journeys, operations and wayfinding.</Text>
         </View>
         <Card title="Continue into the platform" subtitle="Secure access">
           <Input placeholder="Username" value={username} onChangeText={setUsername} />
           <Input placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
           {error ? <ErrorText>{error}</ErrorText> : null}
-          <View style={styles.ctaRow}>
-            <PrimaryButton label="Sign in" onPress={submit} />
-            <SecondaryButton label="Guest mode" onPress={onContinue} />
-          </View>
+          <PrimaryButton
+            label="Sign in"
+            onPress={submit}
+            icon={<Feather name="log-in" size={16} color="#fff" />}
+          />
         </Card>
         <Card title="What you get" subtitle="Overview">
           {['Journey planning', 'Wayfinding maps', 'Ticket and transit pass', 'Operations visibility'].map((item) => (

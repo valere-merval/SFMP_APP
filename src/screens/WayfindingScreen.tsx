@@ -1,32 +1,58 @@
 import React from 'react';
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { Linking, Platform, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
 import { Card, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 
+const venue = 'Santiago Bernabéu, Madrid';
+const venueCoordinate = {
+  latitude: 40.4531,
+  longitude: -3.6883,
+};
+
 export function WayfindingScreen() {
-  const venue = 'Santiago Bernabéu, Madrid';
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.kicker}>WAYFINDING</Text>
           <Text style={styles.title}>Interactive mobility map</Text>
-          <Text style={styles.subtitle}>Blue route = fastest. Lime markers = live gates and transfer points.</Text>
+          <Text style={styles.subtitle}>Native map surface with backend-backed links to Google Maps for routing.</Text>
         </View>
         <Card title="Route map" subtitle="Live routing" wide>
-          <View style={styles.darkMap}>
-            <View style={styles.mapOverlayCard}>
-              <Text style={styles.cardTitleDark}>Madrid live network</Text>
-              <Text style={styles.mutedLight}>Blue route = fastest. Lime markers = live gates and transfer points.</Text>
+          <View style={styles.mapPanel}>
+            <MapView
+              style={styles.mapView}
+              initialRegion={{
+                latitude: venueCoordinate.latitude,
+                longitude: venueCoordinate.longitude,
+                latitudeDelta: 0.03,
+                longitudeDelta: 0.03,
+              }}
+              provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+              showsCompass={false}
+              showsTraffic
+            >
+              <Marker coordinate={venueCoordinate} title={venue} description="Match venue" />
+            </MapView>
+            <View style={styles.mapOverlay}>
+              <Text style={styles.cardTitle}>Madrid live network</Text>
+              <Text style={styles.muted}>The app renders a native map here and uses Google Maps links for route handoff.</Text>
             </View>
-            <View style={styles.routeLine} />
-            <View style={styles.routeNodeStart} />
-            <View style={styles.routeNodeMid} />
-            <View style={styles.routeNodeEnd} />
           </View>
           <View style={styles.ctaRow}>
-            <PrimaryButton label="Open in Google Maps" onPress={() => openGoogleMapsSearch(venue)} />
-            <SecondaryButton label="View directions" onPress={() => openGoogleMapsDirections(venue, 'Madrid city center')} />
+            <PrimaryButton
+              label="Open in Google Maps"
+              onPress={() => openGoogleMapsSearch(venue)}
+              icon={<Ionicons name="navigate-outline" size={16} color="#fff" />}
+            />
+            <SecondaryButton
+              label="View directions"
+              onPress={() => openGoogleMapsDirections(venue, 'Madrid city center')}
+              icon={<Feather name="external-link" size={16} color="#1d3fb3" />}
+            />
           </View>
         </Card>
         <Card title="Route filters" subtitle="Search">
@@ -35,6 +61,19 @@ export function WayfindingScreen() {
             <Pill subtle>Fastest</Pill>
             <Pill subtle>Free with pass</Pill>
             <Pill subtle>Step-free</Pill>
+          </View>
+        </Card>
+        <Card title="App-shell handoff" subtitle="Transport" wide>
+          <View style={styles.bulletRow}>
+            <Feather name="map" size={16} color="#2457e6" />
+            <Text style={styles.muted}>Native map is embedded in the shell; no local demo route data is rendered.</Text>
+          </View>
+          <View style={styles.bulletRow}>
+            <Ionicons name="open-outline" size={16} color="#2457e6" />
+            <Text style={styles.muted}>If the map tiles are unavailable on Android, the external Google Maps links still work.</Text>
+          </View>
+          <View style={styles.ctaRow}>
+            <SecondaryButton label="Search venue" onPress={() => Linking.openURL('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(venue))} icon={<Feather name="search" size={16} color="#1d3fb3" />} />
           </View>
         </Card>
       </ScrollView>

@@ -10,6 +10,10 @@ export function googleMapsDirectionsUrl(destination: string, origin?: string) {
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
+export function googleMapsEmbedUrl(query: string) {
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=14&output=embed`;
+}
+
 export async function openGoogleMapsSearch(query: string) {
   await Linking.openURL(googleMapsSearchUrl(query));
 }
