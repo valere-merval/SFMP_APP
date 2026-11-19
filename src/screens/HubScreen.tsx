@@ -150,9 +150,7 @@ export function HubScreen({
             <View style={localStyles.flagRow}>
               <FlagBadge value={hero.homeFlag} title={hero.homeTeam} />
               <Text style={localStyles.teamLine} numberOfLines={1} ellipsizeMode="tail">
-                <Text style={localStyles.teamName} numberOfLines={1} ellipsizeMode="tail">{hero.homeTeam}</Text>
-                <Text style={localStyles.vsAccent} numberOfLines={1} ellipsizeMode="tail"> vs </Text>
-                <Text style={localStyles.teamName} numberOfLines={1} ellipsizeMode="tail">{hero.awayTeam}</Text>
+                {hero.homeTeam} vs {hero.awayTeam}
               </Text>
               <FlagBadge value={hero.awayFlag} title={hero.awayTeam} />
             </View>

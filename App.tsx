@@ -6,7 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { clearAuthToken, currentUser, hydrateAuthToken } from './src/api';
+import { clearAuthToken, hydrateAuthToken } from './src/api';
 import { fetchCatalog } from './src/catalog';
 import { detectLanguage, t, type Locale } from './src/i18n';
 import { EventCatalogScreen } from './src/screens/EventCatalogScreen';
@@ -179,21 +179,9 @@ function App(): React.JSX.Element {
       }
 
       try {
-        await currentUser();
         await loadCatalog();
-      } catch (error) {
-        const message = error instanceof Error ? error.message : '';
-        const unauthorized = message.includes('401') || message.includes('403');
-        if (!unauthorized) {
-          return;
-        }
-        await clearAuthToken();
-        if (active) {
-          setCatalog(null);
-          setSelectedCatalogId(null);
-          setSelectedMatchId(null);
-          setSession('auth');
-        }
+      } catch {
+        // Keep the stored token and stay signed in until the user logs out manually.
       }
     })();
 
