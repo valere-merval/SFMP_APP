@@ -30,7 +30,7 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
     #endif
     
     reactNativeFactory?.startReactNative(
-      withModuleName: "SFMPAppBare",
+      withModuleName: "SFMP",
       in: window,
       connectionOptions: connectionOptions
     )
