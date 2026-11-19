@@ -1,13 +1,13 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { StatusBar, useColorScheme } from 'react-native';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Platform, StatusBar, useColorScheme } from 'react-native';
 import { NavigationContainer, type NavigatorScreenParams } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { login } from './src/api';
 import { fetchCatalog } from './src/catalog';
+import { detectLanguage, t, type Locale } from './src/i18n';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { HubScreen } from './src/screens/HubScreen';
 import { JourneyScreen } from './src/screens/JourneyScreen';
@@ -71,6 +71,7 @@ function ProfileRoute() {
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
+  const locale = useMemo<Locale>(() => detectLanguage(), []);
   const [signedIn, setSignedIn] = useState(false);
   const [catalog, setCatalog] = useState<LiveData | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
@@ -101,20 +102,29 @@ function App(): React.JSX.Element {
     loadCatalog();
   }, [loadCatalog, signedIn]);
 
-  const handleLogin = useCallback(async (username: string, password: string) => {
-    await login(username, password);
-    setSignedIn(true);
-  }, []);
-
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      {Platform.OS === 'android'
+        ? React.createElement(StatusBar as any, { barStyle: isDarkMode ? 'light-content' : 'dark-content', backgroundColor: isDarkMode ? '#0b1220' : '#f6f8fc' })
+        : React.createElement(StatusBar as any, { barStyle: isDarkMode ? 'light-content' : 'dark-content' })}
       <NavigationContainer>
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
           {!signedIn ? (
-            <RootStack.Screen name="Auth">{() => <AuthScreen onContinue={handleLogin} />}</RootStack.Screen>
+            <RootStack.Screen name="Auth">
+              {() => <AuthScreen locale={locale} onAuthenticated={() => setSignedIn(true)} />}
+            </RootStack.Screen>
           ) : (
-            <RootStack.Screen name="App">{() => <MainTabs catalog={catalog} catalogLoading={catalogLoading} catalogError={catalogError} onRetryCatalog={loadCatalog} />}</RootStack.Screen>
+            <RootStack.Screen name="App">
+              {() => (
+                <MainTabs
+                  locale={locale}
+                  catalog={catalog}
+                  catalogLoading={catalogLoading}
+                  catalogError={catalogError}
+                  onRetryCatalog={loadCatalog}
+                />
+              )}
+            </RootStack.Screen>
           )}
         </RootStack.Navigator>
       </NavigationContainer>
@@ -122,12 +132,29 @@ function App(): React.JSX.Element {
   );
 }
 
+function getTabLabel(locale: Locale, name: keyof TabParamList): string {
+  switch (name) {
+    case 'Hub':
+      return t(locale, 'nav.hub');
+    case 'Wayfinding':
+      return t(locale, 'nav.wayfinding');
+    case 'Journey':
+      return t(locale, 'nav.journey');
+    case 'Pass':
+      return t(locale, 'nav.pass');
+    case 'Profile':
+      return t(locale, 'nav.profile');
+  }
+  return name;
+}
+
 function MainTabs({
+  locale,
   catalog,
   catalogLoading,
   catalogError,
   onRetryCatalog,
-}: CatalogShellState) {
+}: CatalogShellState & { locale: Locale }) {
   const shellValue = {
     catalog,
     catalogLoading,
@@ -151,6 +178,7 @@ function MainTabs({
             paddingTop: 8,
             paddingBottom: 8,
           },
+          tabBarLabel: getTabLabel(locale, route.name as keyof TabParamList),
           // eslint-disable-next-line react/no-unstable-nested-components
           tabBarIcon: ({ color, size }) => {
             switch (route.name) {

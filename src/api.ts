@@ -43,17 +43,44 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   return unwrap(payload);
 }
 
-export async function login(username: string, password: string): Promise<{ accessToken: string; user: { fullName: string; role: string } }> {
-  const payload = await requestJson<{ accessToken: string; user: { fullName: string; role: string } } | { success: boolean; data: { accessToken: string; user: { fullName: string; role: string } } }>(
-    '/api/v1/auth/login',
-    {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    },
-  );
+export type AuthPayload = { accessToken: string; user: { fullName: string; role: string; email?: string } };
+
+export async function login(email: string, password: string): Promise<AuthPayload> {
+  const payload = await requestJson<AuthPayload | { success: boolean; data: AuthPayload }>('/api/v1/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
   const data = unwrap(payload);
   authToken = data.accessToken;
   return data;
+}
+
+export async function registerAccount(payload: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+  city: string;
+  phone: string;
+  preferredLanguage: string;
+  accountType?: string;
+}): Promise<AuthPayload> {
+  const response = await requestJson<AuthPayload>('/api/v1/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  authToken = response.accessToken;
+  return response;
+}
+
+export async function resetPassword(payload: { email: string; newPassword: string }): Promise<AuthPayload> {
+  const response = await requestJson<AuthPayload>('/api/v1/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  authToken = response.accessToken;
+  return response;
 }
 
 export function getJson<T>(path: string): Promise<T> {

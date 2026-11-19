@@ -101,8 +101,33 @@ export function SecondaryButton({ label, onPress, icon }: { label: string; onPre
   );
 }
 
-export function Input({ value, onChangeText, placeholder, secureTextEntry = false }: { value: string; onChangeText: (v: string) => void; placeholder: string; secureTextEntry?: boolean }) {
-  return <TextInput value={value} onChangeText={onChangeText} placeholder={placeholder} secureTextEntry={secureTextEntry} placeholderTextColor="#94a3b8" style={styles.input} autoCapitalize="none" />;
+export function Input({
+  value,
+  onChangeText,
+  placeholder,
+  secureTextEntry = false,
+  keyboardType,
+  autoCapitalize = 'none',
+}: {
+  value: string;
+  onChangeText: (v: string) => void;
+  placeholder: string;
+  secureTextEntry?: boolean;
+  keyboardType?: React.ComponentProps<typeof TextInput>['keyboardType'];
+  autoCapitalize?: React.ComponentProps<typeof TextInput>['autoCapitalize'];
+}) {
+  return (
+    <TextInput
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      secureTextEntry={secureTextEntry}
+      placeholderTextColor="#94a3b8"
+      style={styles.input}
+      autoCapitalize={autoCapitalize}
+      keyboardType={keyboardType}
+    />
+  );
 }
 
 export function ErrorText({ children }: { children: React.ReactNode }) {
@@ -148,11 +173,17 @@ export const styles = StyleSheet.create({
   miniCardMeta: { color: '#101b2d', fontFamily: fonts.bold, marginTop: 6 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingVertical: 10 },
   rowLeft: { flex: 1 },
-  rowTitle: { color: '#101b2d', fontSize: 15, fontFamily: fonts.bold },
   rowRight: { alignItems: 'flex-end' },
+  rowTitle: { color: '#101b2d', fontSize: 15, fontFamily: fonts.bold },
   bulletRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   dot: { width: 8, height: 8, borderRadius: 999, backgroundColor: '#2457e6' },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tabChip: { backgroundColor: '#edf2ff', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: '#dbe4ff' },
+  tabChipActive: { backgroundColor: '#2457e6', borderColor: '#2457e6' },
+  tabChipText: { color: '#1d3fb3', fontFamily: fonts.bold },
+  tabChipTextActive: { color: '#fff' },
+  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  helperText: { color: '#60708b', fontSize: 12, fontFamily: fonts.medium, textAlign: 'center' },
   passCard: { padding: 18, borderRadius: 20, backgroundColor: '#101b2d', gap: 10 },
   passHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   passHeaderContent: { flex: 1 },
