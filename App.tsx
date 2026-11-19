@@ -93,8 +93,8 @@ function HubRoute({ locale }: { locale: Locale }) {
 }
 
 function JourneyRoute({ locale }: { locale: Locale }) {
-  const { catalog, catalogLoading } = useCatalogShell();
-  return <JourneyScreen locale={locale} data={catalog} loading={catalogLoading} />;
+  const { catalog, catalogLoading, selectedMatch } = useCatalogShell();
+  return <JourneyScreen locale={locale} data={catalog} loading={catalogLoading} selectedMatch={selectedMatch} />;
 }
 
 function WayfindingRoute({ locale }: { locale: Locale }) {
