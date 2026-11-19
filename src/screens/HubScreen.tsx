@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -30,6 +30,25 @@ function FlagBadge({ value, title }: { value: string; title: string }) {
   return <Text style={localStyles.flagText}>{value}</Text>;
 }
 
+function formatCountdown(date: string, time: string) {
+  const target = new Date(`${date}T${time.length === 5 ? `${time}:00` : time}`);
+  if (Number.isNaN(target.getTime())) {
+    return 'LIVE';
+  }
+
+  const diff = target.getTime() - Date.now();
+  if (diff <= 0) {
+    return 'LIVE';
+  }
+
+  const totalSeconds = Math.floor(diff / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+}
+
 export function HubScreen({
   data,
   selectedMatch,
@@ -54,6 +73,19 @@ export function HubScreen({
   const [ticket, setTicket] = useState<TicketPurchaseResponse | null>(null);
   const [ticketError, setTicketError] = useState<string | null>(null);
   const [ticketLoading, setTicketLoading] = useState(false);
+  const [countdown, setCountdown] = useState(() => (hero ? formatCountdown(hero.date, hero.time) : 'LIVE'));
+
+  useEffect(() => {
+    if (!hero) {
+      setCountdown('LIVE');
+      return;
+    }
+
+    const refresh = () => setCountdown(formatCountdown(hero.date, hero.time));
+    refresh();
+    const timer = setInterval(refresh, 1000);
+    return () => clearInterval(timer);
+  }, [hero, hero?.date, hero?.time]);
 
   const topAlert = useMemo(() => {
     const corridor = data?.traffic?.[0];
@@ -112,28 +144,33 @@ export function HubScreen({
             <View style={styles.heroRow}>
               <Pill>{hero.status}</Pill>
               <Pill subtle>{hero.stage}</Pill>
+              {hero.ticketAvailable ? <Pill subtle>Tickets live</Pill> : null}
             </View>
             <Text style={styles.cardKicker}>{copy.nextEvent}</Text>
             <View style={localStyles.flagRow}>
               <FlagBadge value={hero.homeFlag} title={hero.homeTeam} />
-              <Text style={styles.cardTitle}>{hero.homeTeam} vs {hero.awayTeam}</Text>
+              <Text style={styles.cardTitle}>
+                {hero.homeTeam}
+                <Text style={localStyles.vsAccent}> vs </Text>
+                {hero.awayTeam}
+              </Text>
               <FlagBadge value={hero.awayFlag} title={hero.awayTeam} />
             </View>
             <Text style={styles.muted}>{hero.venue} · {hero.city}, {hero.country}</Text>
             <View style={styles.statsRow}>
               <Stat label={copy.kickoff} value={hero.time} />
-              <Stat label={copy.countdown} value={hero.countdown} />
+              <Stat label={copy.countdown} value={countdown} />
               <Stat label={copy.weather} value={`${hero.weather} · ${hero.temperature}`} />
             </View>
             <View style={styles.statsRow}>
               <Stat label={copy.gate} value={hero.gate} />
               <Stat label={copy.sector} value={hero.sector} />
-              <Stat label={copy.ticket} value={hero.ticketPrice} />
+              <Stat label={copy.ticket} value={hero.ticketAvailable ? hero.ticketPrice || 'Available' : 'N/A'} />
             </View>
             <Text style={styles.muted}>{hero.transitSummary}</Text>
             <View style={styles.ctaRow}>
               <PrimaryButton label={copy.planJourney} onPress={onChangeMatch} icon={<Ionicons name="map-outline" size={16} color="#fff" />} />
-              <SecondaryButton label={ticketLoading ? 'Processing...' : copy.buyTicket} onPress={buyTicket} icon={<Ionicons name="ticket-outline" size={16} color="#1d3fb3" />} />
+              {hero.ticketAvailable ? <SecondaryButton label={ticketLoading ? 'Processing...' : 'Ticket kaufen'} onPress={buyTicket} icon={<Ionicons name="ticket-outline" size={16} color="#1d3fb3" />} /> : null}
               <SecondaryButton label={copy.changeMatch} onPress={onChangeMatch} icon={<Ionicons name="swap-horizontal-outline" size={16} color="#1d3fb3" />} />
             </View>
           </View>
@@ -250,5 +287,9 @@ const localStyles = {
     color: '#172033',
     fontSize: 18,
     fontFamily: 'Poppins-Bold',
+  },
+  vsAccent: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-ExtraBold',
   },
 };

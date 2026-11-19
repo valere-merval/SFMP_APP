@@ -73,7 +73,7 @@ export function MatchListScreen({
               <View style={localStyles.overlay}>
                 <View style={styles.rowBetween}>
                   <Text style={localStyles.stage}>{match.stage}</Text>
-                  <Text style={localStyles.ticket}>{match.ticketPrice}</Text>
+                  <Text style={localStyles.ticket}>{match.ticketAvailable ? match.ticketPrice || 'Tickets live' : 'Sold out'}</Text>
                 </View>
                 <View style={localStyles.teamRow}>
                   <FlagBadge value={match.homeFlag} />
@@ -85,6 +85,7 @@ export function MatchListScreen({
                 <Text style={localStyles.meta}>{match.date} · {match.time}</Text>
                 <Text style={localStyles.meta}>{match.venue} · {match.city}, {match.country}</Text>
                 <Text style={localStyles.meta}>{match.gate} · {match.sector}</Text>
+                <Text style={localStyles.meta}>{match.ticketAvailable ? `${match.ticketsRemaining ?? match.ticketsTotal ?? 0} tickets remaining` : 'Tickets not available on platform'}</Text>
                 <Text style={localStyles.description}>{match.transitSummary}</Text>
                 <View style={styles.ctaRow}>
                   <PrimaryButton label={copy.openHub} onPress={() => onSelectMatch(match)} icon={<Feather name="arrow-right" size={16} color="#fff" />} />
@@ -134,7 +135,7 @@ const localStyles = {
     fontFamily: 'Poppins-Bold',
   },
   ticket: {
-    color: '#2457e6',
+    color: '#c8f36a',
     fontSize: 16,
     fontFamily: 'Poppins-ExtraBold',
   },

@@ -39,7 +39,10 @@ export type MatchCard = {
   weather: string;
   temperature: string;
   transitSummary: string;
+  ticketAvailable: boolean;
   ticketPrice: string;
+  ticketsTotal: number | null;
+  ticketsRemaining: number | null;
   imageUrl: string;
 };
 

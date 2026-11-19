@@ -57,10 +57,11 @@ export function EventCatalogScreen({
               <View style={localStyles.overlay}>
                 <View style={styles.rowBetween}>
                   <Text style={localStyles.badge}>{catalog.badge}</Text>
-                  <Text style={localStyles.count}>{catalog.eventCount} events</Text>
+                  <Text style={localStyles.liveTag}>LIVE</Text>
                 </View>
                 <Text style={localStyles.title}>{catalog.title}</Text>
                 <Text style={localStyles.meta}>{catalog.sport} · {catalog.country}</Text>
+                <Text style={localStyles.count}>{catalog.eventCount} matches</Text>
                 <Text style={localStyles.description}>{catalog.description}</Text>
               </View>
             </Pressable>
@@ -111,9 +112,18 @@ const localStyles = {
     fontFamily: 'Poppins-Bold',
   },
   count: {
-    color: '#2457e6',
+    color: '#c8f36a',
     fontFamily: 'Poppins-SemiBold',
     fontSize: 12,
+  },
+  liveTag: {
+    backgroundColor: '#c8f36a',
+    color: '#172033',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    fontSize: 12,
+    fontFamily: 'Poppins-Bold',
   },
   title: {
     color: '#172033',
