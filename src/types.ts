@@ -8,6 +8,41 @@ export type EventCard = {
   attendance: string;
 };
 
+export type EventCatalogCard = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  sport: string;
+  country: string;
+  badge: string;
+  eventCount: number;
+};
+
+export type MatchCard = {
+  id: string;
+  catalogId: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeFlag: string;
+  awayFlag: string;
+  city: string;
+  country: string;
+  venue: string;
+  stage: string;
+  date: string;
+  time: string;
+  status: string;
+  gate: string;
+  sector: string;
+  countdown: string;
+  weather: string;
+  temperature: string;
+  transitSummary: string;
+  ticketPrice: string;
+  imageUrl: string;
+};
+
 export type MobilityCard = {
   id: string;
   mode: string;
@@ -114,6 +149,8 @@ export type InsightView = {
 
 export type LiveData = {
   events: EventCard[];
+  eventCatalogs: EventCatalogCard[];
+  matches: MatchCard[];
   mobility: MobilityCard[];
   bookings: BookingCard[];
   operations: MetricCard[];

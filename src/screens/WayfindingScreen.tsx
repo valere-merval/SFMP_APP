@@ -6,13 +6,21 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
 import { Card, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 
-const venue = 'Santiago Bernabéu, Madrid';
-const venueCoordinate = {
-  latitude: 40.4531,
-  longitude: -3.6883,
-};
+export function WayfindingScreen({
+  venueName = 'Estadio Metropolitano',
+  city = 'Madrid',
+  country = 'Spain',
+}: {
+  venueName?: string;
+  city?: string;
+  country?: string;
+}) {
+  const title = `${venueName}, ${city}`;
+  const venueCoordinate = {
+    latitude: 40.4531,
+    longitude: -3.6883,
+  };
 
-export function WayfindingScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -35,22 +43,23 @@ export function WayfindingScreen() {
               showsCompass={false}
               showsTraffic
             >
-              <Marker coordinate={venueCoordinate} title={venue} description="Match venue" />
+              <Marker coordinate={venueCoordinate} title={title} description="Match venue" />
             </MapView>
             <View style={styles.mapOverlay}>
-              <Text style={styles.cardTitle}>Madrid live network</Text>
+              <Text style={styles.cardTitle}>{venueName}</Text>
+              <Text style={styles.muted}>{city}, {country}</Text>
               <Text style={styles.muted}>The app renders a native map here and uses Google Maps links for route handoff.</Text>
             </View>
           </View>
           <View style={styles.ctaRow}>
             <PrimaryButton
               label="Open in Google Maps"
-              onPress={() => openGoogleMapsSearch(venue)}
+              onPress={() => openGoogleMapsSearch(title)}
               icon={<Ionicons name="navigate-outline" size={16} color="#fff" />}
             />
             <SecondaryButton
               label="View directions"
-              onPress={() => openGoogleMapsDirections(venue, 'Madrid city center')}
+              onPress={() => openGoogleMapsDirections(title, 'Madrid city center')}
               icon={<Feather name="external-link" size={16} color="#1d3fb3" />}
             />
           </View>
@@ -73,7 +82,7 @@ export function WayfindingScreen() {
             <Text style={styles.muted}>If the map tiles are unavailable on Android, the external Google Maps links still work.</Text>
           </View>
           <View style={styles.ctaRow}>
-            <SecondaryButton label="Search venue" onPress={() => Linking.openURL('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(venue))} icon={<Feather name="search" size={16} color="#1d3fb3" />} />
+            <SecondaryButton label="Search venue" onPress={() => Linking.openURL('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(title))} icon={<Feather name="search" size={16} color="#1d3fb3" />} />
           </View>
         </Card>
       </ScrollView>

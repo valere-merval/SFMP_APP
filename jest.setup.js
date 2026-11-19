@@ -82,6 +82,25 @@ jest.mock('react-native-vector-icons/Feather', () => {
   return ({ name, color, size }) => React.createElement(Text, { accessibilityLabel: name, style: { color, fontSize: size } }, name);
 });
 
+jest.mock('@react-native-async-storage/async-storage', () => {
+  let store = new Map();
+  return {
+    __esModule: true,
+    default: {
+      getItem: jest.fn(async (key) => (store.has(key) ? store.get(key) : null)),
+      setItem: jest.fn(async (key, value) => {
+        store.set(key, value);
+      }),
+      removeItem: jest.fn(async (key) => {
+        store.delete(key);
+      }),
+      clear: jest.fn(async () => {
+        store.clear();
+      }),
+    },
+  };
+});
+
 jest.mock('react-native-vector-icons/Ionicons', () => {
   return ({ name, color, size }) => React.createElement(Text, { accessibilityLabel: name, style: { color, fontSize: size } }, name);
 });

@@ -6,9 +6,11 @@ import type {
   ContextualMessageView,
   DemandPeakView,
   EventCard,
+  EventCatalogCard,
   HeatmapView,
   InsightView,
   LiveData,
+  MatchCard,
   MobilityCard,
   MetricCard,
   OrgCard,
@@ -21,6 +23,8 @@ import type {
 export async function fetchCatalog(): Promise<LiveData> {
   const [
     events,
+    eventCatalogs,
+    matches,
     mobility,
     bookings,
     operations,
@@ -37,6 +41,8 @@ export async function fetchCatalog(): Promise<LiveData> {
     insights,
   ] = await Promise.all([
     getJson<EventCard[]>('/api/v1/events'),
+    getJson<EventCatalogCard[]>('/api/v1/event-catalogs'),
+    getJson<MatchCard[]>('/api/v1/matches'),
     getJson<MobilityCard[]>('/api/v1/mobility/options'),
     getJson<BookingCard[]>('/api/v1/bookings'),
     getJson<MetricCard[]>('/api/v1/operations/summary'),
@@ -55,6 +61,8 @@ export async function fetchCatalog(): Promise<LiveData> {
 
   return {
     events,
+    eventCatalogs,
+    matches,
     mobility,
     bookings,
     operations,

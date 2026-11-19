@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 const API_BASE =
@@ -6,6 +7,8 @@ const API_BASE =
     ios: 'http://localhost:8080',
     default: 'http://localhost:8080',
   }) ?? 'http://localhost:8080';
+
+const TOKEN_KEY = 'sfmp_token';
 
 let authToken = '';
 
@@ -18,11 +21,28 @@ function unwrap<T>(payload: ApiEnvelope<T>): T {
   if (payload && typeof payload === 'object' && 'data' in payload && payload.data !== undefined) {
     return payload.data as T;
   }
+
   return payload as T;
 }
 
-export function setAuthToken(token: string) {
+export async function hydrateAuthToken() {
+  const stored = await AsyncStorage.getItem(TOKEN_KEY);
+  authToken = stored ?? '';
+  return authToken;
+}
+
+export function getAuthToken() {
+  return authToken;
+}
+
+export async function setAuthToken(token: string) {
   authToken = token;
+  await AsyncStorage.setItem(TOKEN_KEY, token);
+}
+
+export async function clearAuthToken() {
+  authToken = '';
+  await AsyncStorage.removeItem(TOKEN_KEY);
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -45,13 +65,15 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 
 export type AuthPayload = { accessToken: string; user: { fullName: string; role: string; email?: string } };
 
+export type CurrentUser = { id: string; email: string; fullName: string; role: string; organization: string; roles: string[] };
+
 export async function login(email: string, password: string): Promise<AuthPayload> {
   const payload = await requestJson<AuthPayload | { success: boolean; data: AuthPayload }>('/api/v1/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
   const data = unwrap(payload);
-  authToken = data.accessToken;
+  await setAuthToken(data.accessToken);
   return data;
 }
 
@@ -70,7 +92,7 @@ export async function registerAccount(payload: {
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  authToken = response.accessToken;
+  await setAuthToken(response.accessToken);
   return response;
 }
 
@@ -79,8 +101,12 @@ export async function resetPassword(payload: { email: string; newPassword: strin
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  authToken = response.accessToken;
+  await setAuthToken(response.accessToken);
   return response;
+}
+
+export async function currentUser(): Promise<CurrentUser> {
+  return requestJson<CurrentUser>('/api/v1/auth/me');
 }
 
 export function getJson<T>(path: string): Promise<T> {
