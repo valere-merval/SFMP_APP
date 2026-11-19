@@ -6,6 +6,7 @@ import { postJson } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, Pill, PrimaryButton, Row, SecondaryButton, Stat, styles } from '../ui';
+import { trackTelemetry } from '../telemetry';
 import type { Locale } from '../i18n';
 
 type TicketPurchaseResponse = {
@@ -95,6 +96,7 @@ export function HubScreen({
 
   const buyTicket = async () => {
     if (!hero) return;
+    trackTelemetry('ticket_checkout_started', 'Hub', { matchId: hero.id, title: `${hero.homeTeam} vs ${hero.awayTeam}` });
     setTicketLoading(true);
     setTicketError(null);
     try {
@@ -167,9 +169,9 @@ export function HubScreen({
             </View>
             <Text style={styles.muted}>{hero.transitSummary}</Text>
             <View style={styles.ctaRow}>
-              <PrimaryButton label={copy.planJourney} onPress={onChangeMatch} icon={<Ionicons name="map-outline" size={16} color="#fff" />} />
+              <PrimaryButton label={copy.planJourney} onPress={() => { trackTelemetry('plan_journey_clicked', 'Hub', { matchId: hero.id }); onChangeMatch(); }} icon={<Ionicons name="map-outline" size={16} color="#fff" />} />
               {hero.ticketAvailable ? <SecondaryButton label={ticketLoading ? 'Processing...' : 'Ticket kaufen'} onPress={buyTicket} icon={<Ionicons name="ticket-outline" size={16} color="#1d3fb3" />} /> : null}
-              <SecondaryButton label={copy.changeMatch} onPress={onChangeMatch} icon={<Ionicons name="swap-horizontal-outline" size={16} color="#1d3fb3" />} />
+              <SecondaryButton label={copy.changeMatch} onPress={() => { trackTelemetry('change_match_clicked', 'Hub', { matchId: hero.id }); onChangeMatch(); }} icon={<Ionicons name="swap-horizontal-outline" size={16} color="#1d3fb3" />} />
             </View>
           </View>
         ) : null}

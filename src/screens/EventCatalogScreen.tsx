@@ -5,6 +5,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { getScreenCopy } from '../screenCopy';
 import type { EventCatalogCard } from '../types';
 import { Card, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
+import { trackTelemetry } from '../telemetry';
 import type { Locale } from '../i18n';
 
 export function EventCatalogScreen({
@@ -52,7 +53,7 @@ export function EventCatalogScreen({
 
         <View style={localStyles.grid}>
           {items.map((catalog) => (
-            <Pressable key={catalog.id} style={localStyles.card} onPress={() => onSelectCatalog(catalog)}>
+            <Pressable key={catalog.id} style={localStyles.card} onPress={() => { trackTelemetry('catalog_selected', 'EventCatalog', { catalogId: catalog.id, title: catalog.title }); onSelectCatalog(catalog); }}>
               <Image source={{ uri: catalog.imageUrl }} style={localStyles.image} />
               <View style={localStyles.overlay}>
                 <View style={styles.rowBetween}>

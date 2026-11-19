@@ -5,6 +5,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { getScreenCopy } from '../screenCopy';
 import type { EventCatalogCard, MatchCard } from '../types';
 import { Card, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
+import { trackTelemetry } from '../telemetry';
 import type { Locale } from '../i18n';
 
 function isImageUrl(value: string) {
@@ -68,7 +69,7 @@ export function MatchListScreen({
 
         <View style={localStyles.list}>
           {items.map((match) => (
-            <Pressable key={match.id} style={localStyles.card} onPress={() => onSelectMatch(match)}>
+            <Pressable key={match.id} style={localStyles.card} onPress={() => { trackTelemetry('match_selected', 'MatchList', { matchId: match.id, catalogId: match.catalogId, homeTeam: match.homeTeam, awayTeam: match.awayTeam }); onSelectMatch(match); }}>
               <Image source={{ uri: match.imageUrl }} style={localStyles.image} />
               <View style={localStyles.overlay}>
                 <View style={styles.rowBetween}>
