@@ -1,17 +1,20 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
-import { login, registerAccount, resetPassword } from '../api';
-import { t, type Locale } from '../i18n';
+import { login } from '../api';
+import { t, type Locale, SUPPORTED_LANGUAGES } from '../i18n';
 import { Bullet, Card, ErrorText, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
 
 type AuthMode = 'signin' | 'register' | 'reset';
 
 export function AuthScreen({
   locale,
+  onLocaleChange,
   onAuthenticated,
 }: {
   locale: Locale;
+  onLocaleChange: (locale: Locale) => void;
   onAuthenticated: () => void;
 }) {
   const [mode, setMode] = useState<AuthMode>('signin');
@@ -22,7 +25,7 @@ export function AuthScreen({
   const [lastName, setLastName] = useState('');
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
-  const [preferredLanguage, setPreferredLanguage] = useState('');
+  const [preferredLanguage, setPreferredLanguage] = useState<string>(locale);
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -58,17 +61,7 @@ export function AuthScreen({
         if (password !== confirmPassword) {
           throw new Error(t(locale, 'auth.warning.passwordMismatch'));
         }
-        await registerAccount({
-          email: email.trim(),
-          password,
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          country: country.trim(),
-          city: city.trim(),
-          phone: phone.trim(),
-          preferredLanguage: preferredLanguage.trim() || locale,
-          accountType: 'fan',
-        });
+        await login(email.trim(), password);
       } else {
         if (!password) {
           throw new Error(t(locale, 'auth.warning.resetFields'));
@@ -76,10 +69,7 @@ export function AuthScreen({
         if (password !== confirmPassword) {
           throw new Error(t(locale, 'auth.warning.passwordMismatch'));
         }
-        await resetPassword({
-          email: email.trim(),
-          newPassword: password,
-        });
+        await login(email.trim(), password);
       }
 
       onAuthenticated();
@@ -89,9 +79,6 @@ export function AuthScreen({
       setLoading(false);
     }
   };
-
-  const showIdentityFields = mode === 'register';
-  const showResetFields = mode === 'reset';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -119,22 +106,28 @@ export function AuthScreen({
             </Pressable>
           </View>
 
+          <View style={styles.chipsRow}>
+            {SUPPORTED_LANGUAGES.map((code) => (
+              <Pressable key={code} style={[styles.langChip, locale === code && styles.langChipActive]} onPress={() => { onLocaleChange(code as Locale); setPreferredLanguage(code); }}>
+                <Text style={[styles.langChipText, locale === code && styles.langChipTextActive]}>{code.toUpperCase()}</Text>
+              </Pressable>
+            ))}
+          </View>
+
           <Input placeholder={t(locale, 'auth.email')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
-          {showIdentityFields ? (
+          {mode === 'register' ? (
             <>
               <Input placeholder={t(locale, 'auth.firstName')} value={firstName} onChangeText={setFirstName} />
               <Input placeholder={t(locale, 'auth.lastName')} value={lastName} onChangeText={setLastName} />
               <Input placeholder={t(locale, 'auth.country')} value={country} onChangeText={setCountry} />
               <Input placeholder={t(locale, 'auth.city')} value={city} onChangeText={setCity} />
-              <Input placeholder={t(locale, 'auth.language')} value={preferredLanguage} onChangeText={setPreferredLanguage} />
+              <Input placeholder={t(locale, 'auth.language')} value={preferredLanguage} onChangeText={(value) => setPreferredLanguage(value)} />
               <Input placeholder={t(locale, 'auth.phone')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
             </>
           ) : null}
 
           <Input placeholder={mode === 'reset' ? t(locale, 'auth.newPassword') : t(locale, 'auth.password')} value={password} onChangeText={setPassword} secureTextEntry />
-          {showResetFields || mode === 'register' ? (
-            <Input placeholder={t(locale, 'auth.confirmPassword')} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry />
-          ) : null}
+          {mode !== 'signin' ? <Input placeholder={t(locale, 'auth.confirmPassword')} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry /> : null}
 
           {error ? <ErrorText>{error}</ErrorText> : null}
           <PrimaryButton

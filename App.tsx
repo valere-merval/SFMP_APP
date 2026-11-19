@@ -123,7 +123,7 @@ function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
 function App(): React.JSX.Element {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<'auth' | 'catalog' | 'matches' | 'app'>('auth');
-  const [locale] = useState<Locale>(() => detectLanguage());
+  const [locale, setLocale] = useState<Locale>(() => detectLanguage());
   const [catalog, setCatalog] = useState<LiveData | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
@@ -258,7 +258,7 @@ function App(): React.JSX.Element {
         ? React.createElement(StatusBar as any, { barStyle: 'dark-content', backgroundColor: '#f6f8fc' })
         : React.createElement(StatusBar as any, { barStyle: 'dark-content' })}
       {session === 'auth' ? (
-        <AuthScreen locale={locale} onAuthenticated={handleAuthenticated} />
+        <AuthScreen locale={locale} onLocaleChange={setLocale} onAuthenticated={handleAuthenticated} />
       ) : session === 'catalog' ? (
         <EventCatalogScreen catalogs={catalog?.eventCatalogs ?? []} onSelectCatalog={handleSelectCatalog} onSignOut={handleSignOut} />
       ) : session === 'matches' ? (

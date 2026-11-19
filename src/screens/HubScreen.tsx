@@ -1,16 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { postJson } from '../api';
 import { type LiveData, type MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, Pill, PrimaryButton, Row, SecondaryButton, Stat, styles } from '../ui';
-
-type Briefing = {
-  model: string;
-  summary: string;
-  confidence: string;
-  recommendations: string[];
-};
 
 type TicketPurchaseResponse = {
   reference: string;
@@ -40,9 +34,6 @@ export function HubScreen({
   onChangeEvent: () => void;
 }) {
   const hero = selectedMatch;
-  const [briefing, setBriefing] = useState<Briefing | null>(null);
-  const [briefingError, setBriefingError] = useState<string | null>(null);
-  const [briefingLoading, setBriefingLoading] = useState(false);
   const [ticket, setTicket] = useState<TicketPurchaseResponse | null>(null);
   const [ticketError, setTicketError] = useState<string | null>(null);
   const [ticketLoading, setTicketLoading] = useState(false);
@@ -52,23 +43,6 @@ export function HubScreen({
     if (!corridor) return null;
     return `${corridor.corridor}: ${corridor.status} — ${corridor.recommendation}`;
   }, [data]);
-
-  const generateBriefing = async () => {
-    setBriefingLoading(true);
-    setBriefingError(null);
-    try {
-      const result = await postJson<Briefing>('/api/v1/intelligence/analyze', {
-        focus: 'matchday demand and routing',
-        context: hero ? `${hero.homeTeam} vs ${hero.awayTeam}, ${hero.city}, ${hero.venue}` : 'Madrid stadium operations, traffic, gates, and post-match departures',
-      });
-      setBriefing(result);
-    } catch {
-      setBriefing(null);
-      setBriefingError('AI briefing is unavailable until the backend intelligence service is reachable.');
-    } finally {
-      setBriefingLoading(false);
-    }
-  };
 
   const buyTicket = async () => {
     if (!hero) return;
@@ -81,7 +55,6 @@ export function HubScreen({
         paymentMethod: 'card',
       });
       setTicket(response);
-      Alert.alert('Ticket ready', `${response.reference} · ${response.amount}`);
     } catch {
       setTicket(null);
       setTicketError('Ticket checkout could not be created. Try again once the backend payment flow is available.');
@@ -176,66 +149,46 @@ export function HubScreen({
           )) : <EmptyState icon="pulse-outline" title="No operations feed" subtitle="Live telemetry is pulled from the backend catalog." />}
         </Card>
 
-        <Card title="Delivery roadmap" subtitle="Versions" wide>
-          {data ? data.roadmap.map((item) => (
-            <Row key={item.version} leftTitle={`${item.version} · ${item.title}`} leftSubtitle={item.features.join(' • ')} rightTitle={item.features.length.toString()} rightSubtitle="Features" />
-          )) : <EmptyState icon="layers-outline" title="No roadmap loaded" subtitle="The roadmap section waits for backend data instead of local fixtures." />}
+        <Card title="Stadium perimeter gates" subtitle="Wayfinding" wide>
+          <View style={styles.cardBody}>
+            {hero ? (
+              <>
+                <Row leftTitle={hero.gate} leftSubtitle={hero.sector} rightTitle="Open" rightSubtitle="Access" />
+                <Row leftTitle="North Esplanade" leftSubtitle="4 min queue" rightTitle="Guide" rightSubtitle="Route" />
+                <Row leftTitle="Reserved fan lane" leftSubtitle="Accessible access" rightTitle="Ready" rightSubtitle="Access" />
+              </>
+            ) : (
+              <EmptyState icon="map-outline" title="No gate data yet" subtitle="Select a match to render the live gate and wayfinding panel." />
+            )}
+          </View>
         </Card>
 
-        <Card title="Intelligence feed" subtitle="Version 3">
-          {data ? (
-            <>
-              {data.heatmaps.map((item) => (
-                <Row key={item.zone} leftTitle={item.zone} leftSubtitle={`${item.intensity} · ${item.trend}`} rightTitle={item.recommendation} rightSubtitle="Heatmap" />
-              ))}
-              {data.demandPeaks.map((item) => (
-                <Row key={item.window} leftTitle={item.window} leftSubtitle={item.level} rightTitle={item.action} rightSubtitle="Peak" />
-              ))}
-            </>
+        <Card title="Matchday essentials" subtitle="Quick access">
+          {hero ? (
+            <View style={styles.grid2}>
+              <MiniCard title="Locker P3" subtitle="A4 max size" meta="Quick drop-off" />
+              <MiniCard title="Parking P4" subtitle="78 spots left" meta="Reserved access" />
+              <MiniCard title="Fan zones" subtitle="Plaza Mayor" meta="Food and meet-up" />
+              <MiniCard title="Ride-hailing" subtitle="South VTC zone" meta="Pick-up ready" />
+            </View>
           ) : (
-            <EmptyState icon="flame-outline" title="No intelligence feed" subtitle="Crowd and demand insights load from backend endpoints only." />
+            <EmptyState icon="compass-outline" title="No essentials yet" subtitle="This panel is filled from the selected match and backend data." />
           )}
         </Card>
 
-        <Card title="Traffic and consent" subtitle="Version 2">
+        <Card title="Operational signals" subtitle="Live recommendations">
           {data ? (
             <>
               {data.traffic.map((item) => (
                 <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={`${item.status} · ${item.impact}`} rightTitle={item.recommendation} rightSubtitle="Traffic" />
               ))}
-              {data.consents.map((item) => (
-                <Row key={item.source} leftTitle={item.source} leftSubtitle={item.lastUpdated} rightTitle={item.status} rightSubtitle="Consent" />
+              {data.routeAdaptations.map((item) => (
+                <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={item.reason} rightTitle={item.change} rightSubtitle="Route" />
               ))}
             </>
           ) : (
-            <EmptyState icon="shield-checkmark-outline" title="No traffic or consent data" subtitle="These sections read from live backend records only." />
+            <EmptyState icon="navigate-outline" title="No live signals" subtitle="Traffic and route recommendations are loaded from backend data only." />
           )}
-        </Card>
-
-        <Card title="Model insights" subtitle="ML predictions">
-          {data ? data.insights.map((item) => (
-            <Row key={item.model} leftTitle={`${item.model} · ${item.confidence}`} leftSubtitle={item.insight} rightTitle={item.action} rightSubtitle="AI" />
-          )) : <EmptyState icon="analytics-outline" title="No model insights" subtitle="The AI insights feed comes from the backend." />}
-        </Card>
-
-        <Card title="AI briefing" subtitle="OpenAI">
-          <View style={styles.cardBody}>
-            {briefing ? (
-              <>
-                <Row leftTitle={`${briefing.model} · ${briefing.confidence}`} leftSubtitle={briefing.summary} rightTitle="Live" rightSubtitle="AI" />
-                {briefing.recommendations.map((item) => (
-                  <Row key={item} leftTitle={item} leftSubtitle="Recommendation" rightTitle="Action" rightSubtitle="AI" />
-                ))}
-              </>
-            ) : briefingError ? (
-              <EmptyState icon="chatbubble-ellipses-outline" title="Briefing unavailable" subtitle={briefingError} />
-            ) : (
-              <EmptyState icon="sparkles-outline" title="Generate an AI briefing" subtitle="Uses backend intelligence when the service is configured." />
-            )}
-          </View>
-          <View style={styles.ctaRow}>
-            <PrimaryButton label={briefingLoading ? 'Analyzing...' : 'Generate AI briefing'} onPress={generateBriefing} icon={<Ionicons name="sparkles-outline" size={16} color="#fff" />} />
-          </View>
         </Card>
 
         <Card title="Contextual messages" subtitle="Adaptive comms">
