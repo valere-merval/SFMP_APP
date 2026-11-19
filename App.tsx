@@ -173,23 +173,26 @@ function App(): React.JSX.Element {
         return;
       }
 
+      if (active) {
+        setSession('catalog');
+        setReady(true);
+      }
+
       try {
         await currentUser();
         await loadCatalog();
-        if (active) {
-          setSession('catalog');
+      } catch (error) {
+        const message = error instanceof Error ? error.message : '';
+        const unauthorized = message.includes('401') || message.includes('403');
+        if (!unauthorized) {
+          return;
         }
-      } catch {
         await clearAuthToken();
         if (active) {
           setCatalog(null);
           setSelectedCatalogId(null);
           setSelectedMatchId(null);
           setSession('auth');
-        }
-      } finally {
-        if (active) {
-          setReady(true);
         }
       }
     })();

@@ -149,10 +149,10 @@ export function HubScreen({
             <Text style={styles.cardKicker}>{copy.nextEvent}</Text>
             <View style={localStyles.flagRow}>
               <FlagBadge value={hero.homeFlag} title={hero.homeTeam} />
-              <Text style={styles.cardTitle}>
-                {hero.homeTeam}
-                <Text style={localStyles.vsAccent}> vs </Text>
-                {hero.awayTeam}
+              <Text style={localStyles.teamLine} numberOfLines={1} ellipsizeMode="tail">
+                <Text style={localStyles.teamName} numberOfLines={1} ellipsizeMode="tail">{hero.homeTeam}</Text>
+                <Text style={localStyles.vsAccent} numberOfLines={1} ellipsizeMode="tail"> vs </Text>
+                <Text style={localStyles.teamName} numberOfLines={1} ellipsizeMode="tail">{hero.awayTeam}</Text>
               </Text>
               <FlagBadge value={hero.awayFlag} title={hero.awayTeam} />
             </View>
@@ -273,7 +273,7 @@ const localStyles = {
     justifyContent: 'center' as const,
     gap: 10,
     marginBottom: 8,
-    flexWrap: 'wrap' as const,
+    flexWrap: 'nowrap' as const,
   },
   flagImage: {
     width: 28,
@@ -290,6 +290,19 @@ const localStyles = {
   },
   vsAccent: {
     color: '#c8f36a',
+    fontFamily: 'Poppins-ExtraBold',
+  },
+  teamLine: {
+    flexShrink: 1,
+    minWidth: 0,
+    color: '#172033',
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: 'Poppins-ExtraBold',
+    textAlign: 'center' as const,
+  },
+  teamName: {
+    color: '#172033',
     fontFamily: 'Poppins-ExtraBold',
   },
 };
