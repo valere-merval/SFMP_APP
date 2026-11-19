@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { postJson } from '../api';
-import { type LiveData, type MatchCard } from '../types';
+import { getScreenCopy } from '../screenCopy';
+import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, Pill, PrimaryButton, Row, SecondaryButton, Stat, styles } from '../ui';
+import type { Locale } from '../i18n';
 
 type TicketPurchaseResponse = {
   reference: string;
@@ -16,9 +18,22 @@ type TicketPurchaseResponse = {
   message: string;
 };
 
+function isImageUrl(value: string) {
+  return /^https?:\/\//i.test(value);
+}
+
+function FlagBadge({ value, title }: { value: string; title: string }) {
+  if (isImageUrl(value)) {
+    return <Image source={{ uri: value }} style={localStyles.flagImage} accessibilityLabel={title} />;
+  }
+
+  return <Text style={localStyles.flagText}>{value}</Text>;
+}
+
 export function HubScreen({
   data,
   selectedMatch,
+  locale,
   loading,
   error,
   onRetryCatalog,
@@ -27,12 +42,14 @@ export function HubScreen({
 }: {
   data: LiveData | null;
   selectedMatch: MatchCard | null;
+  locale: Locale;
   loading: boolean;
   error: string | null;
   onRetryCatalog: () => void;
   onChangeMatch: () => void;
   onChangeEvent: () => void;
 }) {
+  const copy = getScreenCopy(locale).hub;
   const hero = selectedMatch;
   const [ticket, setTicket] = useState<TicketPurchaseResponse | null>(null);
   const [ticketError, setTicketError] = useState<string | null>(null);
@@ -67,16 +84,16 @@ export function HubScreen({
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.kicker}>MATCHDAY HUB</Text>
-          <Text style={styles.title}>{hero ? `${hero.homeTeam} vs ${hero.awayTeam}` : 'Matchday mobility hub'}</Text>
-          <Text style={styles.subtitle}>{hero ? `${hero.city} · ${hero.venue}` : 'Select a match to load the live journey, operations and gate data.'}</Text>
+          <Text style={styles.kicker}>{copy.eyebrow}</Text>
+          <Text style={styles.title}>{hero ? `${hero.homeTeam} vs ${hero.awayTeam}` : copy.emptyTitle}</Text>
+          <Text style={styles.subtitle}>{hero ? `${hero.city} · ${hero.venue}` : copy.emptySubtitle}</Text>
         </View>
 
         {topAlert ? (
-          <Card title="Live service alert" subtitle="Traffic" wide>
-            <EmptyState icon="warning-outline" title="High congestion detected" subtitle={topAlert} />
+          <Card title={copy.alertTitle} subtitle={copy.alertSubtitle} wide>
+            <EmptyState icon="warning-outline" title={copy.highCongestion} subtitle={topAlert} />
             <View style={styles.ctaRow}>
-              <SecondaryButton label="Open map" onPress={onChangeMatch} icon={<Ionicons name="map-outline" size={16} color="#1d3fb3" />} />
+              <SecondaryButton label={copy.changeMatch} onPress={onChangeMatch} icon={<Ionicons name="map-outline" size={16} color="#1d3fb3" />} />
             </View>
           </Card>
         ) : null}
@@ -84,11 +101,11 @@ export function HubScreen({
         {error ? (
           <Card title="Catalog unavailable" subtitle="Backend sync">
             <EmptyState icon="cloud-offline-outline" title="Live catalog did not load" subtitle={error} />
-            <PrimaryButton label="Retry catalog" onPress={onRetryCatalog} icon={<Ionicons name="refresh-outline" size={16} color="#fff" />} />
+            <PrimaryButton label={copy.retryCatalog} onPress={onRetryCatalog} icon={<Ionicons name="refresh-outline" size={16} color="#fff" />} />
           </Card>
         ) : loading && !hero ? (
-          <Card title="Loading live catalog" subtitle="Backend sync">
-            <EmptyState icon="sync-outline" title="Waiting for live data" subtitle="The app is loading catalog data directly from the backend." />
+          <Card title={copy.loadingTitle} subtitle={copy.loadingSubtitle}>
+            <EmptyState icon="sync-outline" title={copy.loadingTitle} subtitle="The app is loading catalog data directly from the backend." />
           </Card>
         ) : hero ? (
           <View style={styles.heroCard}>
@@ -96,29 +113,33 @@ export function HubScreen({
               <Pill>{hero.status}</Pill>
               <Pill subtle>{hero.stage}</Pill>
             </View>
-            <Text style={styles.cardKicker}>Next sporting event</Text>
-            <Text style={styles.cardTitle}>{hero.homeFlag} {hero.homeTeam} vs {hero.awayFlag} {hero.awayTeam}</Text>
+            <Text style={styles.cardKicker}>{copy.nextEvent}</Text>
+            <View style={localStyles.flagRow}>
+              <FlagBadge value={hero.homeFlag} title={hero.homeTeam} />
+              <Text style={styles.cardTitle}>{hero.homeTeam} vs {hero.awayTeam}</Text>
+              <FlagBadge value={hero.awayFlag} title={hero.awayTeam} />
+            </View>
             <Text style={styles.muted}>{hero.venue} · {hero.city}, {hero.country}</Text>
             <View style={styles.statsRow}>
-              <Stat label="Kickoff" value={hero.time} />
-              <Stat label="Countdown" value={hero.countdown} />
-              <Stat label="Weather" value={`${hero.weather} · ${hero.temperature}`} />
+              <Stat label={copy.kickoff} value={hero.time} />
+              <Stat label={copy.countdown} value={hero.countdown} />
+              <Stat label={copy.weather} value={`${hero.weather} · ${hero.temperature}`} />
             </View>
             <View style={styles.statsRow}>
-              <Stat label="Gate" value={hero.gate} />
-              <Stat label="Sector" value={hero.sector} />
-              <Stat label="Ticket" value={hero.ticketPrice} />
+              <Stat label={copy.gate} value={hero.gate} />
+              <Stat label={copy.sector} value={hero.sector} />
+              <Stat label={copy.ticket} value={hero.ticketPrice} />
             </View>
             <Text style={styles.muted}>{hero.transitSummary}</Text>
             <View style={styles.ctaRow}>
-              <PrimaryButton label="Plan my journey" onPress={onChangeMatch} icon={<Ionicons name="map-outline" size={16} color="#fff" />} />
-              <SecondaryButton label={ticketLoading ? 'Processing...' : 'Buy ticket'} onPress={buyTicket} icon={<Ionicons name="ticket-outline" size={16} color="#1d3fb3" />} />
-              <SecondaryButton label="Change match" onPress={onChangeMatch} icon={<Ionicons name="swap-horizontal-outline" size={16} color="#1d3fb3" />} />
+              <PrimaryButton label={copy.planJourney} onPress={onChangeMatch} icon={<Ionicons name="map-outline" size={16} color="#fff" />} />
+              <SecondaryButton label={ticketLoading ? 'Processing...' : copy.buyTicket} onPress={buyTicket} icon={<Ionicons name="ticket-outline" size={16} color="#1d3fb3" />} />
+              <SecondaryButton label={copy.changeMatch} onPress={onChangeMatch} icon={<Ionicons name="swap-horizontal-outline" size={16} color="#1d3fb3" />} />
             </View>
           </View>
         ) : null}
 
-        <Card title="Ticket purchase" subtitle="Payments" wide>
+        <Card title={copy.ticketTitle} subtitle={copy.ticketSubtitle} wide>
           {ticket ? (
             <View style={styles.cardBody}>
               <Row leftTitle={ticket.reference} leftSubtitle={ticket.matchTitle} rightTitle={ticket.amount} rightSubtitle={ticket.status} />
@@ -127,11 +148,11 @@ export function HubScreen({
           ) : ticketError ? (
             <EmptyState icon="card-outline" title="Ticket checkout unavailable" subtitle={ticketError} />
           ) : (
-            <EmptyState icon="card-outline" title="Ready to pay" subtitle="A backend checkout session will appear here once the ticket endpoint is connected to a payment provider." />
+            <EmptyState icon="card-outline" title={copy.readyToPayTitle} subtitle={copy.readyToPayBody} />
           )}
         </Card>
 
-        <Card title="Transit direct lines" subtitle="Matchday routing" wide>
+        <Card title={copy.linesTitle} subtitle={copy.linesSubtitle} wide>
           {data ? (
             <View style={styles.grid2}>
               {data.mobility.map((item) => (
@@ -143,13 +164,13 @@ export function HubScreen({
           )}
         </Card>
 
-        <Card title="Perimeter live telemetry" subtitle="Operations feed">
+        <Card title={copy.telemetryTitle} subtitle={copy.telemetrySubtitle}>
           {data ? data.operations.map((item) => (
             <Row key={item.id} leftTitle={item.label} leftSubtitle={item.trend} rightTitle={item.value} rightSubtitle="Live" />
           )) : <EmptyState icon="pulse-outline" title="No operations feed" subtitle="Live telemetry is pulled from the backend catalog." />}
         </Card>
 
-        <Card title="Stadium perimeter gates" subtitle="Wayfinding" wide>
+        <Card title={copy.gatesTitle} subtitle={copy.gatesSubtitle} wide>
           <View style={styles.cardBody}>
             {hero ? (
               <>
@@ -163,7 +184,7 @@ export function HubScreen({
           </View>
         </Card>
 
-        <Card title="Matchday essentials" subtitle="Quick access">
+        <Card title={copy.essentialsTitle} subtitle={copy.essentialsSubtitle}>
           {hero ? (
             <View style={styles.grid2}>
               <MiniCard title="Locker P3" subtitle="A4 max size" meta="Quick drop-off" />
@@ -176,7 +197,7 @@ export function HubScreen({
           )}
         </Card>
 
-        <Card title="Operational signals" subtitle="Live recommendations">
+        <Card title={copy.signalsTitle} subtitle={copy.signalsSubtitle}>
           {data ? (
             <>
               {data.traffic.map((item) => (
@@ -191,15 +212,15 @@ export function HubScreen({
           )}
         </Card>
 
-        <Card title="Contextual messages" subtitle="Adaptive comms">
+        <Card title={copy.messagesTitle} subtitle={copy.messagesSubtitle}>
           {data ? data.contextualMessages.map((item) => (
             <Row key={item.message} leftTitle={item.audience} leftSubtitle={`${item.channel} · ${item.timing}`} rightTitle={item.message} rightSubtitle="Message" />
           )) : <EmptyState icon="chatbubbles-outline" title="No contextual messaging" subtitle="The message queue is populated by the backend catalog." />}
         </Card>
 
-        <Card title="Change selection" subtitle="Navigation" wide>
+        <Card title={copy.changeSelectionTitle} subtitle={copy.changeSelectionSubtitle} wide>
           <View style={styles.ctaRow}>
-            <SecondaryButton label="Change match" onPress={onChangeMatch} icon={<Ionicons name="swap-horizontal-outline" size={16} color="#1d3fb3" />} />
+            <SecondaryButton label={copy.changeMatch} onPress={onChangeMatch} icon={<Ionicons name="swap-horizontal-outline" size={16} color="#1d3fb3" />} />
             <SecondaryButton label="Change event" onPress={onChangeEvent} icon={<Ionicons name="grid-outline" size={16} color="#1d3fb3" />} />
           </View>
         </Card>
@@ -207,3 +228,27 @@ export function HubScreen({
     </SafeAreaView>
   );
 }
+
+const localStyles = {
+  flagRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: 10,
+    marginBottom: 8,
+    flexWrap: 'wrap' as const,
+  },
+  flagImage: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#edf2ff',
+  },
+  flagText: {
+    width: 28,
+    textAlign: 'center' as const,
+    color: '#172033',
+    fontSize: 18,
+    fontFamily: 'Poppins-Bold',
+  },
+};

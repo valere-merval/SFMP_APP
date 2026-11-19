@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Platform, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -17,6 +18,8 @@ import { ProfileScreen } from './src/screens/ProfileScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { WayfindingScreen } from './src/screens/WayfindingScreen';
 import type { EventCatalogCard, LiveData, MatchCard } from './src/types';
+
+const LOCALE_KEY = 'sfmp_locale';
 
 const fonts = {
   tab: 'Poppins-SemiBold',
@@ -73,10 +76,11 @@ function useCatalogShell() {
   return value;
 }
 
-function HubRoute() {
+function HubRoute({ locale }: { locale: Locale }) {
   const { catalog, catalogLoading, catalogError, selectedMatch, onRetryCatalog, onChangeMatch, onChangeEvent } = useCatalogShell();
   return (
     <HubScreen
+      locale={locale}
       data={catalog}
       selectedMatch={selectedMatch}
       loading={catalogLoading}
@@ -88,19 +92,19 @@ function HubRoute() {
   );
 }
 
-function JourneyRoute() {
+function JourneyRoute({ locale }: { locale: Locale }) {
   const { catalog, catalogLoading } = useCatalogShell();
-  return <JourneyScreen data={catalog} loading={catalogLoading} />;
+  return <JourneyScreen locale={locale} data={catalog} loading={catalogLoading} />;
 }
 
-function WayfindingRoute() {
+function WayfindingRoute({ locale }: { locale: Locale }) {
   const { selectedMatch } = useCatalogShell();
-  return <WayfindingScreen venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} />;
+  return <WayfindingScreen locale={locale} venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} />;
 }
 
-function ProfileRoute() {
+function ProfileRoute({ locale }: { locale: Locale }) {
   const { catalog, catalogLoading } = useCatalogShell();
-  return <ProfileScreen data={catalog} loading={catalogLoading} />;
+  return <ProfileScreen locale={locale} data={catalog} loading={catalogLoading} />;
 }
 
 function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
@@ -130,6 +134,11 @@ function App(): React.JSX.Element {
   const [selectedCatalogId, setSelectedCatalogId] = useState<string | null>(null);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
 
+  const handleLocaleChange = useCallback(async (nextLocale: Locale) => {
+    setLocale(nextLocale);
+    await AsyncStorage.setItem(LOCALE_KEY, nextLocale);
+  }, []);
+
   const loadCatalog = useCallback(async () => {
     setCatalogLoading(true);
     setCatalogError(null);
@@ -150,6 +159,11 @@ function App(): React.JSX.Element {
     let active = true;
 
     (async () => {
+      const savedLocale = await AsyncStorage.getItem(LOCALE_KEY);
+      if (savedLocale && ['en', 'es', 'fr', 'de', 'pt', 'ar', 'zh', 'ru'].includes(savedLocale)) {
+        setLocale(savedLocale as Locale);
+      }
+
       const token = await hydrateAuthToken();
       if (!token) {
         if (active) {
@@ -258,11 +272,12 @@ function App(): React.JSX.Element {
         ? React.createElement(StatusBar as any, { barStyle: 'dark-content', backgroundColor: '#f6f8fc' })
         : React.createElement(StatusBar as any, { barStyle: 'dark-content' })}
       {session === 'auth' ? (
-        <AuthScreen locale={locale} onLocaleChange={setLocale} onAuthenticated={handleAuthenticated} />
+        <AuthScreen locale={locale} onLocaleChange={handleLocaleChange} onAuthenticated={handleAuthenticated} />
       ) : session === 'catalog' ? (
-        <EventCatalogScreen catalogs={catalog?.eventCatalogs ?? []} onSelectCatalog={handleSelectCatalog} onSignOut={handleSignOut} />
+        <EventCatalogScreen locale={locale} catalogs={catalog?.eventCatalogs ?? []} onSelectCatalog={handleSelectCatalog} onSignOut={handleSignOut} />
       ) : session === 'matches' ? (
         <MatchListScreen
+          locale={locale}
           catalog={selectedCatalog}
           matches={catalog?.matches.filter((item) => item.catalogId === selectedCatalogId) ?? []}
           onSelectMatch={handleSelectMatch}
@@ -290,11 +305,11 @@ function App(): React.JSX.Element {
                 tabBarIcon: ({ color, size }) => renderTabIcon(route.name as keyof TabParamList, color, size),
               })}
             >
-              <AppStack.Screen name="Hub" component={HubRoute} />
-              <AppStack.Screen name="Wayfinding" component={WayfindingRoute} />
-              <AppStack.Screen name="Journey" component={JourneyRoute} />
-              <AppStack.Screen name="Pass" component={PassScreen} />
-              <AppStack.Screen name="Profile" component={ProfileRoute} />
+              <AppStack.Screen name="Hub">{() => <HubRoute locale={locale} />}</AppStack.Screen>
+              <AppStack.Screen name="Wayfinding">{() => <WayfindingRoute locale={locale} />}</AppStack.Screen>
+              <AppStack.Screen name="Journey">{() => <JourneyRoute locale={locale} />}</AppStack.Screen>
+              <AppStack.Screen name="Pass">{() => <PassScreen locale={locale} />}</AppStack.Screen>
+              <AppStack.Screen name="Profile">{() => <ProfileRoute locale={locale} />}</AppStack.Screen>
             </AppStack.Navigator>
           </NavigationContainer>
         </CatalogShellContext.Provider>

@@ -2,18 +2,23 @@ import React, { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
-import { EventCatalogCard } from '../types';
+import { getScreenCopy } from '../screenCopy';
+import type { EventCatalogCard } from '../types';
 import { Card, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
+import type { Locale } from '../i18n';
 
 export function EventCatalogScreen({
   catalogs,
+  locale,
   onSelectCatalog,
   onSignOut,
 }: {
   catalogs: EventCatalogCard[];
+  locale: Locale;
   onSelectCatalog: (catalog: EventCatalogCard) => void;
   onSignOut: () => void;
 }) {
+  const copy = getScreenCopy(locale).catalog;
   const [search, setSearch] = useState('');
   const [ascending, setAscending] = useState(true);
 
@@ -28,17 +33,17 @@ export function EventCatalogScreen({
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.kicker}>EVENTS</Text>
-          <Text style={styles.title}>Choose an event</Text>
-          <Text style={styles.subtitle}>Pick a catalogue first, then open the live match hub for that event.</Text>
+          <Text style={styles.kicker}>{copy.eyebrow}</Text>
+          <Text style={styles.title}>{copy.title}</Text>
+          <Text style={styles.subtitle}>{copy.subtitle}</Text>
         </View>
 
-        <Card title="Event catalog" subtitle="Search and sort" wide>
-          <Input placeholder="Search events" value={search} onChangeText={setSearch} keyboardType="default" />
+        <Card title={copy.cardTitle} subtitle={copy.cardSubtitle} wide>
+          <Input placeholder={copy.searchPlaceholder} value={search} onChangeText={setSearch} keyboardType="default" />
           <View style={styles.rowBetween}>
-            <Text style={styles.muted}>{items.length} catalogues available</Text>
+            <Text style={styles.muted}>{items.length} {copy.countSuffix}</Text>
             <SecondaryButton
-              label={ascending ? 'A → Z' : 'Z → A'}
+              label={ascending ? copy.sortAsc : copy.sortDesc}
               onPress={() => setAscending((value) => !value)}
               icon={<Feather name="arrow-down" size={16} color="#1d3fb3" />}
             />
@@ -62,11 +67,11 @@ export function EventCatalogScreen({
           ))}
         </View>
 
-        <Card title="Need a different language?" subtitle="Account" wide>
-          <Text style={styles.muted}>The app starts in the phone language if supported, otherwise English. You can keep the language in the account profile later.</Text>
+        <Card title={copy.helperTitle} subtitle={copy.helperTitle} wide>
+          <Text style={styles.muted}>{copy.helperBody}</Text>
           <View style={styles.ctaRow}>
-            <PrimaryButton label="Continue" onPress={() => undefined} icon={<Feather name="arrow-right" size={16} color="#fff" />} />
-            <SecondaryButton label="Sign out" onPress={onSignOut} icon={<Feather name="log-out" size={16} color="#1d3fb3" />} />
+            <PrimaryButton label={copy.continue} onPress={() => undefined} icon={<Feather name="arrow-right" size={16} color="#fff" />} />
+            <SecondaryButton label={copy.signOut} onPress={onSignOut} icon={<Feather name="log-out" size={16} color="#1d3fb3" />} />
           </View>
         </Card>
       </ScrollView>
