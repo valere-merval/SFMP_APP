@@ -275,7 +275,9 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
     const key = pendingUploadKey;
     setUploadPickerOpen(false);
     setPendingUploadKey(null);
-    await pickAndUpload(key, source);
+    setTimeout(() => {
+      pickAndUpload(key, source);
+    }, 250);
   };
 
   const submit = async () => {
