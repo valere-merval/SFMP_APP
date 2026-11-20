@@ -13,7 +13,6 @@ import { EventCatalogScreen } from './src/screens/EventCatalogScreen';
 import { HubScreen } from './src/screens/HubScreen';
 import { JourneyScreen } from './src/screens/JourneyScreen';
 import { MatchListScreen } from './src/screens/MatchListScreen';
-import { PassScreen } from './src/screens/PassScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { TransportScreen } from './src/screens/TransportScreen';
@@ -31,7 +30,6 @@ type TabParamList = {
   Wayfinding: undefined;
   Journey: undefined;
   Transport: undefined;
-  Pass: undefined;
   Profile: undefined;
 };
 
@@ -121,11 +119,9 @@ function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
     case 'Wayfinding':
       return <Feather name="map" color={color} size={size} />;
     case 'Journey':
-      return <Feather name="navigation" color={color} size={size} />;
+      return <Feather name="map" color={color} size={size} />;
     case 'Transport':
-      return <Feather name="truck" color={color} size={size} />;
-    case 'Pass':
-      return <Ionicons name="ticket-outline" color={color} size={size} />;
+      return <Ionicons name="car-outline" color={color} size={size} />;
     case 'Profile':
       return <Feather name="user" color={color} size={size} />;
     default:
@@ -309,7 +305,6 @@ function App(): React.JSX.Element {
               <AppStack.Screen name="Wayfinding">{() => <WayfindingRoute locale={locale} />}</AppStack.Screen>
               <AppStack.Screen name="Journey">{() => <JourneyRoute locale={locale} />}</AppStack.Screen>
               <AppStack.Screen name="Transport">{() => <TransportRoute />}</AppStack.Screen>
-              <AppStack.Screen name="Pass">{() => <PassScreen locale={locale} />}</AppStack.Screen>
               <AppStack.Screen name="Profile">{() => <ProfileRoute locale={locale} />}</AppStack.Screen>
             </AppStack.Navigator>
           </NavigationContainer>
@@ -329,8 +324,6 @@ function getTabLabel(locale: Locale, name: keyof TabParamList): string {
       return t(locale, 'nav.journey');
     case 'Transport':
       return t(locale, 'nav.transport');
-    case 'Pass':
-      return t(locale, 'nav.pass');
     case 'Profile':
       return t(locale, 'nav.profile');
     default:
