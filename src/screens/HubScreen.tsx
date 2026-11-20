@@ -75,6 +75,7 @@ export function HubScreen({
   const [ticketError, setTicketError] = useState<string | null>(null);
   const [ticketLoading, setTicketLoading] = useState(false);
   const [countdown, setCountdown] = useState(() => (hero ? formatCountdown(hero.date, hero.time) : 'LIVE'));
+  const transportProviders = data?.transportProviders ?? [];
 
   useEffect(() => {
     if (!hero) {
@@ -198,6 +199,23 @@ export function HubScreen({
             </View>
           ) : (
             <EmptyState icon="bus-outline" title="No route catalog yet" subtitle="Transit options will render once the backend returns live mobility data." />
+          )}
+        </Card>
+
+        <Card title="Registered operators" subtitle="Taxi and VTC" wide>
+          {transportProviders.length ? (
+            <View style={styles.grid2}>
+              {transportProviders.map((provider) => (
+                <MiniCard
+                  key={provider.id}
+                  title={provider.displayName}
+                  subtitle={`${provider.providerType} · ${provider.zone}`}
+                  meta={`${provider.vehicleLabel} · ${provider.status}`}
+                />
+              ))}
+            </View>
+          ) : (
+            <EmptyState icon="car-sport-outline" title="No operators registered" subtitle="Taxi and VTC providers will appear here once they register for this match." />
           )}
         </Card>
 

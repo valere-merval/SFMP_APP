@@ -150,6 +150,20 @@ export type InsightView = {
   action: string;
 };
 
+export type TransportProviderView = {
+  id: string;
+  matchId: string;
+  matchTitle: string;
+  providerType: string;
+  displayName: string;
+  vehicleLabel: string;
+  zone: string;
+  status: string;
+  active: boolean;
+  city: string;
+  country: string;
+};
+
 export type LiveData = {
   events: EventCard[];
   eventCatalogs: EventCatalogCard[];
@@ -168,4 +182,5 @@ export type LiveData = {
   traffic: TrafficView[];
   consents: ConsentView[];
   insights: InsightView[];
+  transportProviders: TransportProviderView[];
 };

@@ -17,6 +17,7 @@ import type {
   RoadmapView,
   RouteAdaptationView,
   TrafficView,
+  TransportProviderView,
   UserCard,
 } from './types';
 
@@ -39,6 +40,7 @@ export async function fetchCatalog(): Promise<LiveData> {
     traffic,
     consents,
     insights,
+    transportProviders,
   ] = await Promise.all([
     getJson<EventCard[]>('/api/v1/events'),
     getJson<EventCatalogCard[]>('/api/v1/event-catalogs'),
@@ -57,6 +59,7 @@ export async function fetchCatalog(): Promise<LiveData> {
     getJson<TrafficView[]>('/api/v1/traffic/conditions'),
     getJson<ConsentView[]>('/api/v1/gps/consents'),
     getJson<InsightView[]>('/api/v1/intelligence/insights'),
+    getJson<TransportProviderView[]>('/api/v1/transport-providers'),
   ]);
 
   return {
@@ -77,5 +80,6 @@ export async function fetchCatalog(): Promise<LiveData> {
     traffic,
     consents,
     insights,
+    transportProviders,
   };
 }
