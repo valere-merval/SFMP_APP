@@ -147,6 +147,8 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
   const [scanText, setScanText] = useState('');
   const [saving, setSaving] = useState(false);
   const [uploadingKey, setUploadingKey] = useState<keyof Assets | null>(null);
+  const [uploadPickerOpen, setUploadPickerOpen] = useState(false);
+  const [pendingUploadKey, setPendingUploadKey] = useState<keyof Assets | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -235,15 +237,15 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
     setError(null);
   };
 
-  const pickAndUpload = async (key: keyof Assets) => {
+  const pickAndUpload = async (key: keyof Assets, source: 'image' | 'file') => {
     setUploadingKey(key);
     setMessage(null);
     setError(null);
     try {
       const [file] = await pick({
         allowMultiSelection: false,
-        presentationStyle: 'fullScreen',
-        type: [types.images, types.pdf, types.allFiles],
+        presentationStyle: source === 'image' ? 'fullScreen' : 'formSheet',
+        type: source === 'image' ? [types.images] : [types.allFiles],
         mode: 'import',
       });
       const uri = file.uri;
@@ -261,6 +263,19 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
     } finally {
       setUploadingKey(null);
     }
+  };
+
+  const openUploadPicker = (key: keyof Assets) => {
+    setPendingUploadKey(key);
+    setUploadPickerOpen(true);
+  };
+
+  const chooseUploadSource = async (source: 'image' | 'file') => {
+    if (!pendingUploadKey) return;
+    const key = pendingUploadKey;
+    setUploadPickerOpen(false);
+    setPendingUploadKey(null);
+    await pickAndUpload(key, source);
   };
 
   const submit = async () => {
@@ -354,10 +369,10 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
             <Card title={t(locale, 'profile.securityDocsTitle')} subtitle={t(locale, 'profile.securityDocsSubtitle')}>
               <View style={screenStyles.rowGap}>
                 <Text style={styles.helperText}>{t(locale, 'profile.scanHint')}</Text>
-                <ActionRow label={uploadingKey === 'driverLicenseUrl' ? t(locale, 'profile.uploading') : t(locale, 'profile.uploadDriverLicense')} onPress={() => pickAndUpload('driverLicenseUrl')} accent={!!assets.driverLicenseUrl} />
-                <ActionRow label={uploadingKey === 'registrationUrl' ? t(locale, 'profile.uploading') : t(locale, 'profile.uploadRegistration')} onPress={() => pickAndUpload('registrationUrl')} accent={!!assets.registrationUrl} />
-                <ActionRow label={uploadingKey === 'permitUrl' ? t(locale, 'profile.uploading') : t(locale, 'profile.uploadPermit')} onPress={() => pickAndUpload('permitUrl')} accent={!!assets.permitUrl} />
-                <ActionRow label={uploadingKey === 'vehicleImageUrl' ? t(locale, 'profile.uploading') : t(locale, 'profile.uploadVehicleImage')} onPress={() => pickAndUpload('vehicleImageUrl')} accent={!!assets.vehicleImageUrl} />
+                <ActionRow label={uploadingKey === 'driverLicenseUrl' ? t(locale, 'profile.uploading') : t(locale, 'profile.uploadDriverLicense')} onPress={() => openUploadPicker('driverLicenseUrl')} accent={!!assets.driverLicenseUrl} />
+                <ActionRow label={uploadingKey === 'registrationUrl' ? t(locale, 'profile.uploading') : t(locale, 'profile.uploadRegistration')} onPress={() => openUploadPicker('registrationUrl')} accent={!!assets.registrationUrl} />
+                <ActionRow label={uploadingKey === 'permitUrl' ? t(locale, 'profile.uploading') : t(locale, 'profile.uploadPermit')} onPress={() => openUploadPicker('permitUrl')} accent={!!assets.permitUrl} />
+                <ActionRow label={uploadingKey === 'vehicleImageUrl' ? t(locale, 'profile.uploading') : t(locale, 'profile.uploadVehicleImage')} onPress={() => openUploadPicker('vehicleImageUrl')} accent={!!assets.vehicleImageUrl} />
                 <TextInput
                   value={scanText}
                   onChangeText={setScanText}
@@ -370,6 +385,27 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
                 <SecondaryButton label={t(locale, 'profile.autofillScan')} onPress={parseScanText} icon={<Feather name="cpu" size={16} color="#172033" />} />
               </View>
             </Card>
+
+            <Modal visible={uploadPickerOpen} transparent animationType="fade" onRequestClose={() => setUploadPickerOpen(false)}>
+              <View style={screenStyles.modalBackdrop}>
+                <Pressable style={screenStyles.modalBackdropPress} onPress={() => setUploadPickerOpen(false)} />
+                <View style={screenStyles.choiceSheet}>
+                  <Text style={screenStyles.modalTitle}>{t(locale, 'profile.uploadChoiceTitle')}</Text>
+                  <Text style={styles.helperText}>{t(locale, 'profile.uploadChoiceSubtitle')}</Text>
+                  <View style={screenStyles.choiceRow}>
+                    <Pressable style={screenStyles.choiceButton} onPress={() => { chooseUploadSource('image'); }}>
+                      <Feather name="image" size={18} color="#2457e6" />
+                      <Text style={screenStyles.choiceButtonText}>{t(locale, 'profile.uploadChoiceImage')}</Text>
+                    </Pressable>
+                    <Pressable style={screenStyles.choiceButton} onPress={() => { chooseUploadSource('file'); }}>
+                      <Feather name="file-text" size={18} color="#2457e6" />
+                      <Text style={screenStyles.choiceButtonText}>{t(locale, 'profile.uploadChoiceFile')}</Text>
+                    </Pressable>
+                  </View>
+                  <SecondaryButton label={t(locale, 'profile.uploadChoiceCancel')} onPress={() => setUploadPickerOpen(false)} />
+                </View>
+              </View>
+            </Modal>
 
             <Card title={t(locale, 'profile.visibilityTitle')} subtitle={t(locale, 'profile.visibilitySubtitle')}>
               <View style={screenStyles.rowGap}>
@@ -463,6 +499,10 @@ const screenStyles = StyleSheet.create({
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(16,27,45,0.45)', justifyContent: 'flex-end' },
   modalBackdropPress: { ...StyleSheet.absoluteFill },
   modalSheet: { backgroundColor: '#f6f8fc', padding: 18, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '78%' },
+  choiceSheet: { backgroundColor: '#f6f8fc', padding: 18, borderTopLeftRadius: 24, borderTopRightRadius: 24, gap: 14 },
+  choiceRow: { flexDirection: 'row', gap: 12 },
+  choiceButton: { flex: 1, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#dce5f5', paddingVertical: 16, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', gap: 8 },
+  choiceButtonText: { color: '#172033', fontFamily: 'Poppins-SemiBold', textAlign: 'center' },
   modalTitle: { color: '#172033', fontSize: 18, fontFamily: 'Poppins-Bold', marginBottom: 10 },
   modalSearch: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#dce5f5', color: '#172033', paddingHorizontal: 14, paddingVertical: 12, fontFamily: 'Poppins-Regular', marginBottom: 12 },
   modalList: { maxHeight: 360 },
