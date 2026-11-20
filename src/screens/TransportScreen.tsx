@@ -155,13 +155,13 @@ export function TransportScreen({
                 onPress={() => setAvailable((value) => !value)}
                 style={[screenStyles.availabilityButton, available ? screenStyles.availabilityButtonOn : screenStyles.availabilityButtonOff]}
               >
-                <Feather name={available ? 'check-circle' : 'slash'} size={22} color={available ? '#172033' : '#f8fafc'} />
+                <Feather name={available ? 'check-circle' : 'slash'} size={28} color={available ? '#172033' : '#f8fafc'} />
                 <View style={screenStyles.availabilityButtonTextBlock}>
                   <Text style={[screenStyles.availabilityButtonTitle, !available && screenStyles.availabilityButtonTitleOff]}>
-                    {available ? 'Disponible' : 'Pas disponible'}
+                    {available ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}
                   </Text>
                   <Text style={[screenStyles.availabilityButtonSubtitle, !available && screenStyles.availabilityButtonSubtitleOff]}>
-                    Tap pour basculer ton statut immédiatement.
+                    {t(locale, 'transport.driverAvailabilityHint')}
                   </Text>
                 </View>
               </Pressable>
@@ -243,13 +243,13 @@ const screenStyles = StyleSheet.create({
   driverSummary: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#dce5f5', gap: 4 },
   driverSummaryTitle: { color: '#172033', fontSize: 16, fontFamily: 'Poppins-Bold' },
   driverSummaryBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
-  availabilityButton: { borderRadius: 24, paddingVertical: 18, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1 },
-  availabilityButtonOn: { backgroundColor: '#c8f36a', borderColor: '#b9e840' },
-  availabilityButtonOff: { backgroundColor: '#172033', borderColor: '#101827' },
+  availabilityButton: { borderRadius: 28, paddingVertical: 24, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', gap: 16, borderWidth: 1, width: '100%', minHeight: 112 },
+  availabilityButtonOn: { backgroundColor: '#c8f36a', borderColor: '#b9e840', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
+  availabilityButtonOff: { backgroundColor: '#172033', borderColor: '#101827', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
   availabilityButtonTextBlock: { flex: 1, gap: 4 },
-  availabilityButtonTitle: { color: '#172033', fontFamily: 'Poppins-Bold', fontSize: 19 },
+  availabilityButtonTitle: { color: '#172033', fontFamily: 'Poppins-Bold', fontSize: 22 },
   availabilityButtonTitleOff: { color: '#f8fafc' },
-  availabilityButtonSubtitle: { color: '#172033', fontFamily: 'Poppins-Medium' },
+  availabilityButtonSubtitle: { color: '#172033', fontFamily: 'Poppins-Medium', fontSize: 13 },
   availabilityButtonSubtitleOff: { color: '#d4def0' },
   success: { color: '#14532d', fontFamily: 'Poppins-Medium' },
   error: { color: '#b42318', fontFamily: 'Poppins-Medium' },
