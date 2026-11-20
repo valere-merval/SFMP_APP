@@ -35,6 +35,10 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow SFMP to pick photos for driver documents.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allow SFMP to save captured media for driver documents.</string>
 	<key>GOOGLE_MAPS_API_KEY</key>
 	<string></string>
 	<key>RCTNewArchEnabled</key>

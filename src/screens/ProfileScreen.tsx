@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { pick, errorCodes, isErrorWithCode, types } from '@react-native-documents/picker';
 import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
@@ -242,10 +243,33 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
     setMessage(null);
     setError(null);
     try {
+      if (source === 'image') {
+        const response = await launchImageLibrary({
+          mediaType: 'photo',
+          selectionLimit: 1,
+          includeBase64: false,
+          presentationStyle: 'fullScreen',
+        });
+        const file = response.assets?.[0];
+        if (response.didCancel || !file?.uri) {
+          setMessage(t(locale, 'profile.selectionCancelled'));
+          return;
+        }
+        const uploaded = await uploadDocument({
+          uri: file.uri,
+          name: file.fileName ?? `${key}.jpg`,
+          type: file.type ?? 'image/jpeg',
+        });
+        setAssets((current) => ({ ...current, [key]: uploaded.url }));
+        setDraft((current) => ({ ...current, [key]: uploaded.url }));
+        setMessage(t(locale, 'profile.documentUploaded'));
+        return;
+      }
+
       const [file] = await pick({
         allowMultiSelection: false,
-        presentationStyle: source === 'image' ? 'fullScreen' : 'formSheet',
-        type: source === 'image' ? [types.images] : [types.allFiles],
+        presentationStyle: 'formSheet',
+        type: [types.allFiles],
         mode: 'import',
       });
       const uri = file.uri;
