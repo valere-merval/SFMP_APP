@@ -16,6 +16,7 @@ import { MatchListScreen } from './src/screens/MatchListScreen';
 import { PassScreen } from './src/screens/PassScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
+import { TransportScreen } from './src/screens/TransportScreen';
 import { WayfindingScreen } from './src/screens/WayfindingScreen';
 import type { EventCatalogCard, LiveData, MatchCard } from './src/types';
 
@@ -29,6 +30,7 @@ type TabParamList = {
   Hub: undefined;
   Wayfinding: undefined;
   Journey: undefined;
+  Transport: undefined;
   Pass: undefined;
   Profile: undefined;
 };
@@ -97,6 +99,11 @@ function JourneyRoute({ locale }: { locale: Locale }) {
   return <JourneyScreen locale={locale} data={catalog} loading={catalogLoading} selectedMatch={selectedMatch} />;
 }
 
+function TransportRoute() {
+  const { catalog, catalogLoading, onRetryCatalog } = useCatalogShell();
+  return <TransportScreen data={catalog} loading={catalogLoading} onReload={onRetryCatalog} />;
+}
+
 function WayfindingRoute({ locale }: { locale: Locale }) {
   const { selectedMatch } = useCatalogShell();
   return <WayfindingScreen locale={locale} venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} />;
@@ -115,6 +122,8 @@ function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
       return <Feather name="map" color={color} size={size} />;
     case 'Journey':
       return <Feather name="navigation" color={color} size={size} />;
+    case 'Transport':
+      return <Feather name="truck" color={color} size={size} />;
     case 'Pass':
       return <Ionicons name="ticket-outline" color={color} size={size} />;
     case 'Profile':
@@ -281,7 +290,7 @@ function App(): React.JSX.Element {
             <AppStack.Navigator
               screenOptions={({ route }) => ({
                 headerShown: false,
-                tabBarActiveTintColor: '#2457e6',
+                tabBarActiveTintColor: '#c8f36a',
                 tabBarInactiveTintColor: '#7183a1',
                 tabBarLabelStyle: { fontFamily: fonts.tab, fontSize: 11, marginBottom: 2 },
                 tabBarStyle: {
@@ -299,6 +308,7 @@ function App(): React.JSX.Element {
               <AppStack.Screen name="Hub">{() => <HubRoute locale={locale} />}</AppStack.Screen>
               <AppStack.Screen name="Wayfinding">{() => <WayfindingRoute locale={locale} />}</AppStack.Screen>
               <AppStack.Screen name="Journey">{() => <JourneyRoute locale={locale} />}</AppStack.Screen>
+              <AppStack.Screen name="Transport">{() => <TransportRoute />}</AppStack.Screen>
               <AppStack.Screen name="Pass">{() => <PassScreen locale={locale} />}</AppStack.Screen>
               <AppStack.Screen name="Profile">{() => <ProfileRoute locale={locale} />}</AppStack.Screen>
             </AppStack.Navigator>
@@ -317,6 +327,8 @@ function getTabLabel(locale: Locale, name: keyof TabParamList): string {
       return t(locale, 'nav.wayfinding');
     case 'Journey':
       return t(locale, 'nav.journey');
+    case 'Transport':
+      return t(locale, 'nav.transport');
     case 'Pass':
       return t(locale, 'nav.pass');
     case 'Profile':

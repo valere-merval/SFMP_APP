@@ -62,6 +62,28 @@ export type BookingCard = {
   status: string;
 };
 
+export type TransportProviderCard = {
+  id: string;
+  matchId: string;
+  matchTitle: string;
+  providerType: string;
+  displayName: string;
+  driverName: string;
+  vehicleLabel: string;
+  vehiclePlate: string;
+  city: string;
+  country: string;
+  zone: string;
+  status: string;
+  active: boolean;
+  permitUrl?: string;
+  registrationUrl?: string;
+  driverLicenseUrl?: string;
+  vehicleImageUrl?: string;
+  notes?: string;
+  publicNotes?: string;
+};
+
 export type MetricCard = {
   id: string;
   label: string;

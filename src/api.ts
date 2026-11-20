@@ -113,9 +113,36 @@ export function getJson<T>(path: string): Promise<T> {
   return requestJson<T>(path);
 }
 
-export function postJson<T>(path: string, body: unknown): Promise<T> {
-  return requestJson<T>(path, {
+export async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const payload = await requestJson<T>(path, {
     method: 'POST',
     body: JSON.stringify(body),
   });
+  return payload;
+}
+
+export async function uploadDocument(file: { uri: string; name: string; type: string }): Promise<{ key: string; url: string }> {
+  const formData = new FormData();
+  formData.append('file', {
+    uri: file.uri,
+    name: file.name,
+    type: file.type,
+  } as any);
+
+  const response = await fetch(`${API_BASE}/api/v1/uploads/images`, {
+    method: 'POST',
+    headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.status}`);
+  }
+
+  const payload = (await response.json()) as { success?: boolean; data?: { key: string; url: string } };
+  if (!payload.data) {
+    throw new Error('Empty upload response');
+  }
+
+  return payload.data;
 }
