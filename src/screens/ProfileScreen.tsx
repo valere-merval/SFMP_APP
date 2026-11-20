@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
-import DocumentPicker from 'react-native-document-picker';
+import { pick, errorCodes, isErrorWithCode, types } from '@react-native-documents/picker';
 import Feather from 'react-native-vector-icons/Feather';
 import { loadTransportProfile, saveTransportProfile, uploadDocument, type TransportProfileView } from '../api';
 import { getScreenCopy } from '../screenCopy';
@@ -132,19 +132,20 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
     setMessage(null);
     setError(null);
     try {
-      const file = await DocumentPicker.pickSingle({
+      const [file] = await pick({
         allowMultiSelection: false,
         presentationStyle: 'fullScreen',
-        type: [DocumentPicker.types.images, DocumentPicker.types.pdf, DocumentPicker.types.allFiles],
+        type: [types.images, types.pdf, types.allFiles],
+        mode: 'import',
       });
-      const uri = file.fileCopyUri ?? file.uri;
+      const uri = file.uri;
       if (!uri) throw new Error('Missing file URI');
       const uploaded = await uploadDocument({ uri, name: file.name ?? `${key}.bin`, type: file.type ?? 'application/octet-stream' });
       setAssets((current) => ({ ...current, [key]: uploaded.url }));
       setDraft((current) => ({ ...current, [key]: uploaded.url }));
       setMessage(`Document chargé: ${file.name ?? key}.`);
     } catch (caught: any) {
-      if (DocumentPicker.isCancel(caught)) {
+      if (isErrorWithCode(caught) && caught.code === errorCodes.OPERATION_CANCELED) {
         setMessage('Sélection de fichier annulée.');
       } else {
         setError(caught?.message ?? 'Upload impossible.');
