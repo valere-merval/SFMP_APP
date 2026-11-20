@@ -67,6 +67,42 @@ export type AuthPayload = { accessToken: string; user: { fullName: string; role:
 
 export type CurrentUser = { id: string; email: string; fullName: string; role: string; organization: string; roles: string[] };
 
+export type TransportProfileView = {
+  id: string;
+  ownerEmail: string;
+  ownerName: string;
+  providerType: string;
+  displayName: string;
+  driverName: string;
+  vehicleLabel: string;
+  vehiclePlate: string;
+  city: string;
+  country: string;
+  zone: string;
+  permitUrl: string;
+  registrationUrl: string;
+  driverLicenseUrl: string;
+  vehicleImageUrl: string;
+  notes: string;
+  publicNotes: string;
+  active: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export type TransportAvailabilityView = {
+  id: string;
+  profileId: string;
+  matchId: string;
+  matchTitle: string;
+  available: boolean;
+  ready: boolean;
+  status: string;
+  notes: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 export async function login(email: string, password: string): Promise<AuthPayload> {
   const payload = await requestJson<AuthPayload | { success: boolean; data: AuthPayload }>('/api/v1/auth/login', {
     method: 'POST',
@@ -119,6 +155,35 @@ export async function postJson<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   return payload;
+}
+
+export async function putJson<T>(path: string, body: unknown): Promise<T> {
+  const payload = await requestJson<T>(path, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+  return payload;
+}
+
+export async function loadTransportProfile(): Promise<TransportProfileView> {
+  return requestJson<TransportProfileView>('/api/v1/transport-profiles/me');
+}
+
+export async function saveTransportProfile(payload: Omit<TransportProfileView, 'id' | 'ownerEmail' | 'ownerName' | 'createdAt' | 'updatedAt'>): Promise<TransportProfileView> {
+  return putJson<TransportProfileView>('/api/v1/transport-profiles/me', payload);
+}
+
+export async function loadTransportAvailability(matchId: string): Promise<TransportAvailabilityView> {
+  return requestJson<TransportAvailabilityView>(`/api/v1/transport-profiles/me/availability?matchId=${encodeURIComponent(matchId)}`);
+}
+
+export async function saveTransportAvailability(matchId: string, payload: { available: boolean; ready: boolean; status: string; notes: string }): Promise<TransportAvailabilityView> {
+  return postJson<TransportAvailabilityView>(`/api/v1/transport-profiles/me/availability?matchId=${encodeURIComponent(matchId)}`, payload);
+}
+
+export async function listPublicTransportProfiles(matchId?: string): Promise<TransportProfileView[]> {
+  const suffix = matchId ? `?matchId=${encodeURIComponent(matchId)}` : '';
+  return requestJson<TransportProfileView[]>(`/api/v1/transport-profiles/public${suffix}`);
 }
 
 export async function uploadDocument(file: { uri: string; name: string; type: string }): Promise<{ key: string; url: string }> {

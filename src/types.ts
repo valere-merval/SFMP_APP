@@ -172,6 +172,42 @@ export type InsightView = {
   action: string;
 };
 
+export type TransportProfileView = {
+  id: string;
+  ownerEmail: string;
+  ownerName: string;
+  providerType: string;
+  displayName: string;
+  driverName: string;
+  vehicleLabel: string;
+  vehiclePlate: string;
+  city: string;
+  country: string;
+  zone: string;
+  permitUrl: string;
+  registrationUrl: string;
+  driverLicenseUrl: string;
+  vehicleImageUrl: string;
+  notes: string;
+  publicNotes: string;
+  active: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export type TransportAvailabilityView = {
+  id: string;
+  profileId: string;
+  matchId: string;
+  matchTitle: string;
+  available: boolean;
+  ready: boolean;
+  status: string;
+  notes: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 export type TransportProviderView = {
   id: string;
   matchId: string;
@@ -184,6 +220,11 @@ export type TransportProviderView = {
   active: boolean;
   city: string;
   country: string;
+  ownerName: string;
+  driverName: string;
+  vehiclePlate: string;
+  ready: boolean;
+  publicNotes: string;
 };
 
 export type LiveData = {
