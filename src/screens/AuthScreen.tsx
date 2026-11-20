@@ -1,12 +1,150 @@
-import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Modal, Pressable, ScrollView, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
-import { login } from '../api';
+import { registerAccount, resetPassword, uploadDocument } from '../api';
 import { t, type Locale, SUPPORTED_LANGUAGES } from '../i18n';
 import { Bullet, Card, ErrorText, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
 
+
 type AuthMode = 'signin' | 'register' | 'reset';
+
+type Option = { key: string; label: string };
+
+const LANGUAGE_OPTIONS: Option[] = [
+  { key: 'en', label: 'English' },
+  { key: 'es', label: 'Español' },
+  { key: 'fr', label: 'Français' },
+  { key: 'de', label: 'Deutsch' },
+  { key: 'pt', label: 'Português' },
+  { key: 'ar', label: 'العربية' },
+  { key: 'zh', label: '中文' },
+  { key: 'ru', label: 'Русский' },
+];
+
+const allCountries = Country.getAllCountries().map((country) => ({
+  key: country.isoCode,
+  label: country.name,
+  dialCode: `+${country.phonecode}`,
+}));
+
+function SearchableDropdown({
+  label,
+  value,
+  placeholder,
+  searchPlaceholder,
+  emptyLabel,
+  options,
+  onSelect,
+  disabled = false,
+  selectedKey,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  searchPlaceholder: string;
+  emptyLabel: string;
+  options: Option[];
+  onSelect: (option: Option) => void;
+  disabled?: boolean;
+  selectedKey?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    if (!open) setQuery('');
+  }, [open]);
+
+  const filtered = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return options.filter((option) => !term || option.label.toLowerCase().includes(term));
+  }, [options, query]);
+
+  return (
+    <>
+      <Pressable onPress={() => !disabled && setOpen(true)} style={[authStyles.dropdown, disabled && authStyles.dropdownDisabled]}>
+        <View style={authStyles.dropdownTextBlock}>
+          <Text style={authStyles.dropdownLabel}>{label}</Text>
+          <Text style={[authStyles.dropdownValue, !value && authStyles.dropdownPlaceholder]} numberOfLines={1}>
+            {value || placeholder}
+          </Text>
+        </View>
+        <Feather name="chevron-down" size={18} color={disabled ? '#94a3b8' : '#2457e6'} />
+      </Pressable>
+
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+        <View style={authStyles.modalBackdrop}>
+          <Pressable style={authStyles.modalBackdropPress} onPress={() => setOpen(false)} />
+          <View style={authStyles.modalSheet}>
+            <Text style={authStyles.modalTitle}>{label}</Text>
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder={searchPlaceholder}
+              placeholderTextColor="#94a3b8"
+              style={authStyles.modalSearch}
+              autoCorrect={false}
+              autoCapitalize="none"
+            />
+            <ScrollView style={authStyles.modalList} keyboardShouldPersistTaps="handled">
+              {filtered.length ? filtered.map((option) => (
+                <Pressable
+                  key={option.key}
+                  style={authStyles.modalOption}
+                  onPress={() => {
+                    onSelect(option);
+                    setOpen(false);
+                  }}
+                >
+                  <Text style={authStyles.modalOptionText}>{option.label}</Text>
+                  {(selectedKey ? selectedKey === option.key : value === option.label) ? <Feather name="check" size={16} color="#2457e6" /> : null}
+                </Pressable>
+              )) : (
+                <Text style={authStyles.modalEmpty}>{emptyLabel}</Text>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
+}
+
+function PasswordField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder: string;
+}) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <View style={authStyles.passwordField}>
+      <Text style={authStyles.passwordLabel}>{label}</Text>
+      <View style={authStyles.passwordRow}>
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor="#94a3b8"
+          style={authStyles.passwordInput}
+          secureTextEntry={!visible}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <Pressable onPress={() => setVisible((current) => !current)} style={authStyles.eyeButton}>
+          <Feather name={visible ? 'eye-off' : 'eye'} size={18} color="#2457e6" />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
 export function AuthScreen({
   locale,
@@ -24,11 +162,34 @@ export function AuthScreen({
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [country, setCountry] = useState('');
+  const [countryCode, setCountryCode] = useState('');
   const [city, setCity] = useState('');
-  const [preferredLanguage, setPreferredLanguage] = useState<string>(locale);
+  const [preferredLanguage, setPreferredLanguage] = useState<Locale>(locale);
+  const [phonePrefix, setPhonePrefix] = useState('');
+  const [phonePrefixCode, setPhonePrefixCode] = useState('');
   const [phone, setPhone] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [photoUploading, setPhotoUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setPreferredLanguage(locale);
+  }, [locale]);
+
+  const countryOptions = useMemo(
+    () => allCountries.map((item) => ({ key: item.key, label: `${item.label} (${item.dialCode})` })),
+    [],
+  );
+
+  const cityOptions = useMemo(() => {
+    if (!countryCode) return [];
+    return (City.getCitiesOfCountry(countryCode) ?? []).map((item) => ({ key: item.name, label: item.name }));
+  }, [countryCode]);
+
+  const languageOptions = useMemo(() => LANGUAGE_OPTIONS, []);
+
+  const phonePrefixOptions = useMemo(() => allCountries.map((item) => ({ key: item.key, label: `${item.label} (+${item.dialCode})` })), []);
 
   const overview = useMemo(
     () => [
@@ -39,6 +200,40 @@ export function AuthScreen({
     ],
     [locale],
   );
+
+  const onCountrySelect = (code: string, label: string) => {
+    setCountryCode(code);
+    setCountry(label);
+    setCity('');
+    const match = allCountries.find((item) => item.key === code);
+    if (match && !phonePrefix) {
+      setPhonePrefix(match.dialCode);
+      setPhonePrefixCode(match.key);
+    }
+  };
+
+  const pickPhoto = async () => {
+    setPhotoUploading(true);
+    setError(null);
+    try {
+      const response = await launchImageLibrary({
+        mediaType: 'photo',
+        selectionLimit: 1,
+        includeBase64: false,
+        presentationStyle: 'fullScreen',
+      });
+      const file = response.assets?.[0];
+      if (response.didCancel || !file?.uri) {
+        return;
+      }
+      const uploaded = await uploadDocument({ uri: file.uri, name: file.fileName ?? 'profile.jpg', type: file.type ?? 'image/jpeg' });
+      setPhotoUrl(uploaded.url);
+    } catch (caught: any) {
+      setError(caught?.message ?? t(locale, 'auth.error.generic'));
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
 
   const submit = async () => {
     try {
@@ -53,15 +248,31 @@ export function AuthScreen({
         if (!password) {
           throw new Error(t(locale, 'auth.warning.loginFields'));
         }
+        const { login } = await import('../api');
         await login(email.trim(), password);
       } else if (mode === 'register') {
         if (!password || !firstName.trim() || !lastName.trim()) {
           throw new Error(t(locale, 'auth.warning.registerFields'));
         }
+        if (!country || !city || !phonePrefix || !preferredLanguage) {
+          throw new Error(t(locale, 'auth.warning.registerFields'));
+        }
         if (password !== confirmPassword) {
           throw new Error(t(locale, 'auth.warning.passwordMismatch'));
         }
-        await login(email.trim(), password);
+        await registerAccount({
+          email: email.trim(),
+          password,
+          firstName,
+          lastName,
+          country,
+          city,
+          phone: phone.trim(),
+          phonePrefix,
+          preferredLanguage,
+          photoUrl: photoUrl || null,
+          accountType: 'FAN',
+        });
       } else {
         if (!password) {
           throw new Error(t(locale, 'auth.warning.resetFields'));
@@ -69,7 +280,7 @@ export function AuthScreen({
         if (password !== confirmPassword) {
           throw new Error(t(locale, 'auth.warning.passwordMismatch'));
         }
-        await login(email.trim(), password);
+        await resetPassword({ email: email.trim(), newPassword: password });
       }
 
       onAuthenticated();
@@ -108,26 +319,96 @@ export function AuthScreen({
 
           <View style={styles.chipsRow}>
             {SUPPORTED_LANGUAGES.map((code) => (
-              <Pressable key={code} style={[styles.langChip, locale === code && styles.langChipActive]} onPress={() => { onLocaleChange(code as Locale); setPreferredLanguage(code); }}>
+              <Pressable
+                key={code}
+                style={[styles.langChip, locale === code && styles.langChipActive]}
+                onPress={() => {
+                  onLocaleChange(code as Locale);
+                  setPreferredLanguage(code as Locale);
+                }}
+              >
                 <Text style={[styles.langChipText, locale === code && styles.langChipTextActive]}>{code.toUpperCase()}</Text>
               </Pressable>
             ))}
           </View>
 
           <Input placeholder={t(locale, 'auth.email')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+
           {mode === 'register' ? (
             <>
               <Input placeholder={t(locale, 'auth.firstName')} value={firstName} onChangeText={setFirstName} />
               <Input placeholder={t(locale, 'auth.lastName')} value={lastName} onChangeText={setLastName} />
-              <Input placeholder={t(locale, 'auth.country')} value={country} onChangeText={setCountry} />
-              <Input placeholder={t(locale, 'auth.city')} value={city} onChangeText={setCity} />
-              <Input placeholder={t(locale, 'auth.language')} value={preferredLanguage} onChangeText={(value) => setPreferredLanguage(value)} />
+              <SearchableDropdown
+                label={t(locale, 'auth.country')}
+                value={country}
+                placeholder={t(locale, 'auth.countryPlaceholder')}
+                searchPlaceholder={t(locale, 'auth.searchCountries')}
+                emptyLabel={t(locale, 'profile.noSearchResults')}
+                options={countryOptions}
+                selectedKey={countryCode}
+                onSelect={(option) => onCountrySelect(option.key, option.label.replace(/\s*\(.*\)$/, ''))}
+              />
+              <SearchableDropdown
+                label={t(locale, 'auth.city')}
+                value={city}
+                placeholder={countryCode ? t(locale, 'auth.cityPlaceholder') : t(locale, 'profile.chooseCountryFirst')}
+                searchPlaceholder={t(locale, 'auth.searchCities')}
+                emptyLabel={countryCode ? t(locale, 'profile.noSearchResults') : t(locale, 'profile.chooseCountryFirst')}
+                options={cityOptions}
+                disabled={!countryCode}
+                selectedKey={city}
+                onSelect={(option) => setCity(option.label)}
+              />
+              <SearchableDropdown
+                label={t(locale, 'auth.language')}
+                value={preferredLanguage}
+                placeholder={t(locale, 'auth.languagePlaceholder')}
+                searchPlaceholder={t(locale, 'auth.searchLanguages')}
+                emptyLabel={t(locale, 'profile.noSearchResults')}
+                options={languageOptions}
+                selectedKey={preferredLanguage}
+                onSelect={(option) => {
+                  setPreferredLanguage(option.key as Locale);
+                  onLocaleChange(option.key as Locale);
+                }}
+              />
+              <SearchableDropdown
+                label={t(locale, 'auth.phonePrefix')}
+                value={phonePrefix}
+                placeholder={t(locale, 'auth.phonePrefixPlaceholder')}
+                searchPlaceholder={t(locale, 'auth.searchPrefixes')}
+                emptyLabel={t(locale, 'profile.noSearchResults')}
+                options={phonePrefixOptions}
+                selectedKey={phonePrefixCode}
+                onSelect={(option) => {
+                  const selected = allCountries.find((item) => item.key === option.key);
+                  setPhonePrefix(selected ? selected.dialCode : option.label);
+                  setPhonePrefixCode(option.key);
+                }}
+              />
               <Input placeholder={t(locale, 'auth.phone')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+              <Pressable style={authStyles.photoButton} onPress={pickPhoto}>
+                <Feather name="camera" size={18} color="#2457e6" />
+                <Text style={authStyles.photoButtonText}>{photoUrl ? t(locale, 'auth.photoChange') : t(locale, 'auth.photoUpload')}</Text>
+              </Pressable>
+              <Text style={styles.helperText}>{photoUrl ? t(locale, 'auth.photoUploaded') : t(locale, 'auth.photoHint')}</Text>
             </>
           ) : null}
 
-          <Input placeholder={mode === 'reset' ? t(locale, 'auth.newPassword') : t(locale, 'auth.password')} value={password} onChangeText={setPassword} secureTextEntry />
-          {mode !== 'signin' ? <Input placeholder={t(locale, 'auth.confirmPassword')} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry /> : null}
+          <PasswordField
+            label={mode === 'reset' ? t(locale, 'auth.newPassword') : t(locale, 'auth.password')}
+            value={password}
+            onChangeText={setPassword}
+            placeholder={mode === 'reset' ? t(locale, 'auth.newPassword') : t(locale, 'auth.password')}
+          />
+          {mode !== 'signin' ? (
+            <PasswordField
+              label={t(locale, 'auth.confirmPassword')}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder={t(locale, 'auth.confirmPassword')}
+            />
+          ) : null}
 
           {error ? <ErrorText>{error}</ErrorText> : null}
           <PrimaryButton
@@ -153,7 +434,44 @@ export function AuthScreen({
           ))}
         </Card>
         <Text style={styles.helperText}>{loading ? t(locale, 'common.loading') : t(locale, 'common.live')}</Text>
+        {photoUploading ? <Text style={styles.helperText}>{t(locale, 'common.processing')}</Text> : null}
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const authStyles = StyleSheet.create({
+  dropdown: {
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#dce5f5',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  dropdownDisabled: { opacity: 0.7 },
+  dropdownTextBlock: { flex: 1, gap: 2 },
+  dropdownLabel: { color: '#60708b', fontFamily: 'Poppins-SemiBold', fontSize: 12, textTransform: 'uppercase' },
+  dropdownValue: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
+  dropdownPlaceholder: { color: '#94a3b8' },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(16,27,45,0.45)', justifyContent: 'flex-end' },
+  modalBackdropPress: { ...StyleSheet.absoluteFill },
+  modalSheet: { backgroundColor: '#f6f8fc', padding: 18, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '78%' },
+  modalTitle: { color: '#172033', fontSize: 18, fontFamily: 'Poppins-Bold', marginBottom: 10 },
+  modalSearch: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#dce5f5', color: '#172033', paddingHorizontal: 14, paddingVertical: 12, fontFamily: 'Poppins-Regular', marginBottom: 12 },
+  modalList: { maxHeight: 360 },
+  modalOption: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#e6eaf0', paddingHorizontal: 14, paddingVertical: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  modalOptionText: { color: '#172033', fontFamily: 'Poppins-SemiBold', flex: 1 },
+  modalEmpty: { color: '#60708b', fontFamily: 'Poppins-Medium', paddingVertical: 12 },
+  passwordField: { gap: 6 },
+  passwordLabel: { color: '#60708b', fontFamily: 'Poppins-SemiBold', fontSize: 12, textTransform: 'uppercase' },
+  passwordRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#dbe4ff', backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 14 },
+  passwordInput: { flex: 1, color: '#172033', paddingVertical: 12, fontFamily: 'Poppins-Medium' },
+  eyeButton: { padding: 8 },
+  photoButton: { borderRadius: 16, borderWidth: 1, borderColor: '#dbe4ff', paddingVertical: 14, paddingHorizontal: 14, backgroundColor: '#edf2ff', flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'center' },
+  photoButtonText: { color: '#2457e6', fontFamily: 'Poppins-SemiBold' },
+});

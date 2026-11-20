@@ -48,7 +48,11 @@ export function TransportScreen({
     () => visibleProviders.filter((provider) => provider.active && provider.ready),
     [visibleProviders],
   );
-  const vtcCount = availableProviders.filter((provider) => provider.providerType.toLowerCase().includes('vtc')).length;
+  const globalAvailableProviders = useMemo(
+    () => providers.filter((provider) => provider.active && provider.ready),
+    [providers],
+  );
+  const vtcCount = globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('vtc')).length;
 
   useEffect(() => {
     let mounted = true;
@@ -181,9 +185,9 @@ export function TransportScreen({
         <Card title="Résumé disponibilité" subtitle="Comptage live par mode" wide>
           <View style={screenStyles.summaryRow}>
             <SummaryPill label="VTC" value={vtcCount} active={vtcCount > 0} />
-            <SummaryPill label="Taxi" value={availableProviders.filter((provider) => provider.providerType.toLowerCase().includes('taxi')).length} active={availableProviders.some((provider) => provider.providerType.toLowerCase().includes('taxi'))} />
-            <SummaryPill label="Bus" value={availableProviders.filter((provider) => provider.providerType.toLowerCase().includes('bus')).length} active={availableProviders.some((provider) => provider.providerType.toLowerCase().includes('bus'))} />
-            <SummaryPill label="Train" value={availableProviders.filter((provider) => provider.providerType.toLowerCase().includes('train')).length} active={availableProviders.some((provider) => provider.providerType.toLowerCase().includes('train'))} />
+            <SummaryPill label="Taxi" value={globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('taxi')).length} active={globalAvailableProviders.some((provider) => provider.providerType.toLowerCase().includes('taxi'))} />
+            <SummaryPill label="Bus" value={globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('bus')).length} active={globalAvailableProviders.some((provider) => provider.providerType.toLowerCase().includes('bus'))} />
+            <SummaryPill label="Train" value={globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('train')).length} active={globalAvailableProviders.some((provider) => provider.providerType.toLowerCase().includes('train'))} />
           </View>
           <Text style={uiStyles.helperText}>
             Quand tu passes à disponible, la liste live dans Reise se met à jour et les fans voient ton mode apparaître immédiatement.

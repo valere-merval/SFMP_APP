@@ -122,6 +122,8 @@ export async function registerAccount(payload: {
   city: string;
   phone: string;
   preferredLanguage: string;
+  phonePrefix: string;
+  photoUrl?: string | null;
   accountType?: string;
 }): Promise<AuthPayload> {
   const response = await requestJson<AuthPayload>('/api/v1/auth/register', {
