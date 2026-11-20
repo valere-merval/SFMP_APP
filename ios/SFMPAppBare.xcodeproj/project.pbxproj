@@ -7,35 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0C80B921A6F3F58F76C31292 /* libPods-SFMPAppBare.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-SFMPAppBare.a */; };
-		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
-		761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EE2CA45674006654EF /* SceneDelegate.swift */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		BABE467342704432BFD6F904 /* Poppins-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1366B2D5FEED4169B49F3171 /* Poppins-Bold.ttf */; };
 		5A91381C99234AB3A42596F6 /* Poppins-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 409E23E127B34431B63FA688 /* Poppins-SemiBold.ttf */; };
 		228795C3AD084C9585622A70 /* Poppins-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 22577F91FEDC46A384842D6C /* Poppins-Medium.ttf */; };
 		939C8FE81A554A76892BE2ED /* Poppins-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3345F0739E854062BC6C6A74 /* Poppins-Regular.ttf */; };
-		75BB34B17C17466BB1AAAC7A /* Foundation.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FF1051FC91904F0F823ABC22 /* Foundation.ttf */; };
-		F007DC2CDF5C4B5FAE043F2D /* AntDesign.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DD849DCC3985494E9448BCF6 /* AntDesign.ttf */; };
-		FA553DE3BB7E4FE89E77F81D /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4060E9888B464D9791DFE6D7 /* MaterialIcons.ttf */; };
-		DB399DCF47FA41FEABAAF4BA /* FontAwesome6_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E363CA88E1474AF49851A581 /* FontAwesome6_Brands.ttf */; };
 		9F41F8960B5346919D3ECA1B /* Poppins-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 59400CA6E9784E1DA0E8CE91 /* Poppins-ExtraBold.ttf */; };
-		933EAC3D359B4199B88822A8 /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F41EC350C0E2478FAA86EEE8 /* Octicons.ttf */; };
-		72D5711090554117920ECB4A /* EvilIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1E899E0ECECF41589B25CB6C /* EvilIcons.ttf */; };
-		8746768957244FA49FB42BA4 /* Entypo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B9B68E25E19B4A2794E070D1 /* Entypo.ttf */; };
-		2A7CD38430C34994BB87A171 /* FontAwesome5_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D1B5781A762D49AFAC24D9C0 /* FontAwesome5_Brands.ttf */; };
-		20A52BB98314463785672F49 /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1B05870AD06647CE9124A450 /* MaterialCommunityIcons.ttf */; };
-		2BED91F7FEA64D00B044E473 /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 38E9960292984C409525BAFF /* Zocial.ttf */; };
-		569B3A73E10D4378A23DF577 /* FontAwesome5_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6F6EE0F1A4324A8AA532A025 /* FontAwesome5_Solid.ttf */; };
-		CD32D64653734FEEA4850454 /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1ED55AC97CD745A48DC1D1BA /* SimpleLineIcons.ttf */; };
-		449EA28D7FEC42D482163120 /* FontAwesome6_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5A4E8EA903DF4AFCB993F7FE /* FontAwesome6_Regular.ttf */; };
-		D2F134CE70FA45528BAD2693 /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1577674C5405455D8DBE2564 /* FontAwesome.ttf */; };
-		9DEBB907D2F644CD9A1021A8 /* Fontisto.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2C256289920148078CFE96B8 /* Fontisto.ttf */; };
-		ED50E04E2726401FAC2165F8 /* FontAwesome5_Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 202BBDD16E04474D8D32FECE /* FontAwesome5_Regular.ttf */; };
-		8CAC6BEA62DA4B3B8983C5EC /* FontAwesome6_Solid.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D53AE17B41574D11842A586D /* FontAwesome6_Solid.ttf */; };
-		ED59BADBC3F647218E80AF0C /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A8334487CCAC48E8A11D6DA4 /* Feather.ttf */; };
-		F99D2032C940481F8F1A382B /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 144CFA86A6C34BA6B5213900 /* Ionicons.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -247,26 +223,7 @@
 				5A91381C99234AB3A42596F6 /* Poppins-SemiBold.ttf in Resources */,
 				228795C3AD084C9585622A70 /* Poppins-Medium.ttf in Resources */,
 				939C8FE81A554A76892BE2ED /* Poppins-Regular.ttf in Resources */,
-				75BB34B17C17466BB1AAAC7A /* Foundation.ttf in Resources */,
-				F007DC2CDF5C4B5FAE043F2D /* AntDesign.ttf in Resources */,
-				FA553DE3BB7E4FE89E77F81D /* MaterialIcons.ttf in Resources */,
-				DB399DCF47FA41FEABAAF4BA /* FontAwesome6_Brands.ttf in Resources */,
 				9F41F8960B5346919D3ECA1B /* Poppins-ExtraBold.ttf in Resources */,
-				933EAC3D359B4199B88822A8 /* Octicons.ttf in Resources */,
-				72D5711090554117920ECB4A /* EvilIcons.ttf in Resources */,
-				8746768957244FA49FB42BA4 /* Entypo.ttf in Resources */,
-				2A7CD38430C34994BB87A171 /* FontAwesome5_Brands.ttf in Resources */,
-				20A52BB98314463785672F49 /* MaterialCommunityIcons.ttf in Resources */,
-				2BED91F7FEA64D00B044E473 /* Zocial.ttf in Resources */,
-				569B3A73E10D4378A23DF577 /* FontAwesome5_Solid.ttf in Resources */,
-				CD32D64653734FEEA4850454 /* SimpleLineIcons.ttf in Resources */,
-				449EA28D7FEC42D482163120 /* FontAwesome6_Regular.ttf in Resources */,
-				D2F134CE70FA45528BAD2693 /* FontAwesome.ttf in Resources */,
-				9DEBB907D2F644CD9A1021A8 /* Fontisto.ttf in Resources */,
-				ED50E04E2726401FAC2165F8 /* FontAwesome5_Regular.ttf in Resources */,
-				8CAC6BEA62DA4B3B8983C5EC /* FontAwesome6_Solid.ttf in Resources */,
-				ED59BADBC3F647218E80AF0C /* Feather.ttf in Resources */,
-				F99D2032C940481F8F1A382B /* Ionicons.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
