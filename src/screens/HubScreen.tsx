@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Image, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { postJson } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
-import { Card, EmptyState, MiniCard, Pill, PrimaryButton, Row, SecondaryButton, Stat, styles } from '../ui';
+import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
 import { trackTelemetry } from '../telemetry';
 import type { Locale } from '../i18n';
 
@@ -143,36 +143,75 @@ export function HubScreen({
             <EmptyState icon="sync-outline" title={copy.loadingTitle} subtitle="The app is loading catalog data directly from the backend." />
           </Card>
         ) : hero ? (
-          <View style={styles.heroCard}>
-            <View style={styles.heroRow}>
-              <Pill>{hero.status}</Pill>
-              <Pill subtle>{hero.stage}</Pill>
-              {hero.ticketAvailable ? <Pill subtle>Tickets live</Pill> : null}
+          <View style={localStyles.ticketCard}>
+            <View style={localStyles.chipsRow}>
+              <View style={[localStyles.statusChip, localStyles.statusChipDark]}>
+                <Ionicons name="time-outline" size={14} color="#fff" />
+                <Text style={localStyles.statusChipTextDark}>Scheduled</Text>
+              </View>
+              <View style={localStyles.statusChip}>
+                <Text style={localStyles.statusChipText}>Finale</Text>
+              </View>
+              <View style={localStyles.statusChip}>
+                <Text style={localStyles.statusChipText}>Tickets live</Text>
+              </View>
             </View>
-            <Text style={styles.cardKicker}>{copy.nextEvent}</Text>
-            <View style={localStyles.flagRow}>
-              <FlagBadge value={hero.homeFlag} title={hero.homeTeam} />
-              <Text style={localStyles.teamLine} numberOfLines={1} ellipsizeMode="tail">
-                {hero.homeTeam} vs {hero.awayTeam}
-              </Text>
-              <FlagBadge value={hero.awayFlag} title={hero.awayTeam} />
+
+            <Text style={localStyles.sectionLabel}>{copy.nextEvent}</Text>
+
+            <View style={localStyles.matchHeader}>
+              <View style={localStyles.teamBlock}>
+                <View style={localStyles.logoWrap}>
+                  <FlagBadge value={hero.homeFlag} title={hero.homeTeam} />
+                </View>
+                <Text style={localStyles.teamName} numberOfLines={1} ellipsizeMode="tail">{hero.homeTeam}</Text>
+                <Text style={localStyles.teamRole}>Home</Text>
+              </View>
+
+              <View style={localStyles.vsPill}>
+                <Text style={localStyles.vsText}>vs</Text>
+              </View>
+
+              <View style={localStyles.teamBlockRight}>
+                <View style={localStyles.logoWrap}>
+                  <FlagBadge value={hero.awayFlag} title={hero.awayTeam} />
+                </View>
+                <Text style={localStyles.teamName} numberOfLines={1} ellipsizeMode="tail">{hero.awayTeam}</Text>
+                <Text style={localStyles.teamRole}>Away</Text>
+              </View>
             </View>
-            <Text style={styles.muted}>{hero.venue} · {hero.city}, {hero.country}</Text>
-            <View style={styles.statsRow}>
-              <Stat label={copy.kickoff} value={hero.time} />
-              <Stat label={copy.countdown} value={countdown} />
-              <Stat label={copy.weather} value={`${hero.weather} · ${hero.temperature}`} />
+
+            <Text style={localStyles.venueText}>{hero.venue} · {hero.city}, {hero.country}</Text>
+
+            <View style={localStyles.tileGrid}>
+              <InfoTile label={copy.kickoff} value={hero.time} />
+              <InfoTile label={copy.countdown} value={countdown} />
+              <InfoTile label={copy.weather} value={`${hero.weather} · ${hero.temperature}`} />
+              <InfoTile label={copy.gate} value={hero.gate} />
+              <InfoTile label={copy.sector} value={hero.sector} />
+              <InfoTile label={copy.ticket} value={hero.ticketAvailable ? hero.ticketPrice || 'Available' : 'N/A'} valueAccent={hero.ticketAvailable} />
             </View>
-            <View style={styles.statsRow}>
-              <Stat label={copy.gate} value={hero.gate} />
-              <Stat label={copy.sector} value={hero.sector} />
-              <Stat label={copy.ticket} value={hero.ticketAvailable ? hero.ticketPrice || 'Available' : 'N/A'} />
-            </View>
-            <Text style={styles.muted}>{hero.transitSummary}</Text>
-            <View style={styles.ctaRow}>
-              <PrimaryButton label={copy.planJourney} onPress={() => { trackTelemetry('plan_journey_clicked', 'Hub', { matchId: hero.id }); onChangeMatch(); }} icon={<Ionicons name="map-outline" size={16} color="#fff" />} />
-              {hero.ticketAvailable ? <SecondaryButton label={ticketLoading ? 'Processing...' : 'Ticket kaufen'} onPress={buyTicket} icon={<Ionicons name="ticket-outline" size={16} color="#1d3fb3" />} /> : null}
-              <SecondaryButton label={copy.changeMatch} onPress={() => { trackTelemetry('change_match_clicked', 'Hub', { matchId: hero.id }); onChangeMatch(); }} icon={<Ionicons name="swap-horizontal-outline" size={16} color="#1d3fb3" />} />
+
+            <Text style={localStyles.transitLine}>{hero.transitSummary}</Text>
+
+            <View style={localStyles.actionRow}>
+              <Pressable
+                onPress={() => {
+                  trackTelemetry('plan_journey_clicked', 'Hub', { matchId: hero.id });
+                  onChangeMatch();
+                }}
+                style={localStyles.primaryAction}
+              >
+                <Text style={localStyles.primaryActionText}>Plan My Journey</Text>
+                <Ionicons name="arrow-forward" size={16} color="#172033" />
+              </Pressable>
+              <Pressable
+                onPress={buyTicket}
+                style={localStyles.secondaryAction}
+              >
+                <Ionicons name="qr-code-outline" size={16} color="#c8f36a" />
+                <Text style={localStyles.secondaryActionText}>{ticketLoading ? 'Processing...' : 'Gate Pass'}</Text>
+              </Pressable>
             </View>
           </View>
         ) : null}
@@ -284,6 +323,17 @@ export function HubScreen({
   );
 }
 
+function InfoTile({ label, value, valueAccent = false }: { label: string; value: string; valueAccent?: boolean }) {
+  return (
+    <View style={localStyles.infoTile}>
+      <Text style={localStyles.infoLabel}>{label}</Text>
+      <Text style={[localStyles.infoValue, valueAccent && localStyles.infoValueAccent]} numberOfLines={2}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
 const localStyles = {
   flagRow: {
     flexDirection: 'row' as const,
@@ -319,8 +369,175 @@ const localStyles = {
     fontFamily: 'Poppins-ExtraBold',
     textAlign: 'center' as const,
   },
+  ticketCard: {
+    padding: 18,
+    borderRadius: 26,
+    backgroundColor: '#101b2d',
+    gap: 14,
+    borderWidth: 1,
+    borderColor: '#1b2b46',
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  chipsRow: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 8,
+  },
+  statusChip: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  statusChipDark: {
+    backgroundColor: '#0d1422',
+  },
+  statusChipText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 12,
+    letterSpacing: 0.4,
+  },
+  statusChipTextDark: {
+    color: '#fff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 12,
+    letterSpacing: 0.4,
+  },
+  sectionLabel: {
+    color: '#c8f36a',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase' as const,
+    fontSize: 12,
+    fontFamily: 'Poppins-Bold',
+  },
+  matchHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    gap: 12,
+  },
+  teamBlock: { flex: 1, alignItems: 'flex-start' as const, gap: 3 },
+  teamBlockRight: { flex: 1, alignItems: 'flex-end' as const, gap: 3 },
+  logoWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: '#16253d',
+    marginBottom: 2,
+  },
   teamName: {
-    color: '#172033',
+    color: '#fff',
+    fontSize: 22,
+    lineHeight: 26,
     fontFamily: 'Poppins-ExtraBold',
+  },
+  teamRole: {
+    color: '#94a3b8',
+    fontSize: 12,
+    fontFamily: 'Poppins-SemiBold',
+  },
+  vsPill: {
+    minWidth: 42,
+    height: 42,
+    borderRadius: 21,
+    paddingHorizontal: 12,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: '#c8f36a',
+  },
+  vsText: {
+    color: '#172033',
+    fontSize: 18,
+    fontFamily: 'Poppins-ExtraBold',
+  },
+  venueText: {
+    color: '#cbd5e1',
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+  },
+  tileGrid: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 10,
+  },
+  infoTile: {
+    flexBasis: '31%',
+    flexGrow: 1,
+    minHeight: 72,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: '#16253d',
+    borderWidth: 1,
+    borderColor: '#23395c',
+    gap: 4,
+  },
+  infoLabel: {
+    color: '#94a3b8',
+    fontSize: 11,
+    fontFamily: 'Poppins-Medium',
+    textTransform: 'uppercase' as const,
+  },
+  infoValue: {
+    color: '#fff',
+    fontSize: 14,
+    lineHeight: 18,
+    fontFamily: 'Poppins-Bold',
+  },
+  infoValueAccent: {
+    color: '#c8f36a',
+  },
+  transitLine: {
+    color: '#d4def0',
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: 'Poppins-Medium',
+  },
+  actionRow: {
+    flexDirection: 'row' as const,
+    gap: 12,
+  },
+  primaryAction: {
+    flex: 1,
+    minHeight: 52,
+    borderRadius: 16,
+    backgroundColor: '#c8f36a',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    flexDirection: 'row' as const,
+    gap: 8,
+    paddingHorizontal: 14,
+  },
+  primaryActionText: {
+    color: '#172033',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 14,
+  },
+  secondaryAction: {
+    flex: 1,
+    minHeight: 52,
+    borderRadius: 16,
+    backgroundColor: '#16253d',
+    borderWidth: 1,
+    borderColor: '#23395c',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    flexDirection: 'row' as const,
+    gap: 8,
+    paddingHorizontal: 14,
+  },
+  secondaryActionText: {
+    color: '#fff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 14,
   },
 };
