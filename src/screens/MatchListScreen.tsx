@@ -6,7 +6,7 @@ import { getScreenCopy } from '../screenCopy';
 import type { EventCatalogCard, MatchCard } from '../types';
 import { Card, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
 import { trackTelemetry } from '../telemetry';
-import type { Locale } from '../i18n';
+import { t, type Locale } from '../i18n';
 
 function isImageUrl(value: string) {
   return /^https?:\/\//i.test(value);
@@ -74,7 +74,7 @@ export function MatchListScreen({
               <View style={localStyles.overlay}>
                 <View style={styles.rowBetween}>
                   <Text style={localStyles.stage}>{match.stage}</Text>
-                  <Text style={localStyles.ticket}>{match.ticketAvailable ? match.ticketPrice || 'Tickets live' : 'Sold out'}</Text>
+                  <Text style={localStyles.ticket}>{match.ticketAvailable ? match.ticketPrice || t(locale, 'common.ticketsLive') : t(locale, 'common.soldOut')}</Text>
                 </View>
                 <View style={localStyles.teamRow}>
                   <FlagBadge value={match.homeFlag} />
@@ -86,7 +86,7 @@ export function MatchListScreen({
                 <Text style={localStyles.meta}>{match.date} · {match.time}</Text>
                 <Text style={localStyles.meta}>{match.venue} · {match.city}, {match.country}</Text>
                 <Text style={localStyles.meta}>{match.gate} · {match.sector}</Text>
-                <Text style={localStyles.meta}>{match.ticketAvailable ? `${match.ticketsRemaining ?? match.ticketsTotal ?? 0} tickets remaining` : 'Tickets not available on platform'}</Text>
+                <Text style={localStyles.meta}>{match.ticketAvailable ? `${match.ticketsRemaining ?? match.ticketsTotal ?? 0} ${t(locale, 'common.ticketsRemaining')}` : t(locale, 'common.ticketsUnavailable')}</Text>
                 <Text style={localStyles.description}>{match.transitSummary}</Text>
                 <View style={styles.ctaRow}>
                   <PrimaryButton label={copy.openHub} onPress={() => onSelectMatch(match)} icon={<Feather name="arrow-right" size={16} color="#fff" />} />
@@ -96,7 +96,7 @@ export function MatchListScreen({
           ))}
         </View>
 
-        <Card title={copy.subtitle} subtitle="Navigation" wide>
+        <Card title={copy.subtitle} subtitle={t(locale, 'common.navigation')} wide>
           <View style={styles.ctaRow}>
             <SecondaryButton label={copy.backToEvents} onPress={onBackToCatalog} icon={<Feather name="grid" size={16} color="#1d3fb3" />} />
             <SecondaryButton label={copy.back} onPress={onBack} icon={<Feather name="chevron-left" size={16} color="#1d3fb3" />} />

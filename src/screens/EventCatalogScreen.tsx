@@ -6,7 +6,7 @@ import { getScreenCopy } from '../screenCopy';
 import type { EventCatalogCard } from '../types';
 import { Card, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
 import { trackTelemetry } from '../telemetry';
-import type { Locale } from '../i18n';
+import { t, type Locale } from '../i18n';
 
 export function EventCatalogScreen({
   catalogs,
@@ -62,7 +62,7 @@ export function EventCatalogScreen({
                 </View>
                 <Text style={localStyles.title}>{catalog.title}</Text>
                 <Text style={localStyles.meta}>{catalog.sport} · {catalog.country}</Text>
-                <Text style={localStyles.count}>{catalog.eventCount} matches</Text>
+                <Text style={localStyles.count}>{catalog.eventCount} {t(locale, 'common.matches')}</Text>
                 <Text style={localStyles.description}>{catalog.description}</Text>
               </View>
             </Pressable>

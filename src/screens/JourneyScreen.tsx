@@ -8,7 +8,7 @@ import { getScreenCopy } from '../screenCopy';
 import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import type { LiveData, MatchCard, TransportProviderView } from '../types';
-import type { Locale } from '../i18n';
+import { t, type Locale } from '../i18n';
 
 type ModeKey = 'taxi' | 'vtc' | 'shuttle' | 'bus' | 'train' | 'walking';
 
@@ -19,14 +19,17 @@ type ModeCard = {
   icon: React.ReactNode;
 };
 
-const modeCards: ModeCard[] = [
-  { key: 'taxi', label: 'Taxi', subtitle: 'Reserve now', icon: <Ionicons name="car-outline" size={18} color="#172033" /> },
-  { key: 'vtc', label: 'VTC', subtitle: 'Ride-hailing', icon: <Feather name="navigation" size={18} color="#172033" /> },
-  { key: 'shuttle', label: 'Shuttle', subtitle: 'Matchday bus', icon: <Ionicons name="bus-outline" size={18} color="#172033" /> },
-  { key: 'bus', label: 'Bus', subtitle: 'Fan transport', icon: <Feather name="bus" size={18} color="#172033" /> },
-  { key: 'train', label: 'Train', subtitle: 'City rail', icon: <Feather name="train" size={18} color="#172033" /> },
-  { key: 'walking', label: 'Walk', subtitle: 'Last mile', icon: <Feather name="map-pin" size={18} color="#172033" /> },
-];
+function getModeCards(locale: Locale): ModeCard[] {
+  return [
+    { key: 'taxi', label: t(locale, 'journey.taxiLabel'), subtitle: t(locale, 'journey.taxiSubtitle'), icon: <Ionicons name="car-outline" size={18} color="#172033" /> },
+    { key: 'vtc', label: t(locale, 'journey.vtcLabel'), subtitle: t(locale, 'journey.vtcSubtitle'), icon: <Feather name="navigation" size={18} color="#172033" /> },
+    { key: 'shuttle', label: t(locale, 'journey.shuttleLabel'), subtitle: t(locale, 'journey.shuttleSubtitle'), icon: <Ionicons name="bus-outline" size={18} color="#172033" /> },
+    { key: 'bus', label: t(locale, 'journey.busLabel'), subtitle: t(locale, 'journey.busSubtitle'), icon: <Feather name="bus" size={18} color="#172033" /> },
+    { key: 'train', label: t(locale, 'journey.trainLabel'), subtitle: t(locale, 'journey.trainSubtitle'), icon: <Feather name="train" size={18} color="#172033" /> },
+    { key: 'walking', label: t(locale, 'journey.walkingLabel'), subtitle: t(locale, 'journey.walkingSubtitle'), icon: <Feather name="map-pin" size={18} color="#172033" /> },
+  ];
+}
+
 
 const venueCoordinate = { latitude: 40.4531, longitude: -3.6883 };
 const pickupCoordinate = { latitude: 40.4602, longitude: -3.6798 };
@@ -73,6 +76,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
   const copy = getScreenCopy(locale).journey;
   const match = selectedMatch;
   const providers = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
+  const modeCards = useMemo(() => getModeCards(locale), [locale]);
   const modeSummary = useMemo(() => {
     const counts = new Map<ModeKey, number>();
     for (const provider of providers) {
@@ -85,7 +89,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
   const availableModes = useMemo(() => {
     const modes = modeCards.filter((item) => (modeSummary.get(item.key) ?? 0) > 0);
     return modes.length ? modes : modeCards;
-  }, [modeSummary]);
+  }, [modeSummary, modeCards]);
 
   const [activeMode, setActiveMode] = useState<ModeKey>('taxi');
   const [_activeProviderId, setActiveProviderId] = useState<string | null>(null);
@@ -142,7 +146,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
           <Text style={styles.subtitle}>{copy.subtitle}</Text>
         </View>
 
-        <Card title="Live map" subtitle="Pick-up and live driver tracking" wide>
+        <Card title={t(locale, 'common.liveMap')} subtitle={t(locale, 'common.pickupTracking')} wide>
           {match ? (
             <View style={styles.mapPanel}>
               <MapView
@@ -174,23 +178,23 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
               </View>
             </View>
           ) : (
-            <EmptyState icon="map-outline" title="Select a match first" subtitle="Choose an event to unlock live transport and pickup reservations." />
+            <EmptyState icon="map-outline" title={t(locale, 'common.selectMatchFirst')} subtitle={t(locale, 'common.selectMatchFirstBody')} />
           )}
           <View style={styles.ctaRow}>
             <PrimaryButton
-              label="Open in Google Maps"
+              label={t(locale, 'common.openInGoogleMaps')}
               onPress={() => match ? openGoogleMapsSearch(`${match.venue}, ${match.city}`) : undefined}
               icon={<Ionicons name="navigate-outline" size={16} color="#172033" />}
             />
             <SecondaryButton
-              label="Find venue"
+              label={t(locale, 'common.findVenue')}
               onPress={() => match ? openGoogleMapsSearch(`${match.venue}, ${match.city}`) : undefined}
               icon={<Feather name="search" size={16} color="#1d3fb3" />}
             />
           </View>
         </Card>
 
-        <Card title="Transport modes" subtitle="Tap one to see available providers" wide>
+        <Card title={t(locale, 'common.transportModes')} subtitle={t(locale, 'common.tapOneToSeeAvailableProviders')} wide>
           <View style={styles.grid2}>
             {availableModes.map((mode) => (
               <Pressable
@@ -211,7 +215,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
           </View>
         </Card>
 
-        <Card title="Available chauffeurs" subtitle="Uber / DiDi-like instant booking" wide>
+        <Card title={t(locale, 'common.availableChauffeurs')} subtitle={t(locale, 'common.instantBooking')} wide>
           {match ? (
             filteredProviders.length ? (
               <View style={styles.cardBody}>
@@ -226,7 +230,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
                           <Text style={styles.muted}>{provider.providerType} · {provider.zone}</Text>
                         </View>
                         <View style={styles.rowRight}>
-                          <Pill subtle={isActive}>{isActive ? 'Active' : 'Paused'}</Pill>
+                          <Pill subtle={isActive}>{isActive ? t(locale, 'common.active') : t(locale, 'common.paused')}</Pill>
                         </View>
                       </View>
                       <Text style={styles.muted}>{provider.driverName} · {provider.vehicleLabel}</Text>
@@ -234,12 +238,12 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
                       {provider.publicNotes ? <Text style={localStyles.providerNotes}>{provider.publicNotes}</Text> : null}
                       <View style={styles.ctaRow}>
                         <PrimaryButton
-                          label={isActive && isReady ? 'Reserve now' : 'Not available'}
+                          label={isActive && isReady ? t(locale, 'common.reserveNow') : t(locale, 'common.notAvailable')}
                           onPress={() => isActive && isReady ? reserveNow(provider) : undefined}
                           icon={<Ionicons name="car-outline" size={16} color="#172033" />}
                         />
                         <SecondaryButton
-                          label="Track live"
+                          label={t(locale, 'common.trackLive')}
                           onPress={() => {
                             setReservedProvider(provider);
                             setStatusMessage(`Tracking ${provider.displayName} live.`);
@@ -252,14 +256,14 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
                 })}
               </View>
             ) : (
-              <EmptyState icon="car-outline" title="No providers in this mode" subtitle="Switch the transport mode or wait until the match transport is published." />
+            <EmptyState icon="car-outline" title={t(locale, 'common.noProviders')} subtitle={t(locale, 'common.changeEvent')} />
             )
           ) : (
-            <EmptyState icon="calendar-outline" title="No match selected" subtitle="Pick a match to load its live transport providers." />
+            <EmptyState icon="calendar-outline" title={t(locale, 'common.noMatchSelected')} subtitle={t(locale, 'common.selectMatchFirstBody')} />
           )}
         </Card>
 
-        <Card title="Live rider tracking" subtitle="Reserve and follow the driver" wide>
+        <Card title={t(locale, 'common.liveRiderTracking')} subtitle={t(locale, 'common.liveTracking')} wide>
           {reservedProvider ? (
             <View style={styles.mapPanel}>
               <MapView
@@ -284,7 +288,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
               </View>
             </View>
           ) : (
-            <EmptyState icon="radio-outline" title="No live reservation yet" subtitle="Tap Reserve now on an active provider to start live tracking." />
+            <EmptyState icon="radio-outline" title={t(locale, 'common.noLiveReservation')} subtitle={t(locale, 'common.liveTracking')} />
           )}
           {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
         </Card>

@@ -97,9 +97,9 @@ function JourneyRoute({ locale }: { locale: Locale }) {
   return <JourneyScreen locale={locale} data={catalog} loading={catalogLoading} selectedMatch={selectedMatch} />;
 }
 
-function TransportRoute() {
+function TransportRoute({ locale }: { locale: Locale }) {
   const { catalog, catalogLoading, onRetryCatalog } = useCatalogShell();
-  return <TransportScreen data={catalog} loading={catalogLoading} onReload={onRetryCatalog} />;
+  return <TransportScreen locale={locale} data={catalog} loading={catalogLoading} onReload={onRetryCatalog} />;
 }
 
 function WayfindingRoute({ locale }: { locale: Locale }) {
@@ -153,12 +153,12 @@ function App(): React.JSX.Element {
       return nextCatalog;
     } catch {
       setCatalog(null);
-      setCatalogError('Live backend catalog unavailable.');
+      setCatalogError(t(locale, 'common.backendUnavailable'));
       return null;
     } finally {
       setCatalogLoading(false);
     }
-  }, []);
+  }, [locale]);
 
   useEffect(() => {
     let active = true;
@@ -256,7 +256,7 @@ function App(): React.JSX.Element {
       <SafeAreaProvider>
         <View style={bootstrapStyles.loadingShell}>
           <Text style={bootstrapStyles.loadingBrand}>SMART FAN MOBILITY</Text>
-          <Text style={bootstrapStyles.loadingCopy}>Loading secure session…</Text>
+          <Text style={bootstrapStyles.loadingCopy}>{t(locale, 'common.loadingSession')}</Text>
         </View>
       </SafeAreaProvider>
     );
@@ -304,7 +304,7 @@ function App(): React.JSX.Element {
               <AppStack.Screen name="Hub">{() => <HubRoute locale={locale} />}</AppStack.Screen>
               <AppStack.Screen name="Wayfinding">{() => <WayfindingRoute locale={locale} />}</AppStack.Screen>
               <AppStack.Screen name="Journey">{() => <JourneyRoute locale={locale} />}</AppStack.Screen>
-              <AppStack.Screen name="Transport">{() => <TransportRoute />}</AppStack.Screen>
+              <AppStack.Screen name="Transport">{() => <TransportRoute locale={locale} />}</AppStack.Screen>
               <AppStack.Screen name="Profile">{() => <ProfileRoute locale={locale} />}</AppStack.Screen>
             </AppStack.Navigator>
           </NavigationContainer>

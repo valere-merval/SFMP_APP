@@ -5,7 +5,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getScreenCopy } from '../screenCopy';
 import { Card, EmptyState, styles } from '../ui';
-import type { Locale } from '../i18n';
+import { t, type Locale } from '../i18n';
 
 export function PassScreen({ locale }: { locale: Locale }) {
   const copy = getScreenCopy(locale).pass;
@@ -39,7 +39,7 @@ export function PassScreen({ locale }: { locale: Locale }) {
             </View>
           </View>
         </Card>
-        <Card title={copy.emptyTitle} subtitle="Runtime state">
+        <Card title={copy.emptyTitle} subtitle={t(locale, 'common.runtimeState')}>
           <EmptyState icon="document-lock-outline" title={copy.emptyTitle} subtitle={copy.emptyBody} />
         </Card>
       </ScrollView>

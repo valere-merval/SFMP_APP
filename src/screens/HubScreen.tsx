@@ -7,7 +7,7 @@ import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
 import { trackTelemetry } from '../telemetry';
-import type { Locale } from '../i18n';
+import { t, type Locale } from '../i18n';
 
 type TicketPurchaseResponse = {
   reference: string;
@@ -147,13 +147,13 @@ export function HubScreen({
             <View style={localStyles.chipsRow}>
               <View style={[localStyles.statusChip, localStyles.statusChipDark]}>
                 <Ionicons name="time-outline" size={14} color="#fff" />
-                <Text style={localStyles.statusChipTextDark}>Scheduled</Text>
+                <Text style={localStyles.statusChipTextDark}>{t(locale, 'common.scheduled')}</Text>
               </View>
               <View style={localStyles.statusChip}>
-                <Text style={localStyles.statusChipText}>Finale</Text>
+                <Text style={localStyles.statusChipText}>{t(locale, 'common.finale')}</Text>
               </View>
               <View style={localStyles.statusChip}>
-                <Text style={localStyles.statusChipText}>Tickets live</Text>
+                <Text style={localStyles.statusChipText}>{t(locale, 'common.ticketsLive')}</Text>
               </View>
             </View>
 
@@ -165,7 +165,7 @@ export function HubScreen({
                   <FlagBadge value={hero.homeFlag} title={hero.homeTeam} />
                 </View>
                 <Text style={localStyles.teamName} numberOfLines={1} ellipsizeMode="tail">{hero.homeTeam}</Text>
-                <Text style={localStyles.teamRole}>Home</Text>
+                <Text style={localStyles.teamRole}>{t(locale, 'common.home')}</Text>
               </View>
 
               <View style={localStyles.vsPill}>
@@ -177,7 +177,7 @@ export function HubScreen({
                   <FlagBadge value={hero.awayFlag} title={hero.awayTeam} />
                 </View>
                 <Text style={localStyles.teamName} numberOfLines={1} ellipsizeMode="tail">{hero.awayTeam}</Text>
-                <Text style={localStyles.teamRole}>Away</Text>
+                <Text style={localStyles.teamRole}>{t(locale, 'common.away')}</Text>
               </View>
             </View>
 
@@ -202,7 +202,7 @@ export function HubScreen({
                 }}
                 style={localStyles.primaryAction}
               >
-                <Text style={localStyles.primaryActionText}>Plan My Journey</Text>
+                <Text style={localStyles.primaryActionText}>{copy.planJourney}</Text>
                 <Ionicons name="arrow-forward" size={16} color="#172033" />
               </Pressable>
               <Pressable
@@ -210,7 +210,7 @@ export function HubScreen({
                 style={localStyles.secondaryAction}
               >
                 <Ionicons name="qr-code-outline" size={16} color="#c8f36a" />
-                <Text style={localStyles.secondaryActionText}>{ticketLoading ? 'Processing...' : 'Gate Pass'}</Text>
+                <Text style={localStyles.secondaryActionText}>{ticketLoading ? t(locale, 'common.processing') : t(locale, 'common.gatePass')}</Text>
               </Pressable>
             </View>
           </View>
@@ -284,7 +284,7 @@ export function HubScreen({
               <MiniCard title="Locker P3" subtitle="A4 max size" meta="Quick drop-off" />
               <MiniCard title="Parking P4" subtitle="78 spots left" meta="Reserved access" />
               <MiniCard title="Fan zones" subtitle="Plaza Mayor" meta="Food and meet-up" />
-              <MiniCard title="Ride-hailing" subtitle="South VTC zone" meta="Pick-up ready" />
+              <MiniCard title={t(locale, 'common.registeredOperators')} subtitle={t(locale, 'common.noOperatorsRegistered')} meta="Taxi and VTC" />
             </View>
           ) : (
             <EmptyState icon="compass-outline" title="No essentials yet" subtitle="This panel is filled from the selected match and backend data." />
@@ -315,7 +315,7 @@ export function HubScreen({
         <Card title={copy.changeSelectionTitle} subtitle={copy.changeSelectionSubtitle} wide>
           <View style={styles.ctaRow}>
             <SecondaryButton label={copy.changeMatch} onPress={onChangeMatch} icon={<Ionicons name="swap-horizontal-outline" size={16} color="#1d3fb3" />} />
-            <SecondaryButton label="Change event" onPress={onChangeEvent} icon={<Ionicons name="grid-outline" size={16} color="#1d3fb3" />} />
+            <SecondaryButton label={t(locale, 'common.changeEvent')} onPress={onChangeEvent} icon={<Ionicons name="grid-outline" size={16} color="#1d3fb3" />} />
           </View>
         </Card>
       </ScrollView>

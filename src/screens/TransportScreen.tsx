@@ -4,18 +4,22 @@ import Feather from 'react-native-vector-icons/Feather';
 import { loadTransportAvailability, saveTransportAvailability, type TransportAvailabilityView } from '../api';
 import { type LiveData, type TransportProviderView } from '../types';
 import { Card, EmptyState, PrimaryButton, SecondaryButton, styles as uiStyles } from '../ui';
+import { t, type Locale } from '../i18n';
 
-const statusOptions = ['Available', 'Busy', 'On route', 'Paused'] as const;
+const getStatusOptions = (locale: Locale) => [t(locale, 'common.available'), t(locale, 'common.busy'), t(locale, 'common.onRoute'), t(locale, 'common.paused')] as const;
 
 export function TransportScreen({
+  locale,
   data,
   loading,
   onReload,
 }: {
+  locale: Locale;
   data: LiveData | null;
   loading: boolean;
   onReload: () => Promise<void> | void;
 }) {
+  const statusOptions = useMemo(() => getStatusOptions(locale), [locale]);
   const matches = useMemo(() => data?.matches ?? [], [data?.matches]);
   const providers = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
   const [matchId, setMatchId] = useState('');
