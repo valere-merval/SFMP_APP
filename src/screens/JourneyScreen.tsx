@@ -306,6 +306,8 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
 
 const localStyles = {
   modeCard: {
+    flexBasis: '48%',
+    flexGrow: 1,
     padding: 14,
     borderRadius: 18,
     borderWidth: 1,

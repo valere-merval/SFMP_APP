@@ -182,11 +182,11 @@ export function HubScreen({
             </View>
 
             <Text style={localStyles.venueText}>{hero.venue} · {hero.city}, {hero.country}</Text>
+            <Text style={localStyles.countdownLine}>COUNTDOWN {countdown.toUpperCase()}</Text>
 
             <View style={localStyles.tileGrid}>
               <InfoTile label={copy.kickoff} value={hero.time} />
-              <InfoTile label={copy.countdown} value={countdown} />
-              <InfoTile label={copy.weather} value={`${hero.weather} · ${hero.temperature}`} />
+              <InfoTile label={copy.weather} value={`${hero.weather} · ${hero.temperature}`} wide />
               <InfoTile label={copy.gate} value={hero.gate} />
               <InfoTile label={copy.sector} value={hero.sector} />
               <InfoTile label={copy.ticket} value={hero.ticketAvailable ? hero.ticketPrice || 'Available' : 'N/A'} valueAccent={hero.ticketAvailable} />
@@ -323,9 +323,9 @@ export function HubScreen({
   );
 }
 
-function InfoTile({ label, value, valueAccent = false }: { label: string; value: string; valueAccent?: boolean }) {
+function InfoTile({ label, value, valueAccent = false, wide = false }: { label: string; value: string; valueAccent?: boolean; wide?: boolean }) {
   return (
-    <View style={localStyles.infoTile}>
+    <View style={[localStyles.infoTile, wide && localStyles.infoTileWide]}>
       <Text style={localStyles.infoLabel}>{label}</Text>
       <Text style={[localStyles.infoValue, valueAccent && localStyles.infoValueAccent]} numberOfLines={2}>
         {value}
@@ -465,6 +465,13 @@ const localStyles = {
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
   },
+  countdownLine: {
+    color: '#c8f36a',
+    fontSize: 12,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase' as const,
+    fontFamily: 'Poppins-Bold',
+  },
   tileGrid: {
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
@@ -480,6 +487,9 @@ const localStyles = {
     borderWidth: 1,
     borderColor: '#23395c',
     gap: 4,
+  },
+  infoTileWide: {
+    flexBasis: '48%',
   },
   infoLabel: {
     color: '#94a3b8',

@@ -180,7 +180,7 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.feature.pass': 'Ticket und Fahrtpass',
     'auth.feature.operations': 'Betriebsübersicht',
     'nav.hub': 'Start',
-    'nav.wayfinding': 'Karten',
+    'nav.wayfinding': 'Map',
     'nav.journey': 'Reise',
     'nav.pass': 'Pass',
     'nav.profile': 'Profil',
