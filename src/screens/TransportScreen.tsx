@@ -1,12 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { loadTransportAvailability, saveTransportAvailability, type TransportAvailabilityView } from '../api';
+import { loadTransportAvailability, loadTransportProfile, saveTransportAvailability, type TransportAvailabilityView, type TransportProfileView } from '../api';
 import { type LiveData, type TransportProviderView } from '../types';
 import { Card, EmptyState, PrimaryButton, SecondaryButton, styles as uiStyles } from '../ui';
 import { t, type Locale } from '../i18n';
 
-const getStatusOptions = (locale: Locale) => [t(locale, 'common.available'), t(locale, 'common.busy'), t(locale, 'common.onRoute'), t(locale, 'common.paused')] as const;
+const modeLabel = (locale: Locale, providerType: string) => {
+  const value = providerType.trim().toLowerCase();
+  if (value.includes('vtc')) return t(locale, 'journey.vtcLabel');
+  if (value.includes('taxi')) return t(locale, 'journey.taxiLabel');
+  if (value.includes('shuttle')) return t(locale, 'journey.shuttleLabel');
+  if (value.includes('bus')) return t(locale, 'journey.busLabel');
+  if (value.includes('train')) return t(locale, 'journey.trainLabel');
+  return providerType;
+};
 
 export function TransportScreen({
   locale,
@@ -19,21 +27,47 @@ export function TransportScreen({
   loading: boolean;
   onReload: () => Promise<void> | void;
 }) {
-  const statusOptions = useMemo(() => getStatusOptions(locale), [locale]);
   const matches = useMemo(() => data?.matches ?? [], [data?.matches]);
   const providers = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
   const [matchId, setMatchId] = useState('');
   const [available, setAvailable] = useState(true);
-  const [ready, setReady] = useState(false);
-  const [status, setStatus] = useState('Available');
-  const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadedAvailability, setLoadedAvailability] = useState<TransportAvailabilityView | null>(null);
+  const [myProfile, setMyProfile] = useState<TransportProfileView | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
+  const registeredDriver = !!myProfile?.id;
   const selectedMatch = useMemo(() => matches.find((item) => item.id === matchId) ?? null, [matchId, matches]);
-  const visibleProviders = useMemo(() => providers.filter((provider) => !matchId || provider.matchId === matchId), [matchId, providers]);
+  const visibleProviders = useMemo(
+    () => providers.filter((provider) => !matchId || provider.matchId === matchId),
+    [matchId, providers],
+  );
+  const availableProviders = useMemo(
+    () => visibleProviders.filter((provider) => provider.active && provider.ready),
+    [visibleProviders],
+  );
+  const vtcCount = availableProviders.filter((provider) => provider.providerType.toLowerCase().includes('vtc')).length;
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const profile = await loadTransportProfile();
+        if (!mounted) return;
+        setMyProfile(profile);
+      } catch {
+        if (!mounted) return;
+        setMyProfile(null);
+      } finally {
+        if (mounted) setLoadingProfile(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -44,16 +78,10 @@ export function TransportScreen({
         if (!mounted) return;
         setLoadedAvailability(availability);
         setAvailable(availability.available);
-        setReady(availability.ready);
-        setStatus(availability.status || 'Available');
-        setNotes(availability.notes || '');
       } catch {
         if (!mounted) return;
         setLoadedAvailability(null);
         setAvailable(true);
-        setReady(false);
-        setStatus('Available');
-        setNotes('');
       }
     })();
     return () => {
@@ -62,6 +90,10 @@ export function TransportScreen({
   }, [matchId]);
 
   const submit = async () => {
+    if (!registeredDriver) {
+      setError('Crée d’abord ton profil chauffeur dans Profil.');
+      return;
+    }
     if (!matchId) {
       setError('Choisis d’abord un match pour déclarer ta disponibilité.');
       return;
@@ -70,8 +102,8 @@ export function TransportScreen({
     setMessage(null);
     setError(null);
     try {
-      await saveTransportAvailability(matchId, { available, ready, status, notes });
-      setMessage('Ta disponibilité est enregistrée pour ce match et les fans pourront te voir si tu es disponible.');
+      await saveTransportAvailability(matchId, { available });
+      setMessage(available ? 'Tu es maintenant visible comme disponible.' : 'Tu es maintenant masqué comme non disponible.');
       await onReload();
     } catch (caught: any) {
       setError(caught?.message ?? 'Impossible d’enregistrer la disponibilité.');
@@ -85,8 +117,10 @@ export function TransportScreen({
       <ScrollView contentContainerStyle={screenStyles.container} showsVerticalScrollIndicator={false}>
         <View style={screenStyles.hero}>
           <Text style={screenStyles.kicker}>TRANSPORT</Text>
-          <Text style={screenStyles.title}>Match availability</Text>
-          <Text style={screenStyles.subtitle}>Ton profil chauffeur se gère dans le profil utilisateur. Ici tu dis simplement si tu es disponible pour le match, puis prêt ou non le jour J.</Text>
+          <Text style={screenStyles.title}>Disponibilité chauffeur</Text>
+          <Text style={screenStyles.subtitle}>
+            Ton profil chauffeur se gère dans le profil utilisateur. Ici tu bascules seulement entre disponible ou pas disponible pour le match choisi.
+          </Text>
         </View>
 
         <Card title="Match ciblé" subtitle="Choisis l’événement" wide>
@@ -106,56 +140,94 @@ export function TransportScreen({
           {selectedMatch ? <Text style={uiStyles.helperText}>Sélection active: {selectedMatch.homeTeam} vs {selectedMatch.awayTeam} · {selectedMatch.city}</Text> : null}
         </Card>
 
-        <Card title="Ma disponibilité" subtitle="Visible par les fans du match" wide>
-          <View style={screenStyles.rowGap}>
-            <Text style={uiStyles.helperText}>Le profil chauffeur/véhicule vient du profil utilisateur. Tu peux seulement basculer ici la disponibilité par match.</Text>
-            <View style={uiStyles.chipsRow}>
-              {statusOptions.map((item) => (
-                <Pressable key={item} onPress={() => setStatus(item)} style={[uiStyles.langChip, status === item && uiStyles.langChipActive]}>
-                  <Text style={[uiStyles.langChipText, status === item && uiStyles.langChipTextActive]}>{item}</Text>
-                </Pressable>
-              ))}
-            </View>
-            <Pressable onPress={() => setAvailable((value) => !value)} style={[screenStyles.toggle, available && screenStyles.toggleActive]}>
-              <Text style={[screenStyles.toggleText, available && screenStyles.toggleTextActive]}>{available ? 'Disponible pour ce match' : 'Non disponible'}</Text>
-            </Pressable>
-            <Pressable onPress={() => setReady((value) => !value)} style={[screenStyles.toggle, ready && screenStyles.toggleActive]}>
-              <Text style={[screenStyles.toggleText, ready && screenStyles.toggleTextActive]}>{ready ? 'Prêt à prendre un passager' : 'Pas encore prêt'}</Text>
-            </Pressable>
-            <TextInput value={notes} onChangeText={setNotes} placeholder="Notes rapides / instruction de pickup" placeholderTextColor="#94a3b8" multiline style={screenStyles.textArea} />
-            <View style={screenStyles.ctaRow}>
-              <PrimaryButton label={saving ? 'Enregistrement...' : 'Sauver ma disponibilité'} onPress={submit} icon={saving ? <ActivityIndicator size="small" color="#fff" /> : <Feather name="check" size={16} color="#fff" />} />
+        <Card title="Mon statut" subtitle="Uniquement pour les chauffeurs enregistrés" wide>
+          {!registeredDriver ? (
+            <EmptyState icon="person-outline" title="Pas encore chauffeur" subtitle="Va dans Profil pour créer ou modifier ton enregistrement chauffeur." />
+          ) : (
+            <View style={screenStyles.rowGap}>
+              {loadingProfile ? <EmptyState icon="time-outline" title="Chargement du profil chauffeur" subtitle="Lecture de ton profil en cours." /> : null}
+              <View style={screenStyles.driverSummary}>
+                <Text style={screenStyles.driverSummaryTitle}>{myProfile?.displayName || 'Profil chauffeur'}</Text>
+                <Text style={screenStyles.driverSummaryBody}>{myProfile?.driverName} · {myProfile?.vehicleLabel}</Text>
+                <Text style={screenStyles.driverSummaryBody}>{myProfile?.vehiclePlate} · {myProfile?.city}, {myProfile?.country}</Text>
+              </View>
+              <Pressable
+                onPress={() => setAvailable((value) => !value)}
+                style={[screenStyles.availabilityButton, available ? screenStyles.availabilityButtonOn : screenStyles.availabilityButtonOff]}
+              >
+                <Feather name={available ? 'check-circle' : 'slash'} size={22} color={available ? '#172033' : '#f8fafc'} />
+                <View style={screenStyles.availabilityButtonTextBlock}>
+                  <Text style={[screenStyles.availabilityButtonTitle, !available && screenStyles.availabilityButtonTitleOff]}>
+                    {available ? 'Disponible' : 'Pas disponible'}
+                  </Text>
+                  <Text style={[screenStyles.availabilityButtonSubtitle, !available && screenStyles.availabilityButtonSubtitleOff]}>
+                    Tap pour basculer ton statut immédiatement.
+                  </Text>
+                </View>
+              </Pressable>
+              <PrimaryButton
+                label={saving ? 'Enregistrement...' : 'Sauver mon statut'}
+                onPress={submit}
+                icon={saving ? <ActivityIndicator size="small" color="#fff" /> : <Feather name="check" size={16} color="#fff" />}
+              />
               <SecondaryButton label="Rafraîchir" onPress={onReload} icon={<Feather name="refresh-cw" size={16} color="#172033" />} />
+              {message ? <Text style={screenStyles.success}>{message}</Text> : null}
+              {error ? <Text style={screenStyles.error}>{error}</Text> : null}
+              {loadedAvailability ? <Text style={uiStyles.helperText}>Dernier état: {loadedAvailability.available ? 'Disponible' : 'Pas disponible'}</Text> : null}
             </View>
-            {message ? <Text style={screenStyles.success}>{message}</Text> : null}
-            {error ? <Text style={screenStyles.error}>{error}</Text> : null}
-            {loadedAvailability ? <Text style={uiStyles.helperText}>Dernier état: {loadedAvailability.status} · {loadedAvailability.available ? 'Visible' : 'Masqué'} · {loadedAvailability.ready ? 'Prêt' : 'Pas prêt'}</Text> : null}
+          )}
+        </Card>
+
+        <Card title="Résumé disponibilité" subtitle="Comptage live par mode" wide>
+          <View style={screenStyles.summaryRow}>
+            <SummaryPill label="VTC" value={vtcCount} active={vtcCount > 0} />
+            <SummaryPill label="Taxi" value={availableProviders.filter((provider) => provider.providerType.toLowerCase().includes('taxi')).length} active={availableProviders.some((provider) => provider.providerType.toLowerCase().includes('taxi'))} />
+            <SummaryPill label="Bus" value={availableProviders.filter((provider) => provider.providerType.toLowerCase().includes('bus')).length} active={availableProviders.some((provider) => provider.providerType.toLowerCase().includes('bus'))} />
+            <SummaryPill label="Train" value={availableProviders.filter((provider) => provider.providerType.toLowerCase().includes('train')).length} active={availableProviders.some((provider) => provider.providerType.toLowerCase().includes('train'))} />
           </View>
+          <Text style={uiStyles.helperText}>
+            Quand tu passes à disponible, la liste live dans Reise se met à jour et les fans voient ton mode apparaître immédiatement.
+          </Text>
         </Card>
 
         <Card title="Chauffeurs visibles" subtitle="Fans du match" wide>
-          {visibleProviders.length ? (
-            visibleProviders.map((provider: TransportProviderView) => (
-              <View key={provider.id} style={screenStyles.providerCard}>
-                <View style={screenStyles.providerTop}>
-                  <View style={screenStyles.providerBadge}>
-                    <Feather name="truck" size={14} color="#172033" />
-                    <Text style={screenStyles.providerBadgeText}>{provider.providerType}</Text>
+          {selectedMatch ? (
+            availableProviders.length ? (
+              <View style={screenStyles.listGap}>
+                {availableProviders.map((provider: TransportProviderView) => (
+                  <View key={provider.id} style={screenStyles.providerCard}>
+                    <View style={screenStyles.providerTop}>
+                      <View style={screenStyles.providerBadge}>
+                        <Feather name="truck" size={14} color="#172033" />
+                        <Text style={screenStyles.providerBadgeText}>{modeLabel(locale, provider.providerType)}</Text>
+                      </View>
+                      <Text style={screenStyles.providerStatus}>{provider.active && provider.ready ? 'Disponible' : 'Pas disponible'}</Text>
+                    </View>
+                    <Text style={screenStyles.providerTitle}>{provider.displayName}</Text>
+                    <Text style={screenStyles.providerBody}>{provider.driverName} · {provider.vehicleLabel}</Text>
+                    <Text style={screenStyles.providerBody}>{provider.city}, {provider.country}</Text>
+                    {provider.publicNotes ? <Text style={screenStyles.providerNotes}>{provider.publicNotes}</Text> : null}
                   </View>
-                  <Text style={screenStyles.providerStatus}>{provider.active ? 'Visible' : 'Paused'}</Text>
-                </View>
-                <Text style={screenStyles.providerTitle}>{provider.displayName}</Text>
-                <Text style={screenStyles.providerBody}>{provider.driverName} · {provider.vehicleLabel} · {provider.vehiclePlate}</Text>
-                <Text style={screenStyles.providerBody}>{provider.city} · {provider.country} · {provider.zone}</Text>
-                {provider.publicNotes ? <Text style={screenStyles.providerNotes}>{provider.publicNotes}</Text> : null}
+                ))}
               </View>
-            ))
+            ) : (
+              <EmptyState icon="car-outline" title="Aucun chauffeur visible" subtitle="Les chauffeurs disponibles pour ce match apparaîtront ici." />
+            )
           ) : (
-            <EmptyState icon="car-outline" title="Aucun chauffeur visible" subtitle="Les chauffeurs disponibles pour ce match apparaîtront ici." />
+            <EmptyState icon="calendar-outline" title="Choisis un match" subtitle="La liste des chauffeurs disponibles dépend du match sélectionné." />
           )}
         </Card>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function SummaryPill({ label, value, active }: { label: string; value: number; active: boolean }) {
+  return (
+    <View style={[screenStyles.summaryPill, active && screenStyles.summaryPillActive]}>
+      <Text style={screenStyles.summaryLabel}>{label}</Text>
+      <Text style={screenStyles.summaryValue}>{value}</Text>
+    </View>
   );
 }
 
@@ -167,15 +239,21 @@ const screenStyles = StyleSheet.create({
   title: { color: '#fff', fontSize: 30, lineHeight: 36, fontFamily: 'Poppins-Bold' },
   subtitle: { color: '#d4def0', fontSize: 15, lineHeight: 22, fontFamily: 'Poppins-Regular' },
   rowGap: { gap: 12 },
-  textArea: { minHeight: 108, backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#dce5f5', paddingHorizontal: 14, paddingVertical: 12, color: '#172033', fontFamily: 'Poppins-Regular', textAlignVertical: 'top' },
-  toggle: { borderRadius: 18, paddingHorizontal: 14, paddingVertical: 14, backgroundColor: '#fff', borderWidth: 1, borderColor: '#dce5f5', alignItems: 'center' },
-  toggleActive: { backgroundColor: '#e8f7bf', borderColor: '#c8f36a' },
-  toggleText: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
-  toggleTextActive: { color: '#172033' },
-  ctaRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
+  listGap: { gap: 12 },
+  driverSummary: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#dce5f5', gap: 4 },
+  driverSummaryTitle: { color: '#172033', fontSize: 16, fontFamily: 'Poppins-Bold' },
+  driverSummaryBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
+  availabilityButton: { borderRadius: 24, paddingVertical: 18, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1 },
+  availabilityButtonOn: { backgroundColor: '#c8f36a', borderColor: '#b9e840' },
+  availabilityButtonOff: { backgroundColor: '#172033', borderColor: '#101827' },
+  availabilityButtonTextBlock: { flex: 1, gap: 4 },
+  availabilityButtonTitle: { color: '#172033', fontFamily: 'Poppins-Bold', fontSize: 19 },
+  availabilityButtonTitleOff: { color: '#f8fafc' },
+  availabilityButtonSubtitle: { color: '#172033', fontFamily: 'Poppins-Medium' },
+  availabilityButtonSubtitleOff: { color: '#d4def0' },
   success: { color: '#14532d', fontFamily: 'Poppins-Medium' },
   error: { color: '#b42318', fontFamily: 'Poppins-Medium' },
-  providerCard: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#dce5f5', gap: 6 },
+  providerCard: { padding: 14, borderRadius: 18, borderWidth: 1, borderColor: '#e6eaf0', backgroundColor: '#fff', gap: 8 },
   providerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   providerBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#e8f7bf', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
   providerBadgeText: { color: '#172033', fontFamily: 'Poppins-Bold', fontSize: 12 },
@@ -183,4 +261,9 @@ const screenStyles = StyleSheet.create({
   providerTitle: { color: '#172033', fontFamily: 'Poppins-Bold', fontSize: 16 },
   providerBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
   providerNotes: { color: '#172033', fontFamily: 'Poppins-Medium' },
+  summaryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  summaryPill: { minWidth: 78, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 16, backgroundColor: '#fff', borderWidth: 1, borderColor: '#dce5f5' },
+  summaryPillActive: { backgroundColor: '#edf8c1', borderColor: '#c8f36a' },
+  summaryLabel: { color: '#60708b', fontSize: 12, fontFamily: 'Poppins-SemiBold' },
+  summaryValue: { color: '#172033', fontSize: 18, fontFamily: 'Poppins-Bold' },
 });

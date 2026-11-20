@@ -206,6 +206,7 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
 
   const countryValue = draft.country;
   const cityValue = draft.city;
+  const hasDriverProfile = Boolean(draft.displayName || draft.driverName || draft.vehiclePlate || draft.city || draft.country || draft.permitUrl || draft.driverLicenseUrl || draft.registrationUrl || draft.vehicleImageUrl);
 
   const update = (key: keyof Draft, value: string | boolean) => {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -335,16 +336,28 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
         <Card title={copy.profileTitle} subtitle={copy.profileSubtitle} wide>
           <View style={screenStyles.rowGap}>
             <Text style={styles.muted}>{copy.profileBody}</Text>
+            {hasDriverProfile ? (
+              <View style={screenStyles.driverPreview}>
+                <Text style={screenStyles.previewTitle}>{draft.displayName || t(locale, 'profile.driverFormTitle')}</Text>
+                <Text style={screenStyles.previewBody}>{draft.driverName} · {draft.providerType}</Text>
+                <Text style={screenStyles.previewBody}>{draft.vehicleLabel} · {draft.vehiclePlate}</Text>
+                <Text style={screenStyles.previewBody}>{draft.city}, {draft.country}</Text>
+              </View>
+            ) : null}
             <Pressable
               onPress={() => setShowDriverForm((value) => !value)}
               style={showDriverForm ? screenStyles.primaryToggleActive : screenStyles.primaryToggle}
             >
-              <Feather name="user-plus" size={16} color={showDriverForm ? '#172033' : '#2457e6'} />
+              <Feather name={hasDriverProfile ? 'edit-3' : 'user-plus'} size={16} color={showDriverForm ? '#172033' : '#2457e6'} />
               <Text style={showDriverForm ? screenStyles.primaryToggleTextActive : screenStyles.primaryToggleText}>
-                {showDriverForm ? t(locale, 'profile.closeDriverForm') : t(locale, 'profile.registerDriver')}
+                {showDriverForm
+                  ? t(locale, 'profile.closeDriverForm')
+                  : hasDriverProfile
+                    ? t(locale, 'profile.editDriverProfile')
+                    : t(locale, 'profile.registerDriver')}
               </Text>
             </Pressable>
-            <Text style={styles.helperText}>{showDriverForm ? t(locale, 'profile.driverFormHint') : t(locale, 'profile.driverFormPrompt')}</Text>
+            <Text style={styles.helperText}>{showDriverForm ? t(locale, 'profile.driverFormHint') : hasDriverProfile ? t(locale, 'profile.driverFormEditPrompt') : t(locale, 'profile.driverFormPrompt')}</Text>
           </View>
         </Card>
 
@@ -490,6 +503,9 @@ function ActionRow({ label, onPress, accent }: { label: string; onPress: () => v
 
 const screenStyles = StyleSheet.create({
   rowGap: { gap: 12 },
+  driverPreview: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#dce5f5', gap: 4 },
+  previewTitle: { color: '#172033', fontSize: 16, fontFamily: 'Poppins-Bold' },
+  previewBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
   primaryToggle: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -177,7 +177,7 @@ export async function loadTransportAvailability(matchId: string): Promise<Transp
   return requestJson<TransportAvailabilityView>(`/api/v1/transport-profiles/me/availability?matchId=${encodeURIComponent(matchId)}`);
 }
 
-export async function saveTransportAvailability(matchId: string, payload: { available: boolean; ready: boolean; status: string; notes: string }): Promise<TransportAvailabilityView> {
+export async function saveTransportAvailability(matchId: string, payload: { available: boolean }): Promise<TransportAvailabilityView> {
   return postJson<TransportAvailabilityView>(`/api/v1/transport-profiles/me/availability?matchId=${encodeURIComponent(matchId)}`, payload);
 }
 

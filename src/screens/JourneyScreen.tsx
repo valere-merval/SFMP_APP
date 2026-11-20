@@ -77,14 +77,15 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
   const match = selectedMatch;
   const providers = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
   const modeCards = useMemo(() => getModeCards(locale), [locale]);
+  const liveProviders = useMemo(() => providers.filter((provider) => provider.active && provider.ready), [providers]);
   const modeSummary = useMemo(() => {
     const counts = new Map<ModeKey, number>();
-    for (const provider of providers) {
+    for (const provider of liveProviders) {
       const mode = modeFromProvider(provider.providerType);
       counts.set(mode, (counts.get(mode) ?? 0) + 1);
     }
     return counts;
-  }, [providers]);
+  }, [liveProviders]);
 
   const availableModes = useMemo(() => {
     const modes = modeCards.filter((item) => (modeSummary.get(item.key) ?? 0) > 0);
@@ -99,8 +100,8 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
 
   const filteredProviders = useMemo(() => {
     if (!match) return [];
-    return providers.filter((provider) => provider.matchId === match.id && modeFromProvider(provider.providerType) === activeMode);
-  }, [activeMode, match, providers]);
+    return liveProviders.filter((provider) => provider.matchId === match.id && modeFromProvider(provider.providerType) === activeMode);
+  }, [activeMode, match, liveProviders]);
 
 
   useEffect(() => {
@@ -126,6 +127,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
   const countdown = match ? formatCountdown(match.date, match.time) : 'LIVE';
   const driverCoordinate = reservedProvider ? driverOffset(modeFromProvider(reservedProvider.providerType), trackingProgress) : null;
   const routeLine = driverCoordinate ? [driverCoordinate, pickupCoordinate] : [];
+  const journeyLine = reservedProvider ? [pickupCoordinate, venueCoordinate] : [];
 
   const reserveNow = async (provider: TransportProviderView) => {
     setActiveProviderId(provider.id);
@@ -166,6 +168,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
                   <>
                     <Marker coordinate={driverCoordinate} title={reservedProvider?.displayName ?? 'Driver'} description="Live driver position" pinColor="#c8f36a" />
                     <Polyline coordinates={routeLine} strokeColor="#c8f36a" strokeWidth={4} />
+                    {reservedProvider ? <Polyline coordinates={journeyLine} strokeColor="#2457e6" strokeWidth={4} lineDashPattern={[8, 6]} /> : null}
                   </>
                 ) : (
                   <Marker coordinate={pickupCoordinate} title="Your pickup point" description="Current pickup area" pinColor="#2457e6" />
@@ -279,6 +282,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
                 <Marker coordinate={pickupCoordinate} title="Your pickup point" description="Pickup location" pinColor="#2457e6" />
                 {driverCoordinate ? <Marker coordinate={driverCoordinate} title={reservedProvider.displayName} description="Driver live position" pinColor="#c8f36a" /> : null}
                 {driverCoordinate ? <Polyline coordinates={routeLine} strokeColor="#c8f36a" strokeWidth={4} /> : null}
+                {reservedProvider ? <Polyline coordinates={journeyLine} strokeColor="#2457e6" strokeWidth={4} lineDashPattern={[8, 6]} /> : null}
               </MapView>
               <View style={styles.mapOverlay}>
                 <Text style={styles.cardTitle}>{reservedProvider.displayName}</Text>
