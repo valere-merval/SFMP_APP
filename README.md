@@ -1,6 +1,20 @@
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
-# Getting Started
+## Environment
+
+Copy `.env.example` to `.env.local` and set your Google Maps keys before building:
+
+```sh
+cp .env.example .env.local
+```
+
+Required values:
+
+- `API_BASE_URL`
+- `MAPS_API_KEY` for Android
+- `GOOGLE_MAPS_API_KEY` for iOS
+
+## Getting Started
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
