@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { postJson } from '../api';
+import { postJson, listPublicTransportProfiles } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
@@ -75,7 +75,8 @@ export function HubScreen({
   const [ticketError, setTicketError] = useState<string | null>(null);
   const [ticketLoading, setTicketLoading] = useState(false);
   const [countdown, setCountdown] = useState(() => (hero ? formatCountdown(hero.date, hero.time) : 'LIVE'));
-  const transportProviders = data?.transportProviders ?? [];
+  const baseTransportProviders = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
+  const [liveTransportProviders, setLiveTransportProviders] = useState(baseTransportProviders);
 
   useEffect(() => {
     if (!hero) {
@@ -88,6 +89,23 @@ export function HubScreen({
     const timer = setInterval(refresh, 1000);
     return () => clearInterval(timer);
   }, [hero, hero?.date, hero?.time]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const live = await listPublicTransportProfiles(hero?.id);
+        if (!mounted) return;
+        setLiveTransportProviders(live);
+      } catch {
+        if (!mounted) return;
+        setLiveTransportProviders(baseTransportProviders);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [hero?.id, baseTransportProviders]);
 
   const topAlert = useMemo(() => {
     const corridor = data?.traffic?.[0];
@@ -242,9 +260,9 @@ export function HubScreen({
         </Card>
 
         <Card title="Registered operators" subtitle="Taxi and VTC" wide>
-          {transportProviders.length ? (
+          {liveTransportProviders.length ? (
             <View style={styles.grid2}>
-              {transportProviders.map((provider) => (
+              {liveTransportProviders.map((provider) => (
                 <MiniCard
                   key={provider.id}
                   title={provider.displayName}

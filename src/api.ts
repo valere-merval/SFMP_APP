@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import type { TransportProviderView } from './types';
 
 const API_BASE =
   Platform.select({
@@ -209,9 +210,9 @@ export async function saveTransportAvailability(matchId: string, payload: { avai
   return postJson<TransportAvailabilityView>(`/api/v1/transport-profiles/me/availability?matchId=${encodeURIComponent(matchId)}`, payload);
 }
 
-export async function listPublicTransportProfiles(matchId?: string): Promise<TransportProfileView[]> {
+export async function listPublicTransportProfiles(matchId?: string): Promise<TransportProviderView[]> {
   const suffix = matchId ? `?matchId=${encodeURIComponent(matchId)}` : '';
-  return requestJson<TransportProfileView[]>(`/api/v1/transport-profiles/public${suffix}`);
+  return requestJson<TransportProviderView[]>(`/api/v1/transport-profiles/public${suffix}`);
 }
 
 export async function uploadImageBase64(file: { name: string; type: string; base64: string }): Promise<{ key: string; url: string }> {

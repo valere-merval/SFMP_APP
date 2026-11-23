@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { loadTransportAvailability, loadTransportProfile, saveTransportAvailability, type TransportAvailabilityView, type TransportProfileView } from '../api';
+import { loadTransportAvailability, loadTransportProfile, saveTransportAvailability, listPublicTransportProfiles, type TransportAvailabilityView, type TransportProfileView } from '../api';
 import { type LiveData, type TransportProviderView } from '../types';
 import { Card, EmptyState, PrimaryButton, SecondaryButton, styles as uiStyles } from '../ui';
 import { t, type Locale } from '../i18n';
@@ -28,7 +28,9 @@ export function TransportScreen({
   onReload: () => Promise<void> | void;
 }) {
   const matches = useMemo(() => data?.matches ?? [], [data?.matches]);
-  const providers = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
+  const baseProviders = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
+  const [publicProviders, setPublicProviders] = useState<TransportProviderView[]>([]);
+  const [providersLoading, setProvidersLoading] = useState(false);
   const [matchId, setMatchId] = useState('');
   const [available, setAvailable] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,6 +42,16 @@ export function TransportScreen({
 
   const registeredDriver = !!myProfile?.id;
   const selectedMatch = useMemo(() => matches.find((item) => item.id === matchId) ?? null, [matchId, matches]);
+  const providers = useMemo(() => {
+    const merged = [...baseProviders, ...publicProviders];
+    const seen = new Set<string>();
+    return merged.filter((provider) => {
+      const key = `${provider.id}:${provider.matchId}:${provider.providerType}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [baseProviders, publicProviders]);
   const visibleProviders = useMemo(
     () => providers.filter((provider) => !matchId || provider.matchId === matchId),
     [matchId, providers],
@@ -86,6 +98,26 @@ export function TransportScreen({
         if (!mounted) return;
         setLoadedAvailability(null);
         setAvailable(true);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [matchId]);
+
+  useEffect(() => {
+    let mounted = true;
+    setProvidersLoading(true);
+    (async () => {
+      try {
+        const live = await listPublicTransportProfiles(matchId || undefined);
+        if (!mounted) return;
+        setPublicProviders(live);
+      } catch {
+        if (!mounted) return;
+        setPublicProviders([]);
+      } finally {
+        if (mounted) setProvidersLoading(false);
       }
     })();
     return () => {
@@ -195,7 +227,9 @@ export function TransportScreen({
         </Card>
 
         <Card title="Chauffeurs visibles" subtitle="Fans du match" wide>
-          {selectedMatch ? (
+          {providersLoading ? (
+            <EmptyState icon="loader-outline" title="Chargement des chauffeurs" subtitle="Lecture de la disponibilité live pour ce match." />
+          ) : selectedMatch ? (
             availableProviders.length ? (
               <View style={screenStyles.listGap}>
                 {availableProviders.map((provider: TransportProviderView) => (

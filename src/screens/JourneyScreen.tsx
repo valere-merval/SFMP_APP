@@ -5,6 +5,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getScreenCopy } from '../screenCopy';
+import { listPublicTransportProfiles } from '../api';
 import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import type { LiveData, MatchCard, TransportProviderView } from '../types';
@@ -75,8 +76,20 @@ function driverOffset(mode: ModeKey, progress: number) {
 export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }: { data: LiveData | null; loading: boolean; locale: Locale; selectedMatch: MatchCard | null }) {
   const copy = getScreenCopy(locale).journey;
   const match = selectedMatch;
-  const providers = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
+  const fallbackProviders = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
+  const [publicProviders, setPublicProviders] = useState<TransportProviderView[]>([]);
+  const [providersLoading, setProvidersLoading] = useState(false);
   const modeCards = useMemo(() => getModeCards(locale), [locale]);
+  const providers = useMemo(() => {
+    const merged = [...fallbackProviders, ...publicProviders];
+    const seen = new Set<string>();
+    return merged.filter((provider) => {
+      const key = `${provider.id}:${provider.matchId}:${provider.providerType}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [fallbackProviders, publicProviders]);
   const liveProviders = useMemo(() => providers.filter((provider) => provider.ready), [providers]);
   const modeSummary = useMemo(() => {
     const counts = new Map<ModeKey, number>();
@@ -97,6 +110,33 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
   const [reservedProvider, setReservedProvider] = useState<TransportProviderView | null>(null);
   const [trackingProgress, setTrackingProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!match) {
+      setPublicProviders([]);
+      setProvidersLoading(false);
+      return () => {
+        mounted = false;
+      };
+    }
+    setProvidersLoading(true);
+    (async () => {
+      try {
+        const live = await listPublicTransportProfiles(match.id);
+        if (!mounted) return;
+        setPublicProviders(live);
+      } catch {
+        if (!mounted) return;
+        setPublicProviders([]);
+      } finally {
+        if (mounted) setProvidersLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [match]);
 
   const filteredProviders = useMemo(() => {
     if (!match) return [];
@@ -219,7 +259,9 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
         </Card>
 
         <Card title={t(locale, 'common.availableChauffeurs')} subtitle={t(locale, 'common.instantBooking')} wide>
-          {match ? (
+          {providersLoading ? (
+            <EmptyState icon="loader-outline" title={t(locale, 'common.loading')} subtitle={t(locale, 'common.loading')} />
+          ) : match ? (
             filteredProviders.length ? (
               <View style={styles.cardBody}>
                 {filteredProviders.map((provider) => {
