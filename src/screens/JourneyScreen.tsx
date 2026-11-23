@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listDriverRideRequests, listPublicTransportProfiles, loadTransportAvailability, refuseRideRequest, markRideRequestArrived, startRideRequestTrip, completeRideRequestTrip } from '../api';
+import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listAssignedDriverRideRequests, listDriverRideRequests, listPassengerRideRequests, listPublicTransportProfiles, loadTransportAvailability, refuseRideRequest, markRideRequestArrived, startRideRequestTrip, completeRideRequestTrip } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { googleMapsDirectionsUrl, openGoogleMapsDirections } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
@@ -79,7 +79,8 @@ export function JourneyScreen({
   const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
   const [driverAvailability, setDriverAvailability] = useState<TransportAvailabilityView | null>(null);
   const currentSessionUser = getSessionUser();
-  const currentDriverEmail = currentSessionUser?.email ?? '';
+  const currentSessionEmail = currentSessionUser?.email ?? '';
+  const currentDriverEmail = currentSessionEmail;
   const isDriver = driverAvailability?.available === true;
 
   const destinationOptions = useMemo(() => (match ? buildDestinationOptions(match) : []), [match]);
@@ -176,9 +177,14 @@ export function JourneyScreen({
       setDriverRequestsLoading(true);
       try {
         const providerType = modeCards.find((mode) => mode.key === activeMode)?.label ?? 'VTC';
-        const live = await listDriverRideRequests(match.id, providerType);
+        const [pending, assigned] = await Promise.all([
+          listDriverRideRequests(match.id, providerType),
+          currentSessionEmail ? listAssignedDriverRideRequests(currentSessionEmail) : Promise.resolve([]),
+        ]);
         if (!cancelled) {
-          setDriverRequests(live);
+          const live = [...pending, ...assigned.filter((request) => request.matchId === match.id)];
+          const deduped = live.filter((request, index, list) => list.findIndex((item) => item.id === request.id) === index);
+          setDriverRequests(deduped);
         }
       } catch {
         if (!cancelled) {
@@ -198,7 +204,39 @@ export function JourneyScreen({
       cancelled = true;
       clearInterval(timer);
     };
-  }, [activeMode, isDriver, match]);
+  }, [activeMode, isDriver, match, currentSessionEmail]);
+
+  useEffect(() => {
+    if (!currentSessionEmail) return;
+    let cancelled = false;
+    const refresh = async () => {
+      try {
+        const live = await listPassengerRideRequests(currentSessionEmail);
+        if (cancelled) return;
+        const activeRequest = live.find((request) => request.status !== 'COMPLETED' && request.status !== 'REFUSED') ?? live[0] ?? null;
+        if (activeRequest) {
+          setRideRequest(activeRequest);
+          if (activeRequest.status === 'ACCEPTED') {
+            setStatusMessage(`${activeRequest.driverDisplayName ?? 'Driver'} accepted your request and is on the way.`);
+          } else if (activeRequest.status === 'ARRIVED_AT_PICKUP') {
+            setStatusMessage(`${activeRequest.driverDisplayName ?? 'Driver'} arrived at the pickup point.`);
+          } else if (activeRequest.status === 'IN_PROGRESS') {
+            setStatusMessage(`${activeRequest.driverDisplayName ?? 'Driver'} is driving you to ${activeRequest.destinationLabel}.`);
+          }
+        }
+      } catch {
+        if (cancelled) return;
+      }
+    };
+    void refresh();
+    const timer = setInterval(() => {
+      void refresh();
+    }, 7000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [currentSessionEmail]);
 
   useEffect(() => {
     if (!rideRequest) return;
@@ -340,7 +378,12 @@ export function JourneyScreen({
                             <PrimaryButton
                               label={t(locale, 'common.accept')}
                               onPress={() => {
-                                void acceptRideRequest(request.id);
+                                void acceptRideRequest(request.id).then((accepted) => {
+                                  setDriverRequests((current) => current.map((item) => (item.id === accepted.id ? accepted : item)));
+                                  setStatusMessage(
+                                    `${accepted.passengerName} is waiting${accepted.driverDistanceKm != null ? ` · ${accepted.driverDistanceKm} km away` : ''}${accepted.driverEtaMinutes != null ? ` · ETA ${accepted.driverEtaMinutes} min` : ''}`,
+                                  );
+                                });
                               }}
                               icon={<Ionicons name="checkmark" size={16} color="#172033" />}
                             />

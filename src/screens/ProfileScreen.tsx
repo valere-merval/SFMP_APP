@@ -4,7 +4,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { pick, errorCodes, isErrorWithCode, types } from '@react-native-documents/picker';
 import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
-import { loadTransportProfile, saveTransportProfile, uploadDocument, uploadImageBase64, type CurrentUser, type TransportProfileView, getSessionUser, deleteUserProfile, loadUserProfile, saveUserProfile } from '../api';
+import { loadTransportProfile, saveTransportProfile, uploadDocument, type CurrentUser, type TransportProfileView, getSessionUser, deleteUserProfile, loadUserProfile, saveUserProfile } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { type LiveData } from '../types';
 import { Card, EmptyState, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
@@ -345,17 +345,17 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
       const response = await launchImageLibrary({
         mediaType: 'photo',
         selectionLimit: 1,
-        includeBase64: true,
+        includeBase64: false,
         presentationStyle: 'fullScreen',
       });
       const file = response.assets?.[0];
-      if (response.didCancel || !file?.base64) {
+      if (response.didCancel || !file?.uri) {
         return;
       }
-      const uploaded = await uploadImageBase64({
+      const uploaded = await uploadDocument({
+        uri: file.uri,
         name: file.fileName ?? 'profile-photo.jpg',
         type: file.type ?? 'image/jpeg',
-        base64: file.base64,
       });
       setUserDraft((current) => ({ ...current, photoUrl: uploaded.url }));
       setUserMessage(t(locale, 'profile.photoUploaded'));

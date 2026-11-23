@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listDriverRideRequests, listPublicTransportProfiles, loadTransportAvailability, postJson, refuseRideRequest } from '../api';
+import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listAssignedDriverRideRequests, listDriverRideRequests, listPassengerRideRequests, listPublicTransportProfiles, loadTransportAvailability, markRideRequestArrived, postJson, refuseRideRequest, startRideRequestTrip, completeRideRequestTrip } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
@@ -159,6 +159,35 @@ export function HubScreen({
   }, [rideRequestId, rideRequestStatus]);
 
   useEffect(() => {
+    const passengerEmail = getSessionUser()?.email ?? '';
+    if (!passengerEmail) return;
+
+    let mounted = true;
+    const refresh = async () => {
+      try {
+        const live = await listPassengerRideRequests(passengerEmail);
+        if (!mounted) return;
+        const activeRequest = live.find((request) => request.status !== 'COMPLETED' && request.status !== 'REFUSED') ?? live[0] ?? null;
+        if (activeRequest) {
+          setRideRequest(activeRequest);
+        }
+      } catch {
+        if (!mounted) return;
+      }
+    };
+
+    void refresh();
+    const timer = setInterval(() => {
+      void refresh();
+    }, 7000);
+
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!hero) {
       setDriverAvailability(null);
       return;
@@ -196,9 +225,14 @@ export function HubScreen({
     const refresh = async () => {
       try {
         const providerType = requestMode;
-        const live = await listDriverRideRequests(hero.id, providerType);
+        const [pending, assigned] = await Promise.all([
+          listDriverRideRequests(hero.id, providerType),
+          getSessionUser()?.email ? listAssignedDriverRideRequests(getSessionUser()!.email) : Promise.resolve([]),
+        ]);
         if (!mounted) return;
-        setDriverRequests(live);
+        const live = [...pending, ...assigned.filter((request) => request.matchId === hero.id)];
+        const deduped = live.filter((request, index, list) => list.findIndex((item) => item.id === request.id) === index);
+        setDriverRequests(deduped);
       } catch {
         if (!mounted) return;
         setDriverRequests([]);
@@ -388,21 +422,69 @@ export function HubScreen({
                         <Text style={localStyles.mapOverlayText}>{request.pickupLabel} → {request.destinationLabel}</Text>
                         <Text style={localStyles.mapOverlayText}>{request.status}</Text>
                       </View>
-                      <View style={styles.ctaRow}>
-                        <SecondaryButton
-                          label={t(locale, 'common.refuse')}
-                          onPress={() => {
-                            void refuseRideRequest(request.id);
-                          }}
-                        />
-                        <PrimaryButton
-                          label={t(locale, 'common.accept')}
-                          onPress={() => {
-                            void acceptRideRequest(request.id);
-                          }}
-                          icon={<Ionicons name="checkmark" size={16} color="#172033" />}
-                        />
-                      </View>
+                      {request.status === 'PENDING' ? (
+                        <View style={styles.ctaRow}>
+                          <SecondaryButton
+                            label={t(locale, 'common.refuse')}
+                            onPress={() => {
+                              void refuseRideRequest(request.id);
+                            }}
+                          />
+                          <PrimaryButton
+                            label={t(locale, 'common.accept')}
+                            onPress={() => {
+                              void acceptRideRequest(request.id).then((accepted) => {
+                                setDriverRequests((current) => current.map((item) => (item.id === accepted.id ? accepted : item)));
+                                setRequestStatus(
+                                  `${accepted.passengerName} is waiting${accepted.driverDistanceKm != null ? ` · ${accepted.driverDistanceKm} km away` : ''}${accepted.driverEtaMinutes != null ? ` · ETA ${accepted.driverEtaMinutes} min` : ''}`,
+                                );
+                              });
+                            }}
+                            icon={<Ionicons name="checkmark" size={16} color="#172033" />}
+                          />
+                        </View>
+                      ) : request.status === 'ACCEPTED' ? (
+                        <View style={styles.ctaRow}>
+                          <SecondaryButton
+                            label={t(locale, 'common.arrived')}
+                            onPress={() => {
+                              void markRideRequestArrived(request.id);
+                            }}
+                          />
+                          <PrimaryButton
+                            label={t(locale, 'common.startTrip')}
+                            onPress={() => {
+                              void startRideRequestTrip(request.id);
+                            }}
+                            icon={<Ionicons name="navigate-circle-outline" size={16} color="#172033" />}
+                          />
+                        </View>
+                      ) : request.status === 'ARRIVED_AT_PICKUP' ? (
+                        <View style={styles.ctaRow}>
+                          <SecondaryButton
+                            label={t(locale, 'common.passengerBoarded')}
+                            onPress={() => {
+                              void startRideRequestTrip(request.id);
+                            }}
+                          />
+                          <PrimaryButton
+                            label={t(locale, 'common.startTrip')}
+                            onPress={() => {
+                              void startRideRequestTrip(request.id);
+                            }}
+                            icon={<Ionicons name="navigate-circle-outline" size={16} color="#172033" />}
+                          />
+                        </View>
+                      ) : request.status === 'IN_PROGRESS' ? (
+                        <View style={styles.ctaRow}>
+                          <SecondaryButton
+                            label={t(locale, 'common.completeTrip')}
+                            onPress={() => {
+                              void completeRideRequestTrip(request.id);
+                            }}
+                          />
+                        </View>
+                      ) : null}
                     </View>
                   ))
                 ) : (
