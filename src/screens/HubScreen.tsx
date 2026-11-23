@@ -541,7 +541,13 @@ export function HubScreen({
                         rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null ? { latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude } : null,
                         rideRequest?.destinationLatitude != null && rideRequest?.destinationLongitude != null ? { latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude } : null,
                       );
-                      return route.length > 1 ? <Polyline coordinates={route} strokeColor={rideStatusStyle(rideRequest?.status).color} strokeWidth={5} geodesic lineCap="round" lineJoin="round" /> : null;
+                      const routeColor = rideStatusStyle(rideRequest?.status).color;
+                      return route.length > 1 ? (
+                        <>
+                          <Polyline coordinates={route} strokeColor="rgba(9, 17, 31, 0.42)" strokeWidth={9} geodesic lineCap="round" lineJoin="round" />
+                          <Polyline coordinates={route} strokeColor={routeColor} strokeWidth={5} geodesic lineCap="round" lineJoin="round" />
+                        </>
+                      ) : null;
                     })()}
                     {rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null ? (
                       <Marker
@@ -983,26 +989,33 @@ const localStyles = {
   },
   mapPanel: {
     marginTop: 4,
-    borderRadius: 22,
+    borderRadius: 24,
     overflow: 'hidden' as const,
     minHeight: 220,
-    backgroundColor: '#0a1120',
+    backgroundColor: '#09111f',
     borderWidth: 1,
     borderColor: '#23395c',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
   },
   mapView: {
     width: '100%',
-    height: 220,
+    height: 230,
   },
   mapOverlay: {
     position: 'absolute' as const,
     left: 12,
     right: 12,
     bottom: 12,
-    padding: 12,
-    borderRadius: 16,
-    backgroundColor: 'rgba(7, 12, 24, 0.82)',
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: 'rgba(7, 12, 24, 0.84)',
     gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   mapOverlayTitle: {
     color: '#fff',

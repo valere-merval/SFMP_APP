@@ -474,7 +474,12 @@ export function JourneyScreen({
                 showsCompass={false}
               >
                 <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={match.venue} description={`${match.city}, ${match.country}`} />
-                {activeDriverRoute.length > 1 ? <Polyline coordinates={activeDriverRoute} strokeColor="#1d3fb3" strokeWidth={5} geodesic lineCap="round" lineJoin="round" /> : null}
+                {activeDriverRoute.length > 1 ? (
+                  <>
+                    <Polyline coordinates={activeDriverRoute} strokeColor="rgba(9, 17, 31, 0.42)" strokeWidth={9} geodesic lineCap="round" lineJoin="round" />
+                    <Polyline coordinates={activeDriverRoute} strokeColor="#1d3fb3" strokeWidth={5} geodesic lineCap="round" lineJoin="round" />
+                  </>
+                ) : null}
                 {activeDriverRequest?.driverLatitude != null && activeDriverRequest?.driverLongitude != null ? (
                   <Marker coordinate={{ latitude: activeDriverRequest.driverLatitude, longitude: activeDriverRequest.driverLongitude }} title={activeDriverRequest.driverDisplayName || 'Driver'} pinColor="#1d3fb3" />
                 ) : null}
@@ -540,14 +545,24 @@ export function JourneyScreen({
             >
               <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={selectedDestination || match.venue} description={`${match.city}, ${match.country}`} />
               {passengerRoute.length > 1 ? (
-                <Polyline
-                  coordinates={passengerRoute}
-                  strokeColor={passengerStatusMeta.color}
-                  strokeWidth={5}
-                  geodesic
-                  lineCap="round"
-                  lineJoin="round"
-                />
+                <>
+                  <Polyline
+                    coordinates={passengerRoute}
+                    strokeColor="rgba(9, 17, 31, 0.42)"
+                    strokeWidth={9}
+                    geodesic
+                    lineCap="round"
+                    lineJoin="round"
+                  />
+                  <Polyline
+                    coordinates={passengerRoute}
+                    strokeColor={passengerStatusMeta.color}
+                    strokeWidth={5}
+                    geodesic
+                    lineCap="round"
+                    lineJoin="round"
+                  />
+                </>
               ) : null}
               {rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null ? (
                 <Marker
