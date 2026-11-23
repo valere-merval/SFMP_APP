@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { postJson, listPublicTransportProfiles, currentUser, createRideRequest } from '../api';
+import { createRideRequest, currentUser, getRideRequest, listPublicTransportProfiles, postJson } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
@@ -82,6 +83,7 @@ export function HubScreen({
   const [requestStatus, setRequestStatus] = useState<string | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [requestLoading, setRequestLoading] = useState(false);
+  const [rideRequest, setRideRequest] = useState<import('../types').RideRequestView | null>(null);
   const destinationOptions = useMemo(
     () => (hero ? [hero.venue, hero.gate, hero.sector].filter(Boolean) : []),
     [hero],
@@ -121,6 +123,36 @@ export function HubScreen({
     };
   }, [hero?.id, baseTransportProviders]);
 
+  const rideRequestId = rideRequest?.id;
+  const rideRequestStatus = rideRequest?.status;
+
+  useEffect(() => {
+    if (!rideRequestId || rideRequestStatus === 'REFUSED') {
+      return;
+    }
+
+    let mounted = true;
+    const refresh = async () => {
+      try {
+        const live = await getRideRequest(rideRequestId);
+        if (!mounted) return;
+        setRideRequest(live);
+      } catch {
+        if (!mounted) return;
+      }
+    };
+
+    void refresh();
+    const timer = setInterval(() => {
+      void refresh();
+    }, 5000);
+
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [rideRequestId, rideRequestStatus]);
+
   const topAlert = useMemo(() => {
     const corridor = data?.traffic?.[0];
     if (!corridor) return null;
@@ -154,7 +186,7 @@ export function HubScreen({
     setRequestStatus(null);
     try {
       const me = await currentUser();
-      await createRideRequest({
+      const response = await createRideRequest({
         matchId: hero.id,
         matchTitle: `${hero.homeTeam} vs ${hero.awayTeam}`,
         passengerEmail: me.email,
@@ -164,7 +196,8 @@ export function HubScreen({
         destinationLabel: requestDestination || hero.venue,
         note: `${requestMode} request started from Hub`,
       });
-      setRequestStatus(`${requestMode} request sent successfully.`);
+      setRideRequest(response);
+      setRequestStatus(t(locale, 'common.requestSent'));
     } catch (caught: any) {
       setRequestError(caught instanceof Error ? caught.message : 'Unable to send the request right now.');
     } finally {
@@ -299,6 +332,52 @@ export function HubScreen({
               />
               {requestStatus ? <Text style={localStyles.requestSuccess}>{requestStatus}</Text> : null}
               {requestError ? <Text style={localStyles.requestError}>{requestError}</Text> : null}
+
+              <View style={localStyles.mapPanel}>
+                <MapView
+                  style={localStyles.mapView}
+                  provider={PROVIDER_GOOGLE}
+                  initialRegion={{
+                    latitude: 40.4531,
+                    longitude: -3.6883,
+                    latitudeDelta: 0.03,
+                    longitudeDelta: 0.03,
+                  }}
+                  showsTraffic
+                  showsCompass={false}
+                >
+                  <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={hero.venue} description={`${hero.city}, ${hero.country}`} />
+                  {rideRequest?.pickupLatitude && rideRequest?.pickupLongitude ? (
+                    <Marker
+                      coordinate={{ latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude }}
+                      title={rideRequest.pickupLabel}
+                      pinColor="#c8f36a"
+                    />
+                  ) : null}
+                  {rideRequest?.destinationLatitude && rideRequest?.destinationLongitude ? (
+                    <Marker
+                      coordinate={{ latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude }}
+                      title={rideRequest.destinationLabel}
+                      pinColor="#4da3ff"
+                    />
+                  ) : null}
+                </MapView>
+                <View style={localStyles.mapOverlay}>
+                  <Text style={localStyles.mapOverlayTitle}>{rideRequest ? rideRequest.destinationLabel : (requestDestination || hero.venue)}</Text>
+                  <Text style={localStyles.mapOverlayText}>
+                    {rideRequest
+                      ? rideRequest.status === 'PENDING'
+                        ? t(locale, 'common.requestPending')
+                        : rideRequest.status === 'ACCEPTED'
+                          ? t(locale, 'common.requestAccepted')
+                          : t(locale, 'common.requestRefused')
+                      : t(locale, 'common.pickupTracking')}
+                  </Text>
+                  {rideRequest?.driverDisplayName ? (
+                    <Text style={localStyles.mapOverlayText}>{rideRequest.driverDisplayName}</Text>
+                  ) : null}
+                </View>
+              </View>
             </View>
           </View>
         ) : null}
@@ -687,5 +766,38 @@ const localStyles = {
     color: '#ff8a8a',
     fontFamily: 'Poppins-Medium',
     fontSize: 12,
+  },
+  mapPanel: {
+    marginTop: 4,
+    borderRadius: 22,
+    overflow: 'hidden' as const,
+    minHeight: 220,
+    backgroundColor: '#0a1120',
+    borderWidth: 1,
+    borderColor: '#23395c',
+  },
+  mapView: {
+    width: '100%',
+    height: 220,
+  },
+  mapOverlay: {
+    position: 'absolute' as const,
+    left: 12,
+    right: 12,
+    bottom: 12,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(7, 12, 24, 0.82)',
+    gap: 4,
+  },
+  mapOverlayTitle: {
+    color: '#fff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 13,
+  },
+  mapOverlayText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 11,
   },
 };
