@@ -65,13 +65,17 @@ export async function clearAuthToken() {
   await AsyncStorage.removeItem(USER_KEY);
 }
 
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+async function requestJson<T>(
+  path: string,
+  init?: RequestInit & { skipAuth?: boolean },
+): Promise<T> {
+  const { skipAuth, ...requestInit } = init ?? {};
   const response = await fetch(`${API_BASE}${path}`, {
-    ...init,
+    ...requestInit,
     headers: {
       'Content-Type': 'application/json',
-      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-      ...(init?.headers ?? {}),
+      ...(!skipAuth && authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      ...(requestInit.headers ?? {}),
     },
   });
 
@@ -141,6 +145,7 @@ export async function login(email: string, password: string): Promise<AuthPayloa
   const payload = await requestJson<AuthPayload | { success: boolean; data: AuthPayload }>('/api/v1/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
+    skipAuth: true,
   });
   const data = unwrap(payload);
   await setAuthToken(data.accessToken, data.user);
@@ -163,6 +168,7 @@ export async function registerAccount(payload: {
   const response = await requestJson<AuthPayload>('/api/v1/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
+    skipAuth: true,
   });
   await setAuthToken(response.accessToken, response.user);
   return response;
@@ -172,6 +178,7 @@ export async function resetPassword(payload: { email: string; newPassword: strin
   const response = await requestJson<AuthPayload>('/api/v1/auth/reset-password', {
     method: 'POST',
     body: JSON.stringify(payload),
+    skipAuth: true,
   });
   await setAuthToken(response.accessToken, response.user);
   return response;
