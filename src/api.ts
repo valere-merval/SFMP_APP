@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
-import type { TransportProviderView } from './types';
+import type { RideRequestView, TransportProviderView } from './types';
 
 const API_BASE =
   Platform.select({
@@ -215,6 +215,55 @@ export async function listPublicTransportProfiles(matchId?: string): Promise<Tra
   return requestJson<TransportProviderView[]>(`/api/v1/transport-profiles/public${suffix}`);
 }
 
+export async function createRideRequest(payload: {
+  matchId: string;
+  matchTitle: string;
+  passengerEmail: string;
+  passengerName: string;
+  providerType: string;
+  pickupLabel: string;
+  pickupLatitude?: number | null;
+  pickupLongitude?: number | null;
+  destinationLabel: string;
+  destinationLatitude?: number | null;
+  destinationLongitude?: number | null;
+  note?: string;
+}): Promise<RideRequestView> {
+  return postJson<RideRequestView>('/api/v1/ride-requests', payload);
+}
+
+export async function listPassengerRideRequests(passengerEmail: string): Promise<RideRequestView[]> {
+  return requestJson<RideRequestView[]>(`/api/v1/ride-requests/me?passengerEmail=${encodeURIComponent(passengerEmail)}`);
+}
+
+export async function getRideRequest(id: string): Promise<RideRequestView> {
+  return requestJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}`);
+}
+
+export async function listDriverRideRequests(matchId: string, providerType: string): Promise<RideRequestView[]> {
+  return requestJson<RideRequestView[]>(
+    `/api/v1/ride-requests/driver?matchId=${encodeURIComponent(matchId)}&providerType=${encodeURIComponent(providerType)}`,
+  );
+}
+
+export async function acceptRideRequest(id: string, payload: {
+  driverProfileId?: string;
+  driverDisplayName?: string;
+  driverPhone?: string;
+  responseNote?: string;
+}): Promise<RideRequestView> {
+  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/accept`, payload);
+}
+
+export async function refuseRideRequest(id: string, payload: {
+  driverProfileId?: string;
+  driverDisplayName?: string;
+  driverPhone?: string;
+  responseNote?: string;
+}): Promise<RideRequestView> {
+  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/refuse`, payload);
+}
+
 export async function uploadImageBase64(file: { name: string; type: string; base64: string }): Promise<{ key: string; url: string }> {
   return requestJson<{ key: string; url: string }>('/api/v1/uploads/images/base64', {
     method: 'POST',
@@ -230,8 +279,14 @@ export async function uploadDocument(file: { uri: string; name: string; type: st
     type: file.type,
   } as any);
 
+  const headers: Record<string, string> = {};
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
   const response = await fetch(`${API_BASE}/api/v1/uploads/images`, {
     method: 'POST',
+    headers,
     body: formData,
   });
 

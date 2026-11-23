@@ -227,6 +227,29 @@ export type TransportProviderView = {
   publicNotes: string;
 };
 
+export type RideRequestView = {
+  id: string;
+  matchId: string;
+  matchTitle: string;
+  passengerEmail: string;
+  passengerName: string;
+  providerType: string;
+  pickupLabel: string;
+  pickupLatitude?: number | null;
+  pickupLongitude?: number | null;
+  destinationLabel: string;
+  destinationLatitude?: number | null;
+  destinationLongitude?: number | null;
+  status: 'PENDING' | 'ACCEPTED' | 'REFUSED';
+  driverProfileId?: string | null;
+  driverDisplayName?: string | null;
+  driverPhone?: string | null;
+  responseNote?: string | null;
+  note?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 export type LiveData = {
   events: EventCard[];
   eventCatalogs: EventCatalogCard[];

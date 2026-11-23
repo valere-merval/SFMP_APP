@@ -92,7 +92,7 @@ export function HubScreen({
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
+    const refresh = async () => {
       try {
         const live = await listPublicTransportProfiles(hero?.id);
         if (!mounted) return;
@@ -101,9 +101,14 @@ export function HubScreen({
         if (!mounted) return;
         setLiveTransportProviders(baseTransportProviders);
       }
-    })();
+    };
+    void refresh();
+    const timer = setInterval(() => {
+      void refresh();
+    }, 8000);
     return () => {
       mounted = false;
+      clearInterval(timer);
     };
   }, [hero?.id, baseTransportProviders]);
 
