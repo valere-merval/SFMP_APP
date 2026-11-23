@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { WebView } from 'react-native-webview';
 import { createRideRequest, currentUser, getRideRequest, listPublicTransportProfiles } from '../api';
 import { getScreenCopy } from '../screenCopy';
-import { googleMapsDirectionsUrl, googleMapsEmbedUrl, openGoogleMapsDirections } from '../maps';
+import { googleMapsDirectionsUrl, openGoogleMapsDirections } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import type { LiveData, MatchCard, RideRequestView, TransportProviderView } from '../types';
 import { t, type Locale } from '../i18n';
@@ -207,7 +207,20 @@ export function JourneyScreen({
 
         <Card title={t(locale, 'common.liveMap')} subtitle={t(locale, 'common.pickupTracking')} wide>
           <View style={styles.mapPanel}>
-            <WebView source={{ uri: googleMapsEmbedUrl(mapQuery) }} style={styles.mapView} javaScriptEnabled domStorageEnabled />
+            <MapView
+              style={styles.mapView}
+              provider={PROVIDER_GOOGLE}
+              initialRegion={{
+                latitude: 40.4531,
+                longitude: -3.6883,
+                latitudeDelta: 0.03,
+                longitudeDelta: 0.03,
+              }}
+              showsCompass={false}
+              showsTraffic
+            >
+              <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={selectedDestination || match.venue} description={`${match.city}, ${match.country}`} />
+            </MapView>
             <View style={styles.mapOverlay}>
               <Text style={styles.cardTitle}>{selectedDestination || match.venue}</Text>
               <Text style={styles.muted}>{match.city}, {match.country}</Text>
