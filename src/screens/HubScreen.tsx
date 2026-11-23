@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, isDriverSession, listDriverRideRequests, listPublicTransportProfiles, postJson, refuseRideRequest } from '../api';
+import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, isDriverSession, listDriverRideRequests, listPublicTransportProfiles, postJson, refuseRideRequest } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
@@ -219,7 +219,8 @@ export function HubScreen({
     setRequestStatus(null);
     try {
       const me = getSessionUser();
-      if (!me?.email) {
+      const hasToken = Boolean(getAuthToken());
+      if (!me?.email && !hasToken) {
         setRequestError('Sign in again to send a live transport request.');
         setRequestLoading(false);
         return;
@@ -227,8 +228,8 @@ export function HubScreen({
       const response = await createRideRequest({
         matchId: hero.id,
         matchTitle: `${hero.homeTeam} vs ${hero.awayTeam}`,
-        passengerEmail: me.email,
-        passengerName: me.fullName,
+        passengerEmail: me?.email,
+        passengerName: me?.fullName,
         providerType: requestMode,
         pickupLabel: `${hero.city} · ${t(locale, 'common.liveMap')}`,
         destinationLabel: requestDestination || hero.venue,

@@ -237,8 +237,8 @@ export async function listPublicTransportProfiles(matchId?: string): Promise<Tra
 export async function createRideRequest(payload: {
   matchId: string;
   matchTitle: string;
-  passengerEmail: string;
-  passengerName: string;
+  passengerEmail?: string;
+  passengerName?: string;
   providerType: string;
   pickupLabel: string;
   pickupLatitude?: number | null;
@@ -251,8 +251,9 @@ export async function createRideRequest(payload: {
   return postJson<RideRequestView>('/api/v1/ride-requests', payload);
 }
 
-export async function listPassengerRideRequests(passengerEmail: string): Promise<RideRequestView[]> {
-  return requestJson<RideRequestView[]>(`/api/v1/ride-requests/me?passengerEmail=${encodeURIComponent(passengerEmail)}`);
+export async function listPassengerRideRequests(passengerEmail?: string): Promise<RideRequestView[]> {
+  const suffix = passengerEmail ? `?passengerEmail=${encodeURIComponent(passengerEmail)}` : '';
+  return requestJson<RideRequestView[]>(`/api/v1/ride-requests/me${suffix}`);
 }
 
 export async function getRideRequest(id: string): Promise<RideRequestView> {

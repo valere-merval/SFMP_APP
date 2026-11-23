@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, isDriverSession, listDriverRideRequests, listPublicTransportProfiles, refuseRideRequest } from '../api';
+import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, isDriverSession, listDriverRideRequests, listPublicTransportProfiles, refuseRideRequest } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { googleMapsDirectionsUrl, openGoogleMapsDirections } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
@@ -192,7 +192,8 @@ export function JourneyScreen({
     setRequestError(null);
     try {
       const me = getSessionUser();
-      if (!me?.email) {
+      const hasToken = Boolean(getAuthToken());
+      if (!me?.email && !hasToken) {
         setRequestError('Sign in again to send a live transport request.');
         setRequestLoading(false);
         return;
@@ -200,8 +201,8 @@ export function JourneyScreen({
       const request = await createRideRequest({
         matchId: match.id,
         matchTitle: `${match.homeTeam} vs ${match.awayTeam}`,
-        passengerEmail: me.email,
-        passengerName: me.fullName,
+        passengerEmail: me?.email,
+        passengerName: me?.fullName,
         providerType: provider.providerType,
         pickupLabel: `${match.city} live pickup`,
         destinationLabel: selectedDestination || match.venue,
