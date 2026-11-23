@@ -44,6 +44,11 @@ export function getSessionUser() {
   return sessionUser;
 }
 
+export function isDriverSession() {
+  const role = sessionUser?.role?.toLowerCase() ?? '';
+  return role.includes('driver') || role.includes('chauffeur') || role.includes('taxi');
+}
+
 export async function setAuthToken(token: string, user?: AuthPayload['user']) {
   authToken = token;
   await AsyncStorage.setItem(TOKEN_KEY, token);
@@ -260,23 +265,14 @@ export async function listDriverRideRequests(matchId: string, providerType: stri
   );
 }
 
-export async function acceptRideRequest(id: string, payload: {
-  driverProfileId?: string;
-  driverDisplayName?: string;
-  driverPhone?: string;
-  responseNote?: string;
-}): Promise<RideRequestView> {
-  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/accept`, payload);
+export async function acceptRideRequest(id: string, responseNote?: string): Promise<RideRequestView> {
+  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/accept`, { responseNote });
 }
 
-export async function refuseRideRequest(id: string, payload: {
-  driverProfileId?: string;
-  driverDisplayName?: string;
-  driverPhone?: string;
-  responseNote?: string;
-}): Promise<RideRequestView> {
-  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/refuse`, payload);
+export async function refuseRideRequest(id: string, responseNote?: string): Promise<RideRequestView> {
+  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/refuse`, { responseNote });
 }
+
 
 export async function uploadImageBase64(file: { name: string; type: string; base64: string }): Promise<{ key: string; url: string }> {
   return requestJson<{ key: string; url: string }>('/api/v1/uploads/images/base64', {

@@ -4,7 +4,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { pick, errorCodes, isErrorWithCode, types } from '@react-native-documents/picker';
 import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
-import { loadTransportProfile, saveTransportProfile, uploadDocument, uploadImageBase64, type CurrentUser, type TransportProfileView, currentUser, deleteUserProfile, loadUserProfile, saveUserProfile } from '../api';
+import { loadTransportProfile, saveTransportProfile, uploadDocument, uploadImageBase64, type CurrentUser, type TransportProfileView, getSessionUser, deleteUserProfile, loadUserProfile, saveUserProfile } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { type LiveData } from '../types';
 import { Card, EmptyState, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
@@ -207,9 +207,10 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
     let mounted = true;
     (async () => {
       try {
-        const [me, profile] = await Promise.all([currentUser(), loadUserProfile()]);
+        const me = getSessionUser();
+        const profile = await loadUserProfile();
         if (!mounted) return;
-        setAccount(me);
+        setAccount(me ? (me as CurrentUser) : null);
         setUserDraft({
           firstName: profile.firstName || '',
           lastName: profile.lastName || '',
@@ -222,7 +223,7 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
         });
       } catch {
         if (!mounted) return;
-        setAccount(null);
+        setAccount((getSessionUser() as unknown as CurrentUser) ?? null);
         setUserDraft(emptyUserDraft());
       } finally {
         if (mounted) setUserLoading(false);

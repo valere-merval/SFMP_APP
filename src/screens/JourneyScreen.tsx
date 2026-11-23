@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { createRideRequest, getRideRequest, getSessionUser, listPublicTransportProfiles } from '../api';
+import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, isDriverSession, listDriverRideRequests, listPublicTransportProfiles, refuseRideRequest } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { googleMapsDirectionsUrl, openGoogleMapsDirections } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
@@ -75,6 +75,9 @@ export function JourneyScreen({
   const [requestLoading, setRequestLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [driverRequests, setDriverRequests] = useState<RideRequestView[]>([]);
+  const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
+  const isDriver = isDriverSession();
 
   const destinationOptions = useMemo(() => (match ? buildDestinationOptions(match) : []), [match]);
 
@@ -117,6 +120,54 @@ export function JourneyScreen({
     return () => clearInterval(timer);
   }, [match, reloadProviders]);
 
+  const availableModes = useMemo(() => {
+    const counts = new Map<ModeKey, number>();
+    for (const provider of providers) {
+      const mode = modeFromProvider(provider.providerType);
+      counts.set(mode, (counts.get(mode) ?? 0) + (provider.active || provider.ready ? 1 : 0));
+    }
+    return counts;
+  }, [providers]);
+
+  const filteredProviders = useMemo(
+    () => providers.filter((provider) => modeFromProvider(provider.providerType) === activeMode),
+    [providers, activeMode],
+  );
+
+  useEffect(() => {
+    if (!match || !isDriver) {
+      setDriverRequests([]);
+      return;
+    }
+    let cancelled = false;
+    const refresh = async () => {
+      setDriverRequestsLoading(true);
+      try {
+        const providerType = modeCards.find((mode) => mode.key === activeMode)?.label ?? 'VTC';
+        const live = await listDriverRideRequests(match.id, providerType);
+        if (!cancelled) {
+          setDriverRequests(live);
+        }
+      } catch {
+        if (!cancelled) {
+          setDriverRequests([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setDriverRequestsLoading(false);
+        }
+      }
+    };
+    void refresh();
+    const timer = setInterval(() => {
+      void refresh();
+    }, 6000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [activeMode, isDriver, match]);
+
   useEffect(() => {
     if (!rideRequest) return;
     const timer = setInterval(async () => {
@@ -134,20 +185,6 @@ export function JourneyScreen({
     }, 3500);
     return () => clearInterval(timer);
   }, [rideRequest]);
-
-  const availableModes = useMemo(() => {
-    const counts = new Map<ModeKey, number>();
-    for (const provider of providers) {
-      const mode = modeFromProvider(provider.providerType);
-      counts.set(mode, (counts.get(mode) ?? 0) + (provider.active || provider.ready ? 1 : 0));
-    }
-    return counts;
-  }, [providers]);
-
-  const filteredProviders = useMemo(
-    () => providers.filter((provider) => modeFromProvider(provider.providerType) === activeMode),
-    [providers, activeMode],
-  );
 
   const reserveRide = async (provider: TransportProviderView) => {
     if (!match) return;
@@ -200,6 +237,74 @@ export function JourneyScreen({
   }
 
   const mapQuery = selectedDestination ? destinationLabelToQuery(match, selectedDestination) : venueCoordinateQuery;
+
+  if (isDriver) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+          <View style={styles.heroRow}>
+            <View style={[styles.card, styles.cardWide]}>
+              <Text style={styles.kicker}>{t(locale, 'journey.title')}</Text>
+              <Text style={styles.title}>{match.homeTeam} vs {match.awayTeam}</Text>
+              <Text style={styles.subtitle}>{match.venue} · {match.city}</Text>
+              <Text style={styles.muted}>{t(locale, 'common.liveTracking')}</Text>
+            </View>
+          </View>
+
+          <Card title={t(locale, 'common.liveTracking')} subtitle={t(locale, 'common.availableChauffeurs')}>
+            {driverRequestsLoading ? (
+              <Text style={styles.muted}>{t(locale, 'common.loading')}</Text>
+            ) : driverRequests.length ? (
+              <View style={styles.grid2}>
+                {driverRequests.map((request) => (
+                  <View key={request.id} style={styles.miniCard}>
+                    <Text style={styles.miniCardTitle}>{request.passengerName}</Text>
+                    <Text style={styles.muted}>{request.pickupLabel}</Text>
+                    <Text style={styles.miniCardMeta}>{request.destinationLabel}</Text>
+                    <Text style={styles.muted}>{request.status}</Text>
+                    <View style={styles.ctaRow}>
+                      <SecondaryButton
+                        label={t(locale, 'common.refuse')}
+                        onPress={() => {
+                          void refuseRideRequest(request.id);
+                        }}
+                      />
+                      <PrimaryButton
+                        label={t(locale, 'common.accept')}
+                        onPress={() => {
+                          void acceptRideRequest(request.id);
+                        }}
+                        icon={<Ionicons name="checkmark" size={16} color="#172033" />}
+                      />
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <EmptyState icon="car-sport-outline" title={t(locale, 'common.noLiveReservation')} subtitle={t(locale, 'common.liveTracking')} />
+            )}
+          </Card>
+
+          <View style={styles.card}>
+            <MapView
+              style={{ height: 280, borderRadius: 20 }}
+              provider={PROVIDER_GOOGLE}
+              initialRegion={{
+                latitude: 40.4531,
+                longitude: -3.6883,
+                latitudeDelta: 0.03,
+                longitudeDelta: 0.03,
+              }}
+              showsTraffic
+            >
+              <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={match.venue} description={`${match.city}, ${match.country}`} />
+            </MapView>
+            <Text style={styles.muted}>{t(locale, 'common.pickupTracking')}</Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>

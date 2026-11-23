@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { createRideRequest, getRideRequest, getSessionUser, listPublicTransportProfiles, postJson } from '../api';
+import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, isDriverSession, listDriverRideRequests, listPublicTransportProfiles, postJson, refuseRideRequest } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
@@ -84,6 +84,9 @@ export function HubScreen({
   const [requestError, setRequestError] = useState<string | null>(null);
   const [requestLoading, setRequestLoading] = useState(false);
   const [rideRequest, setRideRequest] = useState<import('../types').RideRequestView | null>(null);
+  const [driverRequests, setDriverRequests] = useState<import('../types').RideRequestView[]>([]);
+  const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
+  const isDriver = isDriverSession();
   const destinationOptions = useMemo(
     () => (hero ? [hero.venue, hero.gate, hero.sector].filter(Boolean) : []),
     [hero],
@@ -152,6 +155,36 @@ export function HubScreen({
       clearInterval(timer);
     };
   }, [rideRequestId, rideRequestStatus]);
+
+  useEffect(() => {
+    if (!hero || !isDriver) {
+      setDriverRequests([]);
+      return;
+    }
+    let mounted = true;
+    const refresh = async () => {
+      try {
+        const providerType = requestMode;
+        const live = await listDriverRideRequests(hero.id, providerType);
+        if (!mounted) return;
+        setDriverRequests(live);
+      } catch {
+        if (!mounted) return;
+        setDriverRequests([]);
+      } finally {
+        if (mounted) setDriverRequestsLoading(false);
+      }
+    };
+    setDriverRequestsLoading(true);
+    void refresh();
+    const timer = setInterval(() => {
+      void refresh();
+    }, 6000);
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [hero, isDriver, requestMode]);
 
   const topAlert = useMemo(() => {
     const corridor = data?.traffic?.[0];
@@ -309,81 +342,118 @@ export function HubScreen({
               </Pressable>
             </View>
 
-            <View style={localStyles.quickRequestCard}>
-              <Text style={localStyles.sectionLabel}>{t(locale, 'common.instantBooking')}</Text>
-              <Text style={localStyles.quickRequestText}>{t(locale, 'common.liveTracking')}</Text>
-              <View style={localStyles.destinationRow}>
-                {destinationOptions.map((destination) => {
-                  const selected = destination === requestDestination || (!requestDestination && destination === hero.venue);
-                  return (
-                    <Pressable
-                      key={destination}
-                      onPress={() => setRequestDestination(destination)}
-                      style={[localStyles.destinationChip, selected && localStyles.destinationChipActive]}
-                    >
-                      <Text style={[localStyles.destinationChipText, selected && localStyles.destinationChipTextActive]}>{destination}</Text>
-                    </Pressable>
-                  );
-                })}
+            {isDriver ? (
+              <View style={localStyles.quickRequestCard}>
+                <Text style={localStyles.sectionLabel}>{t(locale, 'common.liveTracking')}</Text>
+                <Text style={localStyles.quickRequestText}>{t(locale, 'common.availableChauffeurs')}</Text>
+                {driverRequestsLoading ? (
+                  <Text style={localStyles.mapOverlayText}>{t(locale, 'common.loading')}</Text>
+                ) : driverRequests.length ? (
+                  driverRequests.map((request) => (
+                    <View key={request.id}>
+                      <View>
+                        <Text style={localStyles.mapOverlayTitle}>{request.passengerName}</Text>
+                        <Text style={localStyles.mapOverlayText}>{request.pickupLabel} → {request.destinationLabel}</Text>
+                        <Text style={localStyles.mapOverlayText}>{request.status}</Text>
+                      </View>
+                      <View style={styles.ctaRow}>
+                        <SecondaryButton
+                          label={t(locale, 'common.refuse')}
+                          onPress={() => {
+                            void refuseRideRequest(request.id);
+                          }}
+                        />
+                        <PrimaryButton
+                          label={t(locale, 'common.accept')}
+                          onPress={() => {
+                            void acceptRideRequest(request.id);
+                          }}
+                          icon={<Ionicons name="checkmark" size={16} color="#172033" />}
+                        />
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <EmptyState icon="car-sport-outline" title={t(locale, 'common.noLiveReservation')} subtitle={t(locale, 'common.liveTracking')} />
+                )}
               </View>
-              <View style={styles.ctaRow}>
-                <SecondaryButton label={t(locale, 'journey.taxiLabel')} onPress={() => setRequestMode('Taxi')} icon={<Ionicons name="car-outline" size={16} color="#1d3fb3" />} />
-                <SecondaryButton label={t(locale, 'journey.vtcLabel')} onPress={() => setRequestMode('VTC')} icon={<Ionicons name="car-sport-outline" size={16} color="#1d3fb3" />} />
-              </View>
-              <PrimaryButton
-                label={requestLoading ? t(locale, 'common.processing') : t(locale, 'common.reserveNow')}
-                onPress={requestRide}
-                icon={<Ionicons name="send-outline" size={16} color="#172033" />}
-              />
-              {requestStatus ? <Text style={localStyles.requestSuccess}>{requestStatus}</Text> : null}
-              {requestError ? <Text style={localStyles.requestError}>{requestError}</Text> : null}
+            ) : (
+              <View style={localStyles.quickRequestCard}>
+                <Text style={localStyles.sectionLabel}>{t(locale, 'common.instantBooking')}</Text>
+                <Text style={localStyles.quickRequestText}>{t(locale, 'common.liveTracking')}</Text>
+                <View style={localStyles.destinationRow}>
+                  {destinationOptions.map((destination) => {
+                    const selected = destination === requestDestination || (!requestDestination && destination === hero.venue);
+                    return (
+                      <Pressable
+                        key={destination}
+                        onPress={() => setRequestDestination(destination)}
+                        style={[localStyles.destinationChip, selected && localStyles.destinationChipActive]}
+                      >
+                        <Text style={[localStyles.destinationChipText, selected && localStyles.destinationChipTextActive]}>{destination}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <View style={styles.ctaRow}>
+                  <SecondaryButton label={t(locale, 'journey.taxiLabel')} onPress={() => setRequestMode('Taxi')} icon={<Ionicons name="car-outline" size={16} color="#1d3fb3" />} />
+                  <SecondaryButton label={t(locale, 'journey.vtcLabel')} onPress={() => setRequestMode('VTC')} icon={<Ionicons name="car-sport-outline" size={16} color="#1d3fb3" />} />
+                </View>
+                <PrimaryButton
+                  label={requestLoading ? t(locale, 'common.processing') : t(locale, 'common.reserveNow')}
+                  onPress={requestRide}
+                  icon={<Ionicons name="send-outline" size={16} color="#172033" />}
+                />
+                {requestStatus ? <Text style={localStyles.requestSuccess}>{requestStatus}</Text> : null}
+                {requestError ? <Text style={localStyles.requestError}>{requestError}</Text> : null}
 
-              <View style={localStyles.mapPanel}>
-                <MapView
-                  style={localStyles.mapView}
-                  provider={PROVIDER_GOOGLE}
-                  initialRegion={{
-                    latitude: 40.4531,
-                    longitude: -3.6883,
-                    latitudeDelta: 0.03,
-                    longitudeDelta: 0.03,
-                  }}
-                  showsTraffic
-                  showsCompass={false}
-                >
-                  <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={hero.venue} description={`${hero.city}, ${hero.country}`} />
-                  {rideRequest?.pickupLatitude && rideRequest?.pickupLongitude ? (
-                    <Marker
-                      coordinate={{ latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude }}
-                      title={rideRequest.pickupLabel}
-                      pinColor="#c8f36a"
-                    />
-                  ) : null}
-                  {rideRequest?.destinationLatitude && rideRequest?.destinationLongitude ? (
-                    <Marker
-                      coordinate={{ latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude }}
-                      title={rideRequest.destinationLabel}
-                      pinColor="#4da3ff"
-                    />
-                  ) : null}
-                </MapView>
-                <View style={localStyles.mapOverlay}>
-                  <Text style={localStyles.mapOverlayTitle}>{rideRequest ? rideRequest.destinationLabel : (requestDestination || hero.venue)}</Text>
-                  <Text style={localStyles.mapOverlayText}>
-                    {rideRequest
-                      ? rideRequest.status === 'PENDING'
-                        ? t(locale, 'common.requestPending')
-                        : rideRequest.status === 'ACCEPTED'
-                          ? t(locale, 'common.requestAccepted')
-                          : t(locale, 'common.requestRefused')
-                      : t(locale, 'common.pickupTracking')}
-                  </Text>
-                  {rideRequest?.driverDisplayName ? (
-                    <Text style={localStyles.mapOverlayText}>{rideRequest.driverDisplayName}</Text>
-                  ) : null}
+                <View style={localStyles.mapPanel}>
+                  <MapView
+                    style={localStyles.mapView}
+                    provider={PROVIDER_GOOGLE}
+                    initialRegion={{
+                      latitude: 40.4531,
+                      longitude: -3.6883,
+                      latitudeDelta: 0.03,
+                      longitudeDelta: 0.03,
+                    }}
+                    showsTraffic
+                    showsCompass={false}
+                  >
+                    <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={hero.venue} description={`${hero.city}, ${hero.country}`} />
+                    {rideRequest?.pickupLatitude && rideRequest?.pickupLongitude ? (
+                      <Marker
+                        coordinate={{ latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude }}
+                        title={rideRequest.pickupLabel}
+                        pinColor="#c8f36a"
+                      />
+                    ) : null}
+                    {rideRequest?.destinationLatitude && rideRequest?.destinationLongitude ? (
+                      <Marker
+                        coordinate={{ latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude }}
+                        title={rideRequest.destinationLabel}
+                        pinColor="#4da3ff"
+                      />
+                    ) : null}
+                  </MapView>
+                  <View style={localStyles.mapOverlay}>
+                    <Text style={localStyles.mapOverlayTitle}>{rideRequest ? rideRequest.destinationLabel : (requestDestination || hero.venue)}</Text>
+                    <Text style={localStyles.mapOverlayText}>
+                      {rideRequest
+                        ? rideRequest.status === 'PENDING'
+                          ? t(locale, 'common.requestPending')
+                          : rideRequest.status === 'ACCEPTED'
+                            ? t(locale, 'common.requestAccepted')
+                            : t(locale, 'common.requestRefused')
+                        : t(locale, 'common.pickupTracking')}
+                    </Text>
+                    {rideRequest?.driverDisplayName ? (
+                      <Text style={localStyles.mapOverlayText}>{rideRequest.driverDisplayName}</Text>
+                    ) : null}
+                  </View>
                 </View>
               </View>
-            </View>
+            )}
           </View>
         ) : null}
 
