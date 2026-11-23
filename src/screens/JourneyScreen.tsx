@@ -4,11 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, isDriverSession, listDriverRideRequests, listPublicTransportProfiles, refuseRideRequest } from '../api';
+import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listDriverRideRequests, listPublicTransportProfiles, loadTransportAvailability, refuseRideRequest } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { googleMapsDirectionsUrl, openGoogleMapsDirections } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
-import type { LiveData, MatchCard, RideRequestView, TransportProviderView } from '../types';
+import type { LiveData, MatchCard, RideRequestView, TransportAvailabilityView, TransportProviderView } from '../types';
 import { t, type Locale } from '../i18n';
 
 function formatCountdown(date: string, time: string) {
@@ -77,7 +77,8 @@ export function JourneyScreen({
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [driverRequests, setDriverRequests] = useState<RideRequestView[]>([]);
   const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
-  const isDriver = isDriverSession();
+  const [driverAvailability, setDriverAvailability] = useState<TransportAvailabilityView | null>(null);
+  const isDriver = driverAvailability?.available === true;
 
   const destinationOptions = useMemo(() => (match ? buildDestinationOptions(match) : []), [match]);
 
@@ -111,6 +112,35 @@ export function JourneyScreen({
   useEffect(() => {
     void reloadProviders();
   }, [reloadProviders]);
+
+  useEffect(() => {
+    if (!match) {
+      setDriverAvailability(null);
+      return;
+    }
+
+    let mounted = true;
+    const refresh = async () => {
+      try {
+        const live = await loadTransportAvailability(match.id);
+        if (!mounted) return;
+        setDriverAvailability(live);
+      } catch {
+        if (!mounted) return;
+        setDriverAvailability(null);
+      }
+    };
+
+    void refresh();
+    const timer = setInterval(() => {
+      void refresh();
+    }, 9000);
+
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [match]);
 
   useEffect(() => {
     if (!match) return;
@@ -252,7 +282,7 @@ export function JourneyScreen({
             </View>
           </View>
 
-          <Card title={t(locale, 'common.liveTracking')} subtitle={t(locale, 'common.availableChauffeurs')}>
+          <Card title={t(locale, 'common.passengerRequests')} subtitle={t(locale, 'common.driverRequestsSubtitle')}>
             {driverRequestsLoading ? (
               <Text style={styles.muted}>{t(locale, 'common.loading')}</Text>
             ) : driverRequests.length ? (
@@ -282,7 +312,7 @@ export function JourneyScreen({
                 ))}
               </View>
             ) : (
-              <EmptyState icon="car-sport-outline" title={t(locale, 'common.noLiveReservation')} subtitle={t(locale, 'common.liveTracking')} />
+              <EmptyState icon="car-sport-outline" title={t(locale, 'common.noLiveReservation')} subtitle={t(locale, 'common.driverRequestsSubtitle')} />
             )}
           </Card>
 

@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, isDriverSession, listDriverRideRequests, listPublicTransportProfiles, postJson, refuseRideRequest } from '../api';
+import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listDriverRideRequests, listPublicTransportProfiles, loadTransportAvailability, postJson, refuseRideRequest } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
@@ -86,7 +86,8 @@ export function HubScreen({
   const [rideRequest, setRideRequest] = useState<import('../types').RideRequestView | null>(null);
   const [driverRequests, setDriverRequests] = useState<import('../types').RideRequestView[]>([]);
   const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
-  const isDriver = isDriverSession();
+  const [driverAvailability, setDriverAvailability] = useState<import('../types').TransportAvailabilityView | null>(null);
+  const isDriver = driverAvailability?.available === true;
   const destinationOptions = useMemo(
     () => (hero ? [hero.venue, hero.gate, hero.sector].filter(Boolean) : []),
     [hero],
@@ -155,6 +156,35 @@ export function HubScreen({
       clearInterval(timer);
     };
   }, [rideRequestId, rideRequestStatus]);
+
+  useEffect(() => {
+    if (!hero) {
+      setDriverAvailability(null);
+      return;
+    }
+
+    let mounted = true;
+    const refresh = async () => {
+      try {
+        const live = await loadTransportAvailability(hero.id);
+        if (!mounted) return;
+        setDriverAvailability(live);
+      } catch {
+        if (!mounted) return;
+        setDriverAvailability(null);
+      }
+    };
+
+    void refresh();
+    const timer = setInterval(() => {
+      void refresh();
+    }, 9000);
+
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [hero]);
 
   useEffect(() => {
     if (!hero || !isDriver) {
@@ -345,8 +375,8 @@ export function HubScreen({
 
             {isDriver ? (
               <View style={localStyles.quickRequestCard}>
-                <Text style={localStyles.sectionLabel}>{t(locale, 'common.liveTracking')}</Text>
-                <Text style={localStyles.quickRequestText}>{t(locale, 'common.availableChauffeurs')}</Text>
+                <Text style={localStyles.sectionLabel}>{t(locale, 'common.passengerRequests')}</Text>
+                <Text style={localStyles.quickRequestText}>{t(locale, 'common.driverRequestsSubtitle')}</Text>
                 {driverRequestsLoading ? (
                   <Text style={localStyles.mapOverlayText}>{t(locale, 'common.loading')}</Text>
                 ) : driverRequests.length ? (
