@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { createRideRequest, currentUser, getRideRequest, listPublicTransportProfiles } from '../api';
+import { createRideRequest, currentUser, getRideRequest, getSessionUser, listPublicTransportProfiles } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { googleMapsDirectionsUrl, openGoogleMapsDirections } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
@@ -154,12 +154,12 @@ export function JourneyScreen({
     setRequestLoading(true);
     setRequestError(null);
     try {
-      const me = await currentUser();
+      const me = getSessionUser() ?? (await currentUser().catch(() => null));
       const request = await createRideRequest({
         matchId: match.id,
         matchTitle: `${match.homeTeam} vs ${match.awayTeam}`,
-        passengerEmail: me.email,
-        passengerName: me.fullName,
+        passengerEmail: me?.email ?? '',
+        passengerName: me?.fullName ?? '',
         providerType: provider.providerType,
         pickupLabel: `${match.city} live pickup`,
         destinationLabel: selectedDestination || match.venue,

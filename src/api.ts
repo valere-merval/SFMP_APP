@@ -10,8 +10,10 @@ const API_BASE =
   }) ?? 'http://localhost:8080';
 
 const TOKEN_KEY = 'sfmp_token';
+const USER_KEY = 'sfmp_user';
 
 let authToken = '';
+let sessionUser: AuthPayload['user'] | null = null;
 
 type ApiEnvelope<T> = {
   success?: boolean;
@@ -29,6 +31,8 @@ function unwrap<T>(payload: ApiEnvelope<T>): T {
 export async function hydrateAuthToken() {
   const stored = await AsyncStorage.getItem(TOKEN_KEY);
   authToken = stored ?? '';
+  const user = await AsyncStorage.getItem(USER_KEY);
+  sessionUser = user ? (JSON.parse(user) as AuthPayload['user']) : null;
   return authToken;
 }
 
@@ -36,14 +40,24 @@ export function getAuthToken() {
   return authToken;
 }
 
-export async function setAuthToken(token: string) {
+export function getSessionUser() {
+  return sessionUser;
+}
+
+export async function setAuthToken(token: string, user?: AuthPayload['user']) {
   authToken = token;
   await AsyncStorage.setItem(TOKEN_KEY, token);
+  if (user) {
+    sessionUser = user;
+    await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
 }
 
 export async function clearAuthToken() {
   authToken = '';
+  sessionUser = null;
   await AsyncStorage.removeItem(TOKEN_KEY);
+  await AsyncStorage.removeItem(USER_KEY);
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -124,7 +138,7 @@ export async function login(email: string, password: string): Promise<AuthPayloa
     body: JSON.stringify({ email, password }),
   });
   const data = unwrap(payload);
-  await setAuthToken(data.accessToken);
+  await setAuthToken(data.accessToken, data.user);
   return data;
 }
 
@@ -145,7 +159,7 @@ export async function registerAccount(payload: {
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  await setAuthToken(response.accessToken);
+  await setAuthToken(response.accessToken, response.user);
   return response;
 }
 
@@ -154,7 +168,7 @@ export async function resetPassword(payload: { email: string; newPassword: strin
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  await setAuthToken(response.accessToken);
+  await setAuthToken(response.accessToken, response.user);
   return response;
 }
 
