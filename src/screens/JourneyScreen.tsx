@@ -77,7 +77,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
   const match = selectedMatch;
   const providers = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
   const modeCards = useMemo(() => getModeCards(locale), [locale]);
-  const liveProviders = useMemo(() => providers.filter((provider) => provider.active && provider.ready), [providers]);
+  const liveProviders = useMemo(() => providers.filter((provider) => provider.ready), [providers]);
   const modeSummary = useMemo(() => {
     const counts = new Map<ModeKey, number>();
     for (const provider of liveProviders) {
@@ -223,7 +223,6 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
             filteredProviders.length ? (
               <View style={styles.cardBody}>
                 {filteredProviders.map((provider) => {
-                  const isActive = provider.active;
                   const isReady = provider.ready;
                   return (
                     <View key={provider.id} style={localStyles.providerCard}>
@@ -233,7 +232,7 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
                           <Text style={styles.muted}>{provider.providerType} · {provider.zone}</Text>
                         </View>
                         <View style={styles.rowRight}>
-                          <Pill subtle={isActive}>{isActive ? t(locale, 'common.active') : t(locale, 'common.paused')}</Pill>
+                          <Pill subtle={isReady}>{isReady ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}</Pill>
                         </View>
                       </View>
                       <Text style={styles.muted}>{provider.driverName} · {provider.vehicleLabel}</Text>
@@ -241,8 +240,8 @@ export function JourneyScreen({ data, loading: _loading, locale, selectedMatch }
                       {provider.publicNotes ? <Text style={localStyles.providerNotes}>{provider.publicNotes}</Text> : null}
                       <View style={styles.ctaRow}>
                         <PrimaryButton
-                          label={isActive && isReady ? t(locale, 'common.reserveNow') : t(locale, 'common.notAvailable')}
-                          onPress={() => isActive && isReady ? reserveNow(provider) : undefined}
+                          label={isReady ? t(locale, 'common.reserveNow') : t(locale, 'common.notAvailable')}
+                          onPress={() => isReady ? reserveNow(provider) : undefined}
                           icon={<Ionicons name="car-outline" size={16} color="#172033" />}
                         />
                         <SecondaryButton

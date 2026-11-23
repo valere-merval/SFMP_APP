@@ -265,7 +265,7 @@ function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>
       {Platform.OS === 'android'
-        ? React.createElement(StatusBar as any, { barStyle: 'dark-content', backgroundColor: '#f6f8fc' })
+        ? React.createElement(StatusBar as any, { barStyle: 'dark-content', backgroundColor: '#f6f8fc', translucent: false })
         : React.createElement(StatusBar as any, { barStyle: 'dark-content' })}
       {session === 'auth' ? (
         <AuthScreen locale={locale} onLocaleChange={handleLocaleChange} onAuthenticated={handleAuthenticated} />

@@ -67,6 +67,20 @@ export type AuthPayload = { accessToken: string; user: { fullName: string; role:
 
 export type CurrentUser = { id: string; email: string; fullName: string; role: string; organization: string; roles: string[] };
 
+export type UserProfileView = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+  city: string;
+  phonePrefix: string;
+  phone: string;
+  preferredLanguage: string;
+  photoUrl?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
 export type TransportProfileView = {
   id: string;
   ownerEmail: string;
@@ -147,6 +161,18 @@ export async function currentUser(): Promise<CurrentUser> {
   return requestJson<CurrentUser>('/api/v1/auth/me');
 }
 
+export async function loadUserProfile(): Promise<UserProfileView> {
+  return requestJson<UserProfileView>('/api/v1/user-profiles/me');
+}
+
+export async function saveUserProfile(payload: Omit<UserProfileView, 'email' | 'createdAt' | 'updatedAt'>): Promise<UserProfileView> {
+  return putJson<UserProfileView>('/api/v1/user-profiles/me', payload);
+}
+
+export async function deleteUserProfile(): Promise<void> {
+  await requestJson('/api/v1/user-profiles/me', { method: 'DELETE' });
+}
+
 export function getJson<T>(path: string): Promise<T> {
   return requestJson<T>(path);
 }
@@ -198,7 +224,6 @@ export async function uploadDocument(file: { uri: string; name: string; type: st
 
   const response = await fetch(`${API_BASE}/api/v1/uploads/images`, {
     method: 'POST',
-    headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
     body: formData,
   });
 

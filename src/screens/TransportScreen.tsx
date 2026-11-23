@@ -45,11 +45,11 @@ export function TransportScreen({
     [matchId, providers],
   );
   const availableProviders = useMemo(
-    () => visibleProviders.filter((provider) => provider.active && provider.ready),
+    () => visibleProviders.filter((provider) => provider.ready),
     [visibleProviders],
   );
   const globalAvailableProviders = useMemo(
-    () => providers.filter((provider) => provider.active && provider.ready),
+    () => providers.filter((provider) => provider.ready),
     [providers],
   );
   const vtcCount = globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('vtc')).length;
@@ -205,7 +205,7 @@ export function TransportScreen({
                         <Feather name="truck" size={14} color="#172033" />
                         <Text style={screenStyles.providerBadgeText}>{modeLabel(locale, provider.providerType)}</Text>
                       </View>
-                      <Text style={screenStyles.providerStatus}>{provider.active && provider.ready ? 'Disponible' : 'Pas disponible'}</Text>
+                      <Text style={screenStyles.providerStatus}>{provider.ready ? 'Disponible' : 'Pas disponible'}</Text>
                     </View>
                     <Text style={screenStyles.providerTitle}>{provider.displayName}</Text>
                     <Text style={screenStyles.providerBody}>{provider.driverName} · {provider.vehicleLabel}</Text>

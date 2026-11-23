@@ -4,7 +4,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { pick, errorCodes, isErrorWithCode, types } from '@react-native-documents/picker';
 import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
-import { loadTransportProfile, saveTransportProfile, uploadDocument, type TransportProfileView } from '../api';
+import { loadTransportProfile, saveTransportProfile, uploadDocument, type CurrentUser, type TransportProfileView, currentUser, deleteUserProfile, loadUserProfile, saveUserProfile } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { type LiveData } from '../types';
 import { Card, EmptyState, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
@@ -19,7 +19,47 @@ type Assets = {
   vehicleImageUrl: string;
 };
 
+type UserDraft = {
+  firstName: string;
+  lastName: string;
+  country: string;
+  city: string;
+  phonePrefix: string;
+  phone: string;
+  preferredLanguage: string;
+  photoUrl: string;
+};
+
 type Option = { key: string; label: string };
+
+const supportedLanguages: Option[] = [
+  { key: 'en', label: 'English' },
+  { key: 'fr', label: 'Français' },
+  { key: 'de', label: 'Deutsch' },
+  { key: 'es', label: 'Español' },
+  { key: 'pt', label: 'Português' },
+  { key: 'it', label: 'Italiano' },
+  { key: 'nl', label: 'Nederlands' },
+  { key: 'ar', label: 'العربية' },
+  { key: 'zh', label: '中文' },
+  { key: 'ru', label: 'Русский' },
+];
+
+const phonePrefixOptions: Option[] = Country.getAllCountries()
+  .map((country) => ({ key: `${country.name}-${country.phonecode ?? ''}`, label: `${country.flag} ${country.name} (+${country.phonecode})` }))
+  .filter((option, index, self) => option.label.includes('+') && self.findIndex((item) => item.label === option.label) === index)
+  .sort((a, b) => a.label.localeCompare(b.label));
+
+const emptyUserDraft = (): UserDraft => ({
+  firstName: '',
+  lastName: '',
+  country: '',
+  city: '',
+  phonePrefix: '',
+  phone: '',
+  preferredLanguage: 'en',
+  photoUrl: '',
+});
 
 const emptyDraft = (): Draft => ({
   providerType: 'Taxi',
@@ -155,6 +195,43 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [showDriverForm, setShowDriverForm] = useState(false);
   const [countryCode, setCountryCode] = useState('');
+  const [account, setAccount] = useState<CurrentUser | null>(null);
+  const [userDraft, setUserDraft] = useState<UserDraft>(() => emptyUserDraft());
+  const [savingUser, setSavingUser] = useState(false);
+  const [deletingUser, setDeletingUser] = useState(false);
+  const [userMessage, setUserMessage] = useState<string | null>(null);
+  const [userError, setUserError] = useState<string | null>(null);
+  const [userLoading, setUserLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [me, profile] = await Promise.all([currentUser(), loadUserProfile()]);
+        if (!mounted) return;
+        setAccount(me);
+        setUserDraft({
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+          country: profile.country || '',
+          city: profile.city || '',
+          phonePrefix: profile.phonePrefix || '',
+          phone: profile.phone || '',
+          preferredLanguage: profile.preferredLanguage || 'en',
+          photoUrl: profile.photoUrl || '',
+        });
+      } catch {
+        if (!mounted) return;
+        setAccount(null);
+        setUserDraft(emptyUserDraft());
+      } finally {
+        if (mounted) setUserLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -203,6 +280,11 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
     if (!countryCode) return [];
     return (City.getCitiesOfCountry(countryCode) ?? []).map((city) => ({ key: city.name, label: city.name }));
   }, [countryCode]);
+  const userCountryCode = useMemo(() => resolveCountryCode(userDraft.country), [userDraft.country]);
+  const userCityOptions = useMemo(() => {
+    if (!userCountryCode) return [];
+    return (City.getCitiesOfCountry(userCountryCode) ?? []).map((city) => ({ key: city.name, label: city.name }));
+  }, [userCountryCode]);
 
   const countryValue = draft.country;
   const cityValue = draft.city;
@@ -210,6 +292,71 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
 
   const update = (key: keyof Draft, value: string | boolean) => {
     setDraft((current) => ({ ...current, [key]: value }));
+  };
+
+  const updateUser = (key: keyof UserDraft, value: string) => {
+    setUserDraft((current) => ({ ...current, [key]: value }));
+  };
+
+  const saveUser = async () => {
+    setSavingUser(true);
+    setUserMessage(null);
+    setUserError(null);
+    try {
+      const saved = await saveUserProfile(userDraft);
+      setUserDraft({
+        firstName: saved.firstName || '',
+        lastName: saved.lastName || '',
+        country: saved.country || '',
+        city: saved.city || '',
+        phonePrefix: saved.phonePrefix || '',
+        phone: saved.phone || '',
+        preferredLanguage: saved.preferredLanguage || 'en',
+        photoUrl: saved.photoUrl || '',
+      });
+      setUserMessage(t(locale, 'profile.userSaved'));
+    } catch (caught: any) {
+      setUserError(caught?.message ?? t(locale, 'profile.userSaveFailed'));
+    } finally {
+      setSavingUser(false);
+    }
+  };
+
+  const removeUserProfile = async () => {
+    setDeletingUser(true);
+    setUserMessage(null);
+    setUserError(null);
+    try {
+      await deleteUserProfile();
+      setUserDraft(emptyUserDraft());
+      setUserMessage(t(locale, 'profile.userDeleted'));
+    } catch (caught: any) {
+      setUserError(caught?.message ?? t(locale, 'profile.userDeleteFailed'));
+    } finally {
+      setDeletingUser(false);
+    }
+  };
+
+  const pickProfilePhoto = async () => {
+    setUserError(null);
+    setUserMessage(null);
+    try {
+      const response = await launchImageLibrary({
+        mediaType: 'photo',
+        selectionLimit: 1,
+        includeBase64: false,
+        presentationStyle: 'fullScreen',
+      });
+      const file = response.assets?.[0];
+      if (response.didCancel || !file?.uri) {
+        return;
+      }
+      const uploaded = await uploadDocument({ uri: file.uri, name: file.fileName ?? 'profile-photo.jpg', type: file.type ?? 'image/jpeg' });
+      setUserDraft((current) => ({ ...current, photoUrl: uploaded.url }));
+      setUserMessage(t(locale, 'profile.photoUploaded'));
+    } catch (caught: any) {
+      setUserError(caught?.message ?? t(locale, 'profile.photoUploadFailed'));
+    }
   };
 
   const parseScanText = () => {
@@ -332,6 +479,72 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
           <Text style={styles.title}>{copy.title}</Text>
           <Text style={styles.subtitle}>{copy.subtitle}</Text>
         </View>
+
+        <Card title={t(locale, 'profile.userProfileTitle')} subtitle={t(locale, 'profile.userProfileSubtitle')} wide>
+          <View style={screenStyles.rowGap}>
+            {userLoading ? <EmptyState icon="time-outline" title={copy.loadingTitle} subtitle={copy.loadingBody} /> : null}
+            <Text style={styles.muted}>{t(locale, 'profile.userProfileBody')}</Text>
+            <View style={screenStyles.driverPreview}>
+              <Text style={screenStyles.previewTitle}>{account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || t(locale, 'profile.profileMissing')}</Text>
+              <Text style={screenStyles.previewBody}>{account?.email || t(locale, 'profile.emailUnknown')}</Text>
+              <Text style={screenStyles.previewBody}>{t(locale, 'profile.userProfileRole')}</Text>
+            </View>
+            <Input value={userDraft.firstName} onChangeText={(value) => updateUser('firstName', value)} placeholder={t(locale, 'profile.firstName')} />
+            <Input value={userDraft.lastName} onChangeText={(value) => updateUser('lastName', value)} placeholder={t(locale, 'profile.lastName')} />
+            <SearchableDropdown
+              label={t(locale, 'auth.country')}
+              placeholder={t(locale, 'profile.countryPlaceholder')}
+              value={userDraft.country}
+              options={allCountries}
+              searchPlaceholder={t(locale, 'profile.countrySearch')}
+              emptyLabel={t(locale, 'profile.noSearchResults')}
+              onSelect={(option) => {
+                updateUser('country', option.label);
+                updateUser('city', '');
+              }}
+            />
+            <SearchableDropdown
+              label={t(locale, 'auth.city')}
+              placeholder={userCountryCode ? t(locale, 'profile.cityPlaceholder') : t(locale, 'profile.chooseCountryFirst')}
+              value={userDraft.city}
+              options={userCityOptions}
+              searchPlaceholder={t(locale, 'profile.citySearch')}
+              emptyLabel={t(locale, 'profile.noCitiesAvailable')}
+              disabled={!userCountryCode}
+              onSelect={(option) => updateUser('city', option.label)}
+            />
+            <SearchableDropdown
+              label={t(locale, 'profile.languageLabel')}
+              placeholder={t(locale, 'profile.languagePlaceholder')}
+              value={userDraft.preferredLanguage}
+              options={supportedLanguages}
+              searchPlaceholder={t(locale, 'profile.languageSearch')}
+              emptyLabel={t(locale, 'profile.noSearchResults')}
+              onSelect={(option) => updateUser('preferredLanguage', option.key)}
+            />
+            <SearchableDropdown
+              label={t(locale, 'profile.phonePrefixLabel')}
+              placeholder={t(locale, 'profile.phonePrefixPlaceholder')}
+              value={userDraft.phonePrefix}
+              options={phonePrefixOptions}
+              searchPlaceholder={t(locale, 'profile.phonePrefixSearch')}
+              emptyLabel={t(locale, 'profile.noSearchResults')}
+              onSelect={(option) => updateUser('phonePrefix', option.label)}
+            />
+            <Input value={userDraft.phone} onChangeText={(value) => updateUser('phone', value)} placeholder={t(locale, 'profile.phoneNumber')} keyboardType="phone-pad" />
+            <Pressable style={screenStyles.photoPicker} onPress={pickProfilePhoto}>
+              <Text style={screenStyles.photoPickerLabel}>{t(locale, 'profile.profilePhoto')}</Text>
+              <Text style={screenStyles.photoPickerValue}>{userDraft.photoUrl || t(locale, 'profile.photoMissing')}</Text>
+              <Text style={screenStyles.photoPickerAction}>{t(locale, 'profile.changePhoto')}</Text>
+            </Pressable>
+            <View style={styles.chipsRow}>
+              <PrimaryButton label={savingUser ? t(locale, 'profile.savingUser') : t(locale, 'profile.saveUser')} onPress={saveUser} icon={<Feather name="save" size={16} color="#0f172a" />} />
+              <SecondaryButton label={deletingUser ? t(locale, 'profile.deletingUser') : t(locale, 'profile.deleteUser')} onPress={removeUserProfile} icon={<Feather name="trash-2" size={16} color="#172033" />} />
+            </View>
+            {userMessage ? <Text style={screenStyles.success}>{userMessage}</Text> : null}
+            {userError ? <Text style={screenStyles.error}>{userError}</Text> : null}
+          </View>
+        </Card>
 
         <Card title={copy.profileTitle} subtitle={copy.profileSubtitle} wide>
           <View style={screenStyles.rowGap}>
@@ -577,11 +790,18 @@ const screenStyles = StyleSheet.create({
   actionRowActive: { backgroundColor: '#e8f7bf', borderColor: '#c8f36a' },
   actionRowText: { color: '#172033', fontFamily: 'Poppins-SemiBold', flex: 1, paddingRight: 12 },
   actionRowTextActive: { color: '#172033' },
+  chipsRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
+  muted: { color: '#60708b', fontFamily: 'Poppins-Regular' },
+  helperText: { color: '#60708b', fontFamily: 'Poppins-Regular', lineHeight: 20 },
+  photoPicker: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#dce5f5', paddingHorizontal: 14, paddingVertical: 14, gap: 4 },
+  photoPickerLabel: { color: '#60708b', fontFamily: 'Poppins-SemiBold', textTransform: 'uppercase', fontSize: 12 },
+  photoPickerValue: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
+  photoPickerAction: { color: '#2457e6', fontFamily: 'Poppins-Medium' },
+  success: { color: '#14532d', fontFamily: 'Poppins-Medium' },
+  error: { color: '#b42318', fontFamily: 'Poppins-Medium' },
   toggle: { borderRadius: 18, paddingHorizontal: 14, paddingVertical: 14, backgroundColor: '#fff', borderWidth: 1, borderColor: '#dce5f5', alignItems: 'center' },
   toggleActive: { backgroundColor: '#e8f7bf', borderColor: '#c8f36a' },
   toggleText: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
   toggleTextActive: { color: '#172033' },
   ctaRow: { flexDirection: 'row', gap: 12 },
-  success: { color: '#14532d', fontFamily: 'Poppins-Medium' },
-  error: { color: '#b42318', fontFamily: 'Poppins-Medium' },
 });
