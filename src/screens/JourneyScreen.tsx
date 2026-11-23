@@ -139,7 +139,7 @@ export function JourneyScreen({
     const counts = new Map<ModeKey, number>();
     for (const provider of providers) {
       const mode = modeFromProvider(provider.providerType);
-      counts.set(mode, (counts.get(mode) ?? 0) + (provider.ready ? 1 : 0));
+      counts.set(mode, (counts.get(mode) ?? 0) + (provider.active || provider.ready ? 1 : 0));
     }
     return counts;
   }, [providers]);
@@ -254,7 +254,7 @@ export function JourneyScreen({
           ) : filteredProviders.length ? (
             <View style={styles.cardBody}>
               {filteredProviders.map((provider) => {
-                const isReady = provider.ready;
+                const isReady = provider.active || provider.ready;
                 return (
                   <View key={provider.id} style={styles.miniCard}>
                     <View style={styles.rowBetween}>

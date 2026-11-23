@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { postJson, listPublicTransportProfiles } from '../api';
+import { postJson, listPublicTransportProfiles, currentUser, createRideRequest } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
@@ -77,6 +77,15 @@ export function HubScreen({
   const [countdown, setCountdown] = useState(() => (hero ? formatCountdown(hero.date, hero.time) : 'LIVE'));
   const baseTransportProviders = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
   const [liveTransportProviders, setLiveTransportProviders] = useState(baseTransportProviders);
+  const [requestMode, setRequestMode] = useState<'Taxi' | 'VTC'>('VTC');
+  const [requestDestination, setRequestDestination] = useState('');
+  const [requestStatus, setRequestStatus] = useState<string | null>(null);
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const [requestLoading, setRequestLoading] = useState(false);
+  const destinationOptions = useMemo(
+    () => (hero ? [hero.venue, hero.gate, hero.sector].filter(Boolean) : []),
+    [hero],
+  );
 
   useEffect(() => {
     if (!hero) {
@@ -135,6 +144,31 @@ export function HubScreen({
       setTicketError('Ticket checkout could not be created. Try again once the backend payment flow is available.');
     } finally {
       setTicketLoading(false);
+    }
+  };
+
+  const requestRide = async () => {
+    if (!hero) return;
+    setRequestLoading(true);
+    setRequestError(null);
+    setRequestStatus(null);
+    try {
+      const me = await currentUser();
+      await createRideRequest({
+        matchId: hero.id,
+        matchTitle: `${hero.homeTeam} vs ${hero.awayTeam}`,
+        passengerEmail: me.email,
+        passengerName: me.fullName,
+        providerType: requestMode,
+        pickupLabel: `${hero.city} · ${t(locale, 'common.liveMap')}`,
+        destinationLabel: requestDestination || hero.venue,
+        note: `${requestMode} request started from Hub`,
+      });
+      setRequestStatus(`${requestMode} request sent successfully.`);
+    } catch (caught: any) {
+      setRequestError(caught instanceof Error ? caught.message : 'Unable to send the request right now.');
+    } finally {
+      setRequestLoading(false);
     }
   };
 
@@ -235,6 +269,36 @@ export function HubScreen({
                 <Ionicons name="qr-code-outline" size={16} color="#c8f36a" />
                 <Text style={localStyles.secondaryActionText}>{ticketLoading ? t(locale, 'common.processing') : t(locale, 'common.gatePass')}</Text>
               </Pressable>
+            </View>
+
+            <View style={localStyles.quickRequestCard}>
+              <Text style={localStyles.sectionLabel}>{t(locale, 'common.instantBooking')}</Text>
+              <Text style={localStyles.quickRequestText}>{t(locale, 'common.liveTracking')}</Text>
+              <View style={localStyles.destinationRow}>
+                {destinationOptions.map((destination) => {
+                  const selected = destination === requestDestination || (!requestDestination && destination === hero.venue);
+                  return (
+                    <Pressable
+                      key={destination}
+                      onPress={() => setRequestDestination(destination)}
+                      style={[localStyles.destinationChip, selected && localStyles.destinationChipActive]}
+                    >
+                      <Text style={[localStyles.destinationChipText, selected && localStyles.destinationChipTextActive]}>{destination}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <View style={styles.ctaRow}>
+                <SecondaryButton label={t(locale, 'journey.taxiLabel')} onPress={() => setRequestMode('Taxi')} icon={<Ionicons name="car-outline" size={16} color="#1d3fb3" />} />
+                <SecondaryButton label={t(locale, 'journey.vtcLabel')} onPress={() => setRequestMode('VTC')} icon={<Ionicons name="car-sport-outline" size={16} color="#1d3fb3" />} />
+              </View>
+              <PrimaryButton
+                label={requestLoading ? t(locale, 'common.processing') : t(locale, 'common.reserveNow')}
+                onPress={requestRide}
+                icon={<Ionicons name="send-outline" size={16} color="#172033" />}
+              />
+              {requestStatus ? <Text style={localStyles.requestSuccess}>{requestStatus}</Text> : null}
+              {requestError ? <Text style={localStyles.requestError}>{requestError}</Text> : null}
             </View>
           </View>
         ) : null}
@@ -572,5 +636,56 @@ const localStyles = {
     color: '#fff',
     fontFamily: 'Poppins-Bold',
     fontSize: 14,
+  },
+  quickRequestCard: {
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 24,
+    backgroundColor: '#0f1729',
+    borderWidth: 1,
+    borderColor: '#23395c',
+    gap: 12,
+  },
+  quickRequestText: {
+    color: '#d7e3ff',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 13,
+  },
+  destinationRow: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 8,
+  },
+  destinationChip: {
+    minHeight: 38,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#2d4062',
+    backgroundColor: '#122138',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  destinationChipActive: {
+    backgroundColor: '#c8f36a',
+    borderColor: '#c8f36a',
+  },
+  destinationChipText: {
+    color: '#d7e3ff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 12,
+  },
+  destinationChipTextActive: {
+    color: '#172033',
+  },
+  requestSuccess: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 12,
+  },
+  requestError: {
+    color: '#ff8a8a',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 12,
   },
 };
