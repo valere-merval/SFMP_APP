@@ -214,6 +214,13 @@ export async function listPublicTransportProfiles(matchId?: string): Promise<Tra
   return requestJson<TransportProfileView[]>(`/api/v1/transport-profiles/public${suffix}`);
 }
 
+export async function uploadImageBase64(file: { name: string; type: string; base64: string }): Promise<{ key: string; url: string }> {
+  return requestJson<{ key: string; url: string }>('/api/v1/uploads/images/base64', {
+    method: 'POST',
+    body: JSON.stringify(file),
+  });
+}
+
 export async function uploadDocument(file: { uri: string; name: string; type: string }): Promise<{ key: string; url: string }> {
   const formData = new FormData();
   formData.append('file', {
