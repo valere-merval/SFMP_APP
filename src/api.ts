@@ -273,12 +273,42 @@ export async function listDriverRideRequests(matchId: string, providerType: stri
   );
 }
 
-export async function acceptRideRequest(id: string, responseNote?: string): Promise<RideRequestView> {
-  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/accept`, { responseNote });
+export async function listAssignedDriverRideRequests(driverProfileId?: string): Promise<RideRequestView[]> {
+  const suffix = driverProfileId ? `?driverProfileId=${encodeURIComponent(driverProfileId)}` : '';
+  return requestJson<RideRequestView[]>(`/api/v1/ride-requests/driver/assigned${suffix}`);
+}
+
+export async function acceptRideRequest(
+  id: string,
+  payload?: {
+    driverProfileId?: string;
+    driverDisplayName?: string;
+    driverPhone?: string;
+    driverVehiclePlate?: string;
+    driverLatitude?: number | null;
+    driverLongitude?: number | null;
+    driverDistanceKm?: number | null;
+    driverEtaMinutes?: number | null;
+    responseNote?: string;
+  },
+): Promise<RideRequestView> {
+  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/accept`, payload ?? {});
 }
 
 export async function refuseRideRequest(id: string, responseNote?: string): Promise<RideRequestView> {
   return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/refuse`, { responseNote });
+}
+
+export async function markRideRequestArrived(id: string): Promise<RideRequestView> {
+  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/arrive`, {});
+}
+
+export async function startRideRequestTrip(id: string): Promise<RideRequestView> {
+  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/start`, {});
+}
+
+export async function completeRideRequestTrip(id: string): Promise<RideRequestView> {
+  return postJson<RideRequestView>(`/api/v1/ride-requests/${encodeURIComponent(id)}/complete`, {});
 }
 
 

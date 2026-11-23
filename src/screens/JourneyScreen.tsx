@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listDriverRideRequests, listPublicTransportProfiles, loadTransportAvailability, refuseRideRequest } from '../api';
+import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listDriverRideRequests, listPublicTransportProfiles, loadTransportAvailability, refuseRideRequest, markRideRequestArrived, startRideRequestTrip, completeRideRequestTrip } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { googleMapsDirectionsUrl, openGoogleMapsDirections } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
@@ -78,6 +78,8 @@ export function JourneyScreen({
   const [driverRequests, setDriverRequests] = useState<RideRequestView[]>([]);
   const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
   const [driverAvailability, setDriverAvailability] = useState<TransportAvailabilityView | null>(null);
+  const currentSessionUser = getSessionUser();
+  const currentDriverEmail = currentSessionUser?.email ?? '';
   const isDriver = driverAvailability?.available === true;
 
   const destinationOptions = useMemo(() => (match ? buildDestinationOptions(match) : []), [match]);
@@ -223,6 +225,13 @@ export function JourneyScreen({
     try {
       const me = getSessionUser();
       const hasToken = Boolean(getAuthToken());
+      const wantsLiveBooking = provider.providerType.toLowerCase().includes('taxi') || provider.providerType.toLowerCase().includes('vtc');
+      if (!wantsLiveBooking) {
+        const walkingQuery = destinationLabelToQuery(match, selectedDestination || match.venue);
+        setStatusMessage(`${provider.displayName} opens the walking route in maps.`);
+        await Linking.openURL(googleMapsDirectionsUrl(walkingQuery));
+        return;
+      }
       if (!me?.email && !hasToken) {
         setRequestError('Sign in again to send a live transport request.');
         setRequestLoading(false);
@@ -240,10 +249,6 @@ export function JourneyScreen({
       });
       setRideRequest(request);
       setStatusMessage(`Request sent to ${provider.displayName}. Waiting for driver response.`);
-      if (provider.providerType.toLowerCase().includes('taxi') || provider.providerType.toLowerCase().includes('vtc')) {
-        return;
-      }
-      await Linking.openURL(googleMapsDirectionsUrl(destinationLabelToQuery(match, selectedDestination || match.venue)));
     } catch {
       setRequestError('The ride request could not be created. Please try again.');
     } finally {
@@ -254,6 +259,8 @@ export function JourneyScreen({
   const requestSummary = rideRequest
     ? `${rideRequest.providerType} · ${rideRequest.status} · ${rideRequest.pickupLabel} → ${rideRequest.destinationLabel}`
     : null;
+  const visibleDriverRequests = driverRequests.filter((request) => request.status !== 'ACCEPTED' || request.driverProfileId === currentDriverEmail);
+  const activeDriverRequest = visibleDriverRequests.find((request) => request.status === 'ACCEPTED' && request.driverProfileId === currentDriverEmail) ?? null;
 
   if (!match) {
     return (
@@ -285,31 +292,70 @@ export function JourneyScreen({
           <Card title={t(locale, 'common.passengerRequests')} subtitle={t(locale, 'common.driverRequestsSubtitle')}>
             {driverRequestsLoading ? (
               <Text style={styles.muted}>{t(locale, 'common.loading')}</Text>
-            ) : driverRequests.length ? (
-              <View style={styles.grid2}>
-                {driverRequests.map((request) => (
-                  <View key={request.id} style={styles.miniCard}>
-                    <Text style={styles.miniCardTitle}>{request.passengerName}</Text>
-                    <Text style={styles.muted}>{request.pickupLabel}</Text>
-                    <Text style={styles.miniCardMeta}>{request.destinationLabel}</Text>
-                    <Text style={styles.muted}>{request.status}</Text>
+            ) : visibleDriverRequests.length ? (
+              <View style={styles.cardBody}>
+                {activeDriverRequest ? (
+                  <View style={styles.miniCard}>
+                    <View style={styles.rowBetween}>
+                      <View style={styles.rowLeft}>
+                        <Text style={styles.cardTitle}>Live ride in progress</Text>
+                        <Text style={styles.muted}>{activeDriverRequest.passengerName}</Text>
+                      </View>
+                      <Pill subtle>{activeDriverRequest.status}</Pill>
+                    </View>
+                    <Text style={styles.muted}>{activeDriverRequest.pickupLabel}</Text>
+                    <Text style={styles.miniCardMeta}>{activeDriverRequest.destinationLabel}</Text>
+                    <Text style={styles.helperText}>
+                      {activeDriverRequest.driverDistanceKm != null || activeDriverRequest.driverEtaMinutes != null
+                        ? `Passenger is ${activeDriverRequest.driverDistanceKm ?? '?'} km away · ETA ${activeDriverRequest.driverEtaMinutes ?? '?'} min`
+                        : 'Passenger location is live and will update on the map.'}
+                    </Text>
                     <View style={styles.ctaRow}>
-                      <SecondaryButton
-                        label={t(locale, 'common.refuse')}
-                        onPress={() => {
-                          void refuseRideRequest(request.id);
-                        }}
-                      />
-                      <PrimaryButton
-                        label={t(locale, 'common.accept')}
-                        onPress={() => {
-                          void acceptRideRequest(request.id);
-                        }}
-                        icon={<Ionicons name="checkmark" size={16} color="#172033" />}
-                      />
+                      <SecondaryButton label="Arrived at pickup" onPress={() => void markRideRequestArrived(activeDriverRequest.id)} icon={<Ionicons name="location-outline" size={16} color="#1d3fb3" />} />
+                      <PrimaryButton label="Start trip" onPress={() => void startRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="navigate-outline" size={16} color="#172033" />} />
+                      <SecondaryButton label="Complete trip" onPress={() => void completeRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="checkmark-done-outline" size={16} color="#1d3fb3" />} />
                     </View>
                   </View>
-                ))}
+                ) : null}
+                {visibleDriverRequests.map((request) => {
+                  const isOwnAccepted = request.status === 'ACCEPTED' && request.driverProfileId === currentDriverEmail;
+                  return (
+                    <View key={request.id} style={styles.miniCard}>
+                      <Text style={styles.miniCardTitle}>{request.passengerName}</Text>
+                      <Text style={styles.muted}>{request.pickupLabel}</Text>
+                      <Text style={styles.miniCardMeta}>{request.destinationLabel}</Text>
+                      <Text style={styles.muted}>{request.status}</Text>
+                      {isOwnAccepted ? (
+                        <Text style={styles.helperText}>You accepted this request. Open the map to drive to the passenger, then mark arrival and start the trip.</Text>
+                      ) : null}
+                      <View style={styles.ctaRow}>
+                        {request.status === 'PENDING' ? (
+                          <>
+                            <SecondaryButton
+                              label={t(locale, 'common.refuse')}
+                              onPress={() => {
+                                void refuseRideRequest(request.id);
+                              }}
+                            />
+                            <PrimaryButton
+                              label={t(locale, 'common.accept')}
+                              onPress={() => {
+                                void acceptRideRequest(request.id);
+                              }}
+                              icon={<Ionicons name="checkmark" size={16} color="#172033" />}
+                            />
+                          </>
+                        ) : isOwnAccepted ? (
+                          <SecondaryButton
+                            label={t(locale, 'common.openInMaps')}
+                            onPress={() => void openGoogleMapsDirections(destinationLabelToQuery(match, request.pickupLabel))}
+                            icon={<Feather name="map" size={16} color="#1d3fb3" />}
+                          />
+                        ) : null}
+                      </View>
+                    </View>
+                  );
+                })}
               </View>
             ) : (
               <EmptyState icon="car-sport-outline" title={t(locale, 'common.noLiveReservation')} subtitle={t(locale, 'common.driverRequestsSubtitle')} />
@@ -361,11 +407,30 @@ export function JourneyScreen({
               showsTraffic
             >
               <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={selectedDestination || match.venue} description={`${match.city}, ${match.country}`} />
+              {rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null ? (
+                <Marker
+                  coordinate={{ latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude }}
+                  title="Passenger pickup"
+                  description={rideRequest.pickupLabel}
+                />
+              ) : null}
+              {rideRequest?.driverLatitude != null && rideRequest?.driverLongitude != null ? (
+                <Marker
+                  coordinate={{ latitude: rideRequest.driverLatitude, longitude: rideRequest.driverLongitude }}
+                  title={rideRequest.driverDisplayName || 'Driver'}
+                  description={rideRequest.driverVehiclePlate || rideRequest.driverPhone || ''}
+                />
+              ) : null}
             </MapView>
             <View style={styles.mapOverlay}>
               <Text style={styles.cardTitle}>{selectedDestination || match.venue}</Text>
               <Text style={styles.muted}>{match.city}, {match.country}</Text>
               <Text style={styles.muted}>{formatCountdown(match.date, match.time)} · {match.transitSummary}</Text>
+              {rideRequest?.status === 'ACCEPTED' ? (
+                <Text style={styles.helperText}>
+                  {rideRequest.driverDisplayName || 'Your driver'} · {rideRequest.driverVehiclePlate || 'vehicle pending'} · {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km away` : 'live route active'} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : 'ETA updating'}
+                </Text>
+              ) : null}
             </View>
           </View>
         </Card>
@@ -453,8 +518,17 @@ export function JourneyScreen({
                   ? 'The request has been sent to the driver. Waiting for accept or refuse.'
                   : rideRequest.status === 'ACCEPTED'
                     ? 'The driver is coming to your pickup point and the route is live.'
-                    : 'The driver refused the request. Select another available chauffeur.'}
+                    : rideRequest.status === 'ARRIVED_AT_PICKUP'
+                      ? 'The driver has arrived at the pickup point.'
+                      : rideRequest.status === 'IN_PROGRESS'
+                        ? 'The driver is now taking you to the final destination.'
+                        : 'The driver refused the request. Select another available chauffeur.'}
               </Text>
+              {rideRequest.status === 'ACCEPTED' || rideRequest.status === 'ARRIVED_AT_PICKUP' || rideRequest.status === 'IN_PROGRESS' ? (
+                <Text style={styles.helperText}>
+                  {rideRequest.driverDisplayName || 'Driver'} · {rideRequest.driverVehiclePlate || 'plate pending'} · {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km away` : 'distance updating'} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : 'ETA updating'}
+                </Text>
+              ) : null}
               {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
               <View style={styles.ctaRow}>
                 <SecondaryButton label={t(locale, 'common.openInMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#1d3fb3" />} />

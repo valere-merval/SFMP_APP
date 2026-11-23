@@ -51,6 +51,7 @@ function formatCountdown(date: string, time: string) {
   return `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
 }
 
+
 export function HubScreen({
   data,
   selectedMatch,
