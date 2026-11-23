@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { createRideRequest, currentUser, getRideRequest, listPublicTransportProfiles, postJson } from '../api';
+import { createRideRequest, getRideRequest, getSessionUser, listPublicTransportProfiles, postJson } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
@@ -185,7 +185,12 @@ export function HubScreen({
     setRequestError(null);
     setRequestStatus(null);
     try {
-      const me = await currentUser();
+      const me = getSessionUser();
+      if (!me?.email) {
+        setRequestError('Sign in again to send a live transport request.');
+        setRequestLoading(false);
+        return;
+      }
       const response = await createRideRequest({
         matchId: hero.id,
         matchTitle: `${hero.homeTeam} vs ${hero.awayTeam}`,
