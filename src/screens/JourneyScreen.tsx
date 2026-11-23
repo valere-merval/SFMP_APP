@@ -1,29 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listAssignedDriverRideRequests, listDriverRideRequests, listPassengerRideRequests, listPublicTransportProfiles, loadTransportAvailability, refuseRideRequest, markRideRequestArrived, startRideRequestTrip, completeRideRequestTrip } from '../api';
 import { getScreenCopy } from '../screenCopy';
-import { googleMapsDirectionsUrl, openGoogleMapsDirections } from '../maps';
+import { googleMapsDirectionsUrl, openGoogleMapsDirections, buildRideRouteCoordinates, rideStatusStyle } from '../maps';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import type { LiveData, MatchCard, RideRequestView, TransportAvailabilityView, TransportProviderView } from '../types';
 import { t, type Locale } from '../i18n';
-
-function formatCountdown(date: string, time: string) {
-  const target = new Date(`${date}T${time.length === 5 ? `${time}:00` : time}`);
-  if (Number.isNaN(target.getTime())) return 'LIVE';
-  const diff = target.getTime() - Date.now();
-  if (diff <= 0) return 'LIVE';
-
-  const totalSeconds = Math.floor(diff / 1000);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
-}
 
 type ModeKey = 'bus' | 'train' | 'metro' | 'scooter' | 'bike' | 'taxi' | 'vtc';
 
@@ -50,6 +36,48 @@ function buildDestinationOptions(match: MatchCard) {
 
 function destinationLabelToQuery(match: MatchCard, label: string) {
   return `${label}, ${match.city}, ${match.country}`;
+}
+
+function rideStatusCopy(status?: RideRequestView['status'] | null) {
+  const meta = rideStatusStyle(status);
+  if (status === 'ACCEPTED') {
+    return {
+      badge: meta.label,
+      title: 'Driver is on the way',
+      subtitle: 'Live tracking begins now',
+      detail: 'Route to pickup is active and updates in real time.',
+    };
+  }
+  if (status === 'ARRIVED_AT_PICKUP') {
+    return {
+      badge: meta.label,
+      title: 'Driver arrived at pickup',
+      subtitle: 'Passenger is being collected',
+      detail: 'Hold position until the passenger confirms boarding.',
+    };
+  }
+  if (status === 'IN_PROGRESS') {
+    return {
+      badge: meta.label,
+      title: 'Trip in progress',
+      subtitle: 'Destination route is live',
+      detail: 'Follow the final route to the selected destination.',
+    };
+  }
+  if (status === 'COMPLETED') {
+    return {
+      badge: meta.label,
+      title: 'Trip completed',
+      subtitle: 'Ready for the next request',
+      detail: 'Passenger has reached the destination.',
+    };
+  }
+  return {
+    badge: meta.label,
+    title: 'Live request tracking',
+    subtitle: 'Waiting for the next step',
+    detail: 'Accept a ride to show live pickup and destination routing.',
+  };
 }
 
 export function JourneyScreen({
@@ -299,6 +327,32 @@ export function JourneyScreen({
     : null;
   const visibleDriverRequests = driverRequests.filter((request) => request.status !== 'ACCEPTED' || request.driverProfileId === currentDriverEmail);
   const activeDriverRequest = visibleDriverRequests.find((request) => request.status === 'ACCEPTED' && request.driverProfileId === currentDriverEmail) ?? null;
+  const activeDriverStatusMeta = rideStatusStyle(activeDriverRequest?.status);
+  const activeDriverStatus = rideStatusCopy(activeDriverRequest?.status);
+  const activeDriverRoute = buildRideRouteCoordinates(
+    activeDriverRequest?.driverLatitude != null && activeDriverRequest?.driverLongitude != null
+      ? { latitude: activeDriverRequest.driverLatitude, longitude: activeDriverRequest.driverLongitude }
+      : null,
+    activeDriverRequest?.pickupLatitude != null && activeDriverRequest?.pickupLongitude != null
+      ? { latitude: activeDriverRequest.pickupLatitude, longitude: activeDriverRequest.pickupLongitude }
+      : null,
+    activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
+      ? { latitude: activeDriverRequest.destinationLatitude, longitude: activeDriverRequest.destinationLongitude }
+      : null,
+  );
+  const passengerStatusMeta = rideStatusStyle(rideRequest?.status);
+  const passengerStatus = rideStatusCopy(rideRequest?.status);
+  const passengerRoute = buildRideRouteCoordinates(
+    rideRequest?.driverLatitude != null && rideRequest?.driverLongitude != null
+      ? { latitude: rideRequest.driverLatitude, longitude: rideRequest.driverLongitude }
+      : null,
+    rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null
+      ? { latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude }
+      : null,
+    rideRequest?.status === 'IN_PROGRESS' && rideRequest.destinationLatitude != null && rideRequest.destinationLongitude != null
+      ? { latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude }
+      : null,
+  );
 
   if (!match) {
     return (
@@ -406,19 +460,54 @@ export function JourneyScreen({
           </Card>
 
           <View style={styles.card}>
-            <MapView
-              style={{ height: 280, borderRadius: 20 }}
-              provider={PROVIDER_GOOGLE}
-              initialRegion={{
-                latitude: 40.4531,
-                longitude: -3.6883,
-                latitudeDelta: 0.03,
-                longitudeDelta: 0.03,
-              }}
-              showsTraffic
-            >
-              <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={match.venue} description={`${match.city}, ${match.country}`} />
-            </MapView>
+            <View style={styles.mapPanel}>
+              <MapView
+                style={styles.mapView}
+                provider={PROVIDER_GOOGLE}
+                initialRegion={{
+                  latitude: 40.4531,
+                  longitude: -3.6883,
+                  latitudeDelta: 0.03,
+                  longitudeDelta: 0.03,
+                }}
+                showsTraffic
+                showsCompass={false}
+              >
+                <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={match.venue} description={`${match.city}, ${match.country}`} />
+                {activeDriverRoute.length > 1 ? <Polyline coordinates={activeDriverRoute} strokeColor="#1d3fb3" strokeWidth={5} geodesic lineCap="round" lineJoin="round" /> : null}
+                {activeDriverRequest?.driverLatitude != null && activeDriverRequest?.driverLongitude != null ? (
+                  <Marker coordinate={{ latitude: activeDriverRequest.driverLatitude, longitude: activeDriverRequest.driverLongitude }} title={activeDriverRequest.driverDisplayName || 'Driver'} pinColor="#1d3fb3" />
+                ) : null}
+                {activeDriverRequest?.pickupLatitude != null && activeDriverRequest?.pickupLongitude != null ? (
+                  <Marker coordinate={{ latitude: activeDriverRequest.pickupLatitude, longitude: activeDriverRequest.pickupLongitude }} title={activeDriverRequest.pickupLabel} pinColor="#c8f36a" />
+                ) : null}
+                {activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null ? (
+                  <Marker coordinate={{ latitude: activeDriverRequest.destinationLatitude, longitude: activeDriverRequest.destinationLongitude }} title={activeDriverRequest.destinationLabel} pinColor="#172033" />
+                ) : null}
+              </MapView>
+              <View style={styles.mapOverlay}>
+                <View style={styles.rowBetween}>
+                  <View style={styles.rowLeft}>
+                    <Text style={styles.cardTitle}>{activeDriverStatus.title}</Text>
+                    <Text style={styles.muted}>{activeDriverStatus.subtitle}</Text>
+                  </View>
+                  <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: activeDriverStatusMeta.backgroundColor }}>
+                    <Text style={{ color: activeDriverStatusMeta.color, fontFamily: 'Poppins-SemiBold' }}>{activeDriverStatus.badge}</Text>
+                  </View>
+                </View>
+                <Text style={styles.helperText}>{activeDriverStatus.detail}</Text>
+                {activeDriverRequest ? (
+                  <Text style={styles.helperText}>
+                    {activeDriverRequest.passengerName} · {activeDriverRequest.pickupLabel} · {activeDriverRequest.destinationLabel}
+                  </Text>
+                ) : null}
+                {activeDriverRequest?.driverDistanceKm != null || activeDriverRequest?.driverEtaMinutes != null ? (
+                  <Text style={styles.helperText}>
+                    {activeDriverRequest.driverDistanceKm != null ? `${activeDriverRequest.driverDistanceKm} km away` : 'Distance updating'} · {activeDriverRequest.driverEtaMinutes != null ? `${activeDriverRequest.driverEtaMinutes} min ETA` : 'ETA updating'}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
             <Text style={styles.muted}>{t(locale, 'common.pickupTracking')}</Text>
           </View>
         </ScrollView>
@@ -450,11 +539,22 @@ export function JourneyScreen({
               showsTraffic
             >
               <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={selectedDestination || match.venue} description={`${match.city}, ${match.country}`} />
+              {passengerRoute.length > 1 ? (
+                <Polyline
+                  coordinates={passengerRoute}
+                  strokeColor={passengerStatusMeta.color}
+                  strokeWidth={5}
+                  geodesic
+                  lineCap="round"
+                  lineJoin="round"
+                />
+              ) : null}
               {rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null ? (
                 <Marker
                   coordinate={{ latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude }}
                   title="Passenger pickup"
                   description={rideRequest.pickupLabel}
+                  pinColor="#c8f36a"
                 />
               ) : null}
               {rideRequest?.driverLatitude != null && rideRequest?.driverLongitude != null ? (
@@ -462,18 +562,41 @@ export function JourneyScreen({
                   coordinate={{ latitude: rideRequest.driverLatitude, longitude: rideRequest.driverLongitude }}
                   title={rideRequest.driverDisplayName || 'Driver'}
                   description={rideRequest.driverVehiclePlate || rideRequest.driverPhone || ''}
+                  pinColor="#1d3fb3"
+                />
+              ) : null}
+              {rideRequest?.status === 'IN_PROGRESS' && rideRequest.destinationLatitude != null && rideRequest.destinationLongitude != null ? (
+                <Marker
+                  coordinate={{ latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude }}
+                  title={rideRequest.destinationLabel}
+                  pinColor="#172033"
                 />
               ) : null}
             </MapView>
             <View style={styles.mapOverlay}>
-              <Text style={styles.cardTitle}>{selectedDestination || match.venue}</Text>
-              <Text style={styles.muted}>{match.city}, {match.country}</Text>
-              <Text style={styles.muted}>{formatCountdown(match.date, match.time)} · {match.transitSummary}</Text>
-              {rideRequest?.status === 'ACCEPTED' ? (
-                <Text style={styles.helperText}>
-                  {rideRequest.driverDisplayName || 'Your driver'} · {rideRequest.driverVehiclePlate || 'vehicle pending'} · {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km away` : 'live route active'} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : 'ETA updating'}
-                </Text>
+              <View style={styles.rowBetween}>
+                <View style={styles.rowLeft}>
+                  <Text style={styles.cardTitle}>{passengerStatus.title}</Text>
+                  <Text style={styles.muted}>{passengerStatus.subtitle}</Text>
+                </View>
+                <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: passengerStatusMeta.backgroundColor }}>
+                  <Text style={{ color: passengerStatusMeta.color, fontFamily: 'Poppins-SemiBold' }}>{passengerStatus.badge}</Text>
+                </View>
+              </View>
+              <Text style={styles.helperText}>{passengerStatus.detail}</Text>
+              <Text style={styles.helperText}>
+                {rideRequest?.driverDisplayName || 'Your driver'}
+                {rideRequest?.driverVehiclePlate ? ` · ${rideRequest.driverVehiclePlate}` : ''}
+                {rideRequest?.driverDistanceKm != null ? ` · ${rideRequest.driverDistanceKm} km away` : ' · distance updating'}
+                {rideRequest?.driverEtaMinutes != null ? ` · ${rideRequest.driverEtaMinutes} min ETA` : ' · ETA updating'}
+              </Text>
+              {rideRequest?.status === 'IN_PROGRESS' ? (
+                <Text style={styles.helperText}>The trip route is now live on the map until the final destination.</Text>
               ) : null}
+              {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
+              <View style={styles.ctaRow}>
+                <SecondaryButton label={t(locale, 'common.openInMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#1d3fb3" />} />
+              </View>
             </View>
           </View>
         </Card>

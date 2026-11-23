@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listAssignedDriverRideRequests, listDriverRideRequests, listPassengerRideRequests, listPublicTransportProfiles, loadTransportAvailability, markRideRequestArrived, postJson, refuseRideRequest, startRideRequestTrip, completeRideRequestTrip } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import type { LiveData, MatchCard } from '../types';
 import { Card, EmptyState, MiniCard, PrimaryButton, Row, SecondaryButton, styles } from '../ui';
 import { trackTelemetry } from '../telemetry';
+import { buildRideRouteCoordinates, rideStatusStyle } from '../maps';
 import { t, type Locale } from '../i18n';
 
 type TicketPurchaseResponse = {
@@ -535,14 +536,21 @@ export function HubScreen({
                     showsCompass={false}
                   >
                     <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={hero.venue} description={`${hero.city}, ${hero.country}`} />
-                    {rideRequest?.pickupLatitude && rideRequest?.pickupLongitude ? (
+                    {(() => {
+                      const route = buildRideRouteCoordinates(
+                        rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null ? { latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude } : null,
+                        rideRequest?.destinationLatitude != null && rideRequest?.destinationLongitude != null ? { latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude } : null,
+                      );
+                      return route.length > 1 ? <Polyline coordinates={route} strokeColor={rideStatusStyle(rideRequest?.status).color} strokeWidth={5} geodesic lineCap="round" lineJoin="round" /> : null;
+                    })()}
+                    {rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null ? (
                       <Marker
                         coordinate={{ latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude }}
                         title={rideRequest.pickupLabel}
                         pinColor="#c8f36a"
                       />
                     ) : null}
-                    {rideRequest?.destinationLatitude && rideRequest?.destinationLongitude ? (
+                    {rideRequest?.destinationLatitude != null && rideRequest?.destinationLongitude != null ? (
                       <Marker
                         coordinate={{ latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude }}
                         title={rideRequest.destinationLabel}
@@ -551,18 +559,35 @@ export function HubScreen({
                     ) : null}
                   </MapView>
                   <View style={localStyles.mapOverlay}>
-                    <Text style={localStyles.mapOverlayTitle}>{rideRequest ? rideRequest.destinationLabel : (requestDestination || hero.venue)}</Text>
-                    <Text style={localStyles.mapOverlayText}>
-                      {rideRequest
-                        ? rideRequest.status === 'PENDING'
-                          ? t(locale, 'common.requestPending')
-                          : rideRequest.status === 'ACCEPTED'
-                            ? t(locale, 'common.requestAccepted')
-                            : t(locale, 'common.requestRefused')
-                        : t(locale, 'common.pickupTracking')}
-                    </Text>
+                    <View style={styles.rowBetween}>
+                      <View>
+                        <Text style={localStyles.mapOverlayTitle}>{rideRequest ? rideRequest.destinationLabel : (requestDestination || hero.venue)}</Text>
+                        <Text style={localStyles.mapOverlayText}>
+                          {rideRequest
+                            ? rideRequest.status === 'PENDING'
+                              ? t(locale, 'common.requestPending')
+                              : rideRequest.status === 'ACCEPTED'
+                                ? t(locale, 'common.requestAccepted')
+                                : rideRequest.status === 'IN_PROGRESS'
+                                  ? t(locale, 'common.requestInProgress')
+                                  : t(locale, 'common.requestRefused')
+                            : t(locale, 'common.pickupTracking')}
+                        </Text>
+                      </View>
+                      <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: rideStatusStyle(rideRequest?.status).backgroundColor }}>
+                        <Text style={{ color: rideStatusStyle(rideRequest?.status).color, fontFamily: 'Poppins-SemiBold' }}>{rideStatusStyle(rideRequest?.status).label}</Text>
+                      </View>
+                    </View>
                     {rideRequest?.driverDisplayName ? (
                       <Text style={localStyles.mapOverlayText}>{rideRequest.driverDisplayName}</Text>
+                    ) : null}
+                    {rideRequest?.driverVehiclePlate ? (
+                      <Text style={localStyles.mapOverlayText}>{rideRequest.driverVehiclePlate}</Text>
+                    ) : null}
+                    {(rideRequest?.driverDistanceKm != null || rideRequest?.driverEtaMinutes != null) ? (
+                      <Text style={localStyles.mapOverlayText}>
+                        {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km away` : 'Distance updating'} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min ETA` : 'ETA updating'}
+                      </Text>
                     ) : null}
                   </View>
                 </View>
