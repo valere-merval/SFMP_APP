@@ -6,7 +6,7 @@ import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
 import { registerAccount, resetPassword, uploadDocument } from '../api';
 import { t, type Locale, SUPPORTED_LANGUAGES } from '../i18n';
-import { Bullet, Card, ErrorText, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
+import { AvatarPhoto, BrandLogo, Bullet, Card, ErrorText, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
 
 
 type AuthMode = 'signin' | 'register' | 'reset';
@@ -296,6 +296,7 @@ export function AuthScreen({
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={[styles.container, authStyles.authContainer]} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
+          <BrandLogo compact />
           <Text style={styles.kicker}>{t(locale, 'auth.brand')}</Text>
           <Text style={styles.title}>
             {mode === 'register' ? t(locale, 'auth.create.title') : mode === 'reset' ? t(locale, 'auth.reset.title') : t(locale, 'auth.signin.title')}
@@ -392,7 +393,13 @@ export function AuthScreen({
                 <Feather name="camera" size={18} color="#2457e6" />
                 <Text style={authStyles.photoButtonText}>{photoUrl ? t(locale, 'auth.photoChange') : t(locale, 'auth.photoUpload')}</Text>
               </Pressable>
-              <Text style={styles.helperText}>{photoUrl ? t(locale, 'auth.photoUploaded') : t(locale, 'auth.photoHint')}</Text>
+              <View style={authStyles.photoPreview}>
+                <AvatarPhoto uri={photoUrl || null} label={`${firstName} ${lastName}`.trim() || email || t(locale, 'auth.photoUpload')} size={72} />
+                <View style={authStyles.photoPreviewText}>
+                  <Text style={styles.helperText}>{photoUrl ? t(locale, 'auth.photoUploaded') : t(locale, 'auth.photoHint')}</Text>
+                  <Text style={styles.helperText}>{photoUrl ? t(locale, 'auth.photoChange') : t(locale, 'auth.photoUpload')}</Text>
+                </View>
+              </View>
             </>
           ) : null}
 
@@ -479,4 +486,6 @@ const authStyles = StyleSheet.create({
   eyeButton: { padding: 8 },
   photoButton: { borderRadius: 16, borderWidth: 1, borderColor: '#dbe4ff', paddingVertical: 14, paddingHorizontal: 14, backgroundColor: '#edf2ff', flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'center' },
   photoButtonText: { color: '#2457e6', fontFamily: 'Poppins-SemiBold' },
+  photoPreview: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, borderWidth: 1, borderColor: '#dbe4ff', backgroundColor: '#fff' },
+  photoPreviewText: { flex: 1, gap: 4 },
 });

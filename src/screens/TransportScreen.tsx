@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { loadTransportAvailability, loadTransportProfile, saveTransportAvailability, listPublicTransportProfiles, type TransportAvailabilityView, type TransportProfileView } from '../api';
 import { type LiveData, type TransportProviderView } from '../types';
 import { Card, EmptyState, PrimaryButton, SecondaryButton, styles as uiStyles } from '../ui';

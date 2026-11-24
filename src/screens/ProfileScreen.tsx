@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { pick, errorCodes, isErrorWithCode, types } from '@react-native-documents/picker';
 import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { loadTransportProfile, saveTransportProfile, uploadDocument, type CurrentUser, type TransportProfileView, getSessionUser, deleteUserProfile, loadUserProfile, saveUserProfile } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { type LiveData } from '../types';
-import { Card, EmptyState, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
+import { AvatarPhoto, Card, EmptyState, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
 import { t, type Locale } from '../i18n';
 
 type Draft = Omit<TransportProfileView, 'id' | 'ownerEmail' | 'ownerName' | 'createdAt' | 'updatedAt'>;
@@ -493,10 +494,13 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
           <View style={screenStyles.rowGap}>
             {userLoading ? <EmptyState icon="time-outline" title={copy.loadingTitle} subtitle={copy.loadingBody} /> : null}
             <Text style={styles.muted}>{t(locale, 'profile.userProfileBody')}</Text>
-            <View style={screenStyles.driverPreview}>
-              <Text style={screenStyles.previewTitle}>{account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || t(locale, 'profile.profileMissing')}</Text>
-              <Text style={screenStyles.previewBody}>{account?.email || t(locale, 'profile.emailUnknown')}</Text>
-              <Text style={screenStyles.previewBody}>{t(locale, 'profile.userProfileRole')}</Text>
+            <View style={screenStyles.profilePreviewRow}>
+              <AvatarPhoto uri={userDraft.photoUrl || null} label={account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || account?.email || t(locale, 'profile.profileMissing')} size={72} />
+              <View style={screenStyles.profilePreviewMeta}>
+                <Text style={screenStyles.previewTitle}>{account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || t(locale, 'profile.profileMissing')}</Text>
+                <Text style={screenStyles.previewBody}>{account?.email || t(locale, 'profile.emailUnknown')}</Text>
+                <Text style={screenStyles.previewBody}>{t(locale, 'profile.userProfileRole')}</Text>
+              </View>
             </View>
             <Input value={userDraft.firstName} onChangeText={(value) => updateUser('firstName', value)} placeholder={t(locale, 'profile.firstName')} />
             <Input value={userDraft.lastName} onChangeText={(value) => updateUser('lastName', value)} placeholder={t(locale, 'profile.lastName')} />
@@ -543,8 +547,13 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
             <Input value={userDraft.phone} onChangeText={(value) => updateUser('phone', value)} placeholder={t(locale, 'profile.phoneNumber')} keyboardType="phone-pad" />
             <Pressable style={screenStyles.photoPicker} onPress={pickProfilePhoto}>
               <Text style={screenStyles.photoPickerLabel}>{t(locale, 'profile.profilePhoto')}</Text>
-              <Text style={screenStyles.photoPickerValue}>{userDraft.photoUrl || t(locale, 'profile.photoMissing')}</Text>
-              <Text style={screenStyles.photoPickerAction}>{t(locale, 'profile.changePhoto')}</Text>
+              <View style={screenStyles.photoPickerPreview}>
+                <AvatarPhoto uri={userDraft.photoUrl || null} label={account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || account?.email || t(locale, 'profile.profileMissing')} size={52} />
+                <View style={screenStyles.photoPickerTextBlock}>
+                  <Text style={screenStyles.photoPickerValue}>{userDraft.photoUrl ? t(locale, 'profile.photoUploaded') : t(locale, 'profile.photoMissing')}</Text>
+                  <Text style={screenStyles.photoPickerAction}>{t(locale, 'profile.changePhoto')}</Text>
+                </View>
+              </View>
             </Pressable>
             <View style={styles.chipsRow}>
               <PrimaryButton label={savingUser ? t(locale, 'profile.savingUser') : t(locale, 'profile.saveUser')} onPress={saveUser} icon={<Feather name="save" size={16} color="#0f172a" />} />
@@ -726,6 +735,8 @@ function ActionRow({ label, onPress, accent }: { label: string; onPress: () => v
 const screenStyles = StyleSheet.create({
   rowGap: { gap: 12 },
   driverPreview: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#dce5f5', gap: 4 },
+  profilePreviewRow: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#dce5f5', flexDirection: 'row', alignItems: 'center', gap: 14 },
+  profilePreviewMeta: { flex: 1, gap: 4 },
   previewTitle: { color: '#172033', fontSize: 16, fontFamily: 'Poppins-Bold' },
   previewBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
   primaryToggle: {
@@ -802,8 +813,10 @@ const screenStyles = StyleSheet.create({
   chipsRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
   muted: { color: '#60708b', fontFamily: 'Poppins-Regular' },
   helperText: { color: '#60708b', fontFamily: 'Poppins-Regular', lineHeight: 20 },
-  photoPicker: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#dce5f5', paddingHorizontal: 14, paddingVertical: 14, gap: 4 },
+  photoPicker: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#dce5f5', paddingHorizontal: 14, paddingVertical: 14, gap: 10 },
   photoPickerLabel: { color: '#60708b', fontFamily: 'Poppins-SemiBold', textTransform: 'uppercase', fontSize: 12 },
+  photoPickerPreview: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  photoPickerTextBlock: { flex: 1, gap: 2 },
   photoPickerValue: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
   photoPickerAction: { color: '#2457e6', fontFamily: 'Poppins-Medium' },
   success: { color: '#14532d', fontFamily: 'Poppins-Medium' },

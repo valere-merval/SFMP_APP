@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Platform, StatusBar, StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import { Platform, StatusBar, StyleSheet, Text, View, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { clearAuthToken, getSessionUser, hydrateAuthToken, loadUserProfile, type UserProfileView } from './src/api';
@@ -18,6 +18,7 @@ import { AuthScreen } from './src/screens/AuthScreen';
 import { TransportScreen } from './src/screens/TransportScreen';
 import { WayfindingScreen } from './src/screens/WayfindingScreen';
 import type { EventCatalogCard, LiveData, MatchCard } from './src/types';
+import { AvatarPhoto, BrandLogo } from './src/ui';
 
 const LOCALE_KEY = 'sfmp_locale';
 
@@ -57,11 +58,6 @@ const bootstrapStyles = StyleSheet.create({
     backgroundColor: '#f6f8fc',
     padding: 24,
   },
-  loadingBrand: {
-    color: '#172033',
-    fontFamily: 'Poppins-ExtraBold',
-    fontSize: 20,
-  },
   loadingCopy: {
     color: '#60708b',
     fontFamily: 'Poppins-Regular',
@@ -85,6 +81,7 @@ const shellStyles = StyleSheet.create({
     borderBottomColor: '#dbe4ff',
     backgroundColor: '#ffffff',
   },
+  topBarSafeArea: { backgroundColor: '#ffffff' },
   brandBlock: {
     flex: 1,
     paddingRight: 12,
@@ -101,26 +98,7 @@ const shellStyles = StyleSheet.create({
     fontSize: 11,
     marginTop: 2,
   },
-  avatarButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    overflow: 'hidden',
-    backgroundColor: '#172033',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#c8f36a',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-  },
-  avatarFallback: {
-    color: '#ffffff',
-    fontFamily: 'Poppins-ExtraBold',
-    fontSize: 15,
-  },
+  avatarButton: { width: 44, height: 44, borderRadius: 22, overflow: 'hidden' },
 });
 
 function useCatalogShell() {
@@ -190,16 +168,6 @@ function getAvatarFallbackName(profile: AppUserProfile) {
   if (name) return name;
   const sessionUser = getSessionUser();
   return sessionUser?.fullName ?? sessionUser?.email ?? 'SF';
-}
-
-function getAvatarInitials(label: string) {
-  return label
-    .split(/\s+/)
-    .map((part) => part.trim().charAt(0))
-    .filter(Boolean)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
 }
 
 function App(): React.JSX.Element {
@@ -346,10 +314,10 @@ function App(): React.JSX.Element {
   if (!ready) {
     return (
       <SafeAreaProvider>
-        <View style={bootstrapStyles.loadingShell}>
-          <Text style={bootstrapStyles.loadingBrand}>SMART FAN MOBILITY</Text>
+        <SafeAreaView style={bootstrapStyles.loadingShell} edges={['top', 'left', 'right']}>
+          <BrandLogo />
           <Text style={bootstrapStyles.loadingCopy}>{t(locale, 'common.loadingSession')}</Text>
-        </View>
+        </SafeAreaView>
       </SafeAreaProvider>
     );
   }
@@ -363,19 +331,17 @@ function App(): React.JSX.Element {
         <AuthScreen locale={locale} onLocaleChange={handleLocaleChange} onAuthenticated={handleAuthenticated} />
       ) : (
         <View style={shellStyles.connectedShell}>
-          <View style={shellStyles.topBar}>
+          <SafeAreaView style={shellStyles.topBarSafeArea} edges={['top', 'left', 'right']}>
+            <View style={shellStyles.topBar}>
             <View style={shellStyles.brandBlock}>
-              <Text style={shellStyles.brandTitle}>SMART FAN MOBILITY</Text>
+              <BrandLogo compact />
               <Text style={shellStyles.brandSubtitle}>{getAvatarFallbackName(userProfile)}</Text>
             </View>
             <Pressable style={shellStyles.avatarButton} onPress={() => setSession('app')} accessibilityRole="button" accessibilityLabel="Open profile area">
-              {userProfile?.photoUrl ? (
-                <Image source={{ uri: userProfile.photoUrl }} style={shellStyles.avatarImage} />
-              ) : (
-                <Text style={shellStyles.avatarFallback}>{getAvatarInitials(getAvatarFallbackName(userProfile))}</Text>
-              )}
+              <AvatarPhoto uri={userProfile?.photoUrl} label={getAvatarFallbackName(userProfile)} />
             </Pressable>
-          </View>
+            </View>
+          </SafeAreaView>
           {session === 'catalog' ? (
             <EventCatalogScreen locale={locale} catalogs={catalog?.eventCatalogs ?? []} onSelectCatalog={handleSelectCatalog} onSignOut={handleSignOut} />
           ) : session === 'matches' ? (

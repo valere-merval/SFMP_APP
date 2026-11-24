@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const fonts = {
@@ -63,6 +63,30 @@ export function Bullet({ children }: { children: React.ReactNode }) {
     <View style={styles.bulletRow}>
       <View style={styles.dot} />
       <Text style={styles.muted}>{children}</Text>
+    </View>
+  );
+}
+
+export function BrandLogo({ compact = false }: { compact?: boolean }) {
+  return (
+    <View style={[styles.brandLogoWrap, compact && styles.brandLogoWrapCompact]}>
+      <Image source={require('../assets/smart-fan-mobility-logo.jpg')} style={[styles.brandLogo, compact && styles.brandLogoCompact]} resizeMode="contain" />
+    </View>
+  );
+}
+
+export function AvatarPhoto({ uri, label, size = 44 }: { uri?: string | null; label: string; size?: number }) {
+  const initials = label
+    .split(/\s+/)
+    .map((part) => part.trim().charAt(0))
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+  const radius = Math.round(size / 2);
+  return (
+    <View style={[styles.avatarPhoto, { width: size, height: size, borderRadius: radius }]}>
+      {uri ? <Image source={{ uri }} style={[styles.avatarPhotoImage, { width: size, height: size, borderRadius: radius }]} /> : <Text style={styles.avatarPhotoFallback}>{initials}</Text>}
     </View>
   );
 }
@@ -189,6 +213,13 @@ export const styles = StyleSheet.create({
   langChipTextActive: { color: '#fff' },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   helperText: { color: '#60708b', fontSize: 12, fontFamily: fonts.medium, textAlign: 'center' },
+  brandLogoWrap: { width: '100%', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  brandLogoWrapCompact: { marginBottom: 0 },
+  brandLogo: { width: '100%', maxWidth: 320, height: 78 },
+  brandLogoCompact: { maxWidth: 240, height: 58 },
+  avatarPhoto: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#172033', overflow: 'hidden', borderWidth: 2, borderColor: '#c8f36a' },
+  avatarPhotoImage: { backgroundColor: '#172033' },
+  avatarPhotoFallback: { color: '#fff', fontFamily: fonts.extrabold, fontSize: 14 },
   passCard: { padding: 18, borderRadius: 22, backgroundColor: '#101b2d', gap: 10, borderWidth: 1, borderColor: '#1c2a44', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
   passHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   passHeaderContent: { flex: 1 },
