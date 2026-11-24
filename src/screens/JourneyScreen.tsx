@@ -23,6 +23,238 @@ const modeCards: Array<{ key: ModeKey; label: string; subtitle: string; icon: Re
   { key: 'vtc', label: 'VTC', subtitle: 'Send a live request', icon: <Ionicons name="car-sport-outline" size={20} color="#172033" />, regex: /vtc|chauffeur|driver/i },
 ];
 
+const J = {
+  en: {
+    liveRideInProgress: 'Live ride in progress',
+    passengerIsAwayEta: 'Passenger is {distance} km away · ETA {eta} min',
+    passengerLocationLive: 'Passenger location is live and updates on the map.',
+    navigateToPickup: 'Navigate to pickup',
+    openDestinationRoute: 'Open destination route',
+    followDestinationRoute: 'Follow destination route',
+    arrivedAtPickup: 'Arrived at pickup',
+    startTrip: 'Start trip',
+    completeTrip: 'Complete trip',
+    availableTransportModes: 'Available transport modes',
+    pickYourLiveRideType: 'Pick your live ride type',
+    yourDriver: 'Your driver',
+    distanceUpdating: 'Distance updating',
+    etaUpdating: 'ETA updating',
+    tripRouteLive: 'The trip route is now live on the map until the final destination.',
+    signInAgainToSendRequest: 'Sign in again to send a live transport request.',
+    requestCouldNotBeCreated: 'The ride request could not be created. Please try again.',
+    driverAcceptedThisRequest: 'You accepted this request. Open the map to drive to the passenger, then mark arrival and start the trip.',
+    openMapToDriveToPassenger: 'Open the map to drive to the passenger',
+    requestSentToDriver: 'Request sent to the driver. Waiting for a response.',
+    waitingForAcceptOrRefuse: 'Waiting for accept or refuse',
+    driverComingToPickup: 'The driver is coming to your pickup point and the route is live.',
+    driverArrivedAtPickup: 'The driver has arrived at the pickup point.',
+    driverTakingToFinalDestination: 'The driver is now taking you to the final destination.',
+    driverRefusedAnother: 'The driver refused this request. Select another available chauffeur.',
+    tripInProgress: 'Trip in progress',
+    tripCompleted: 'Trip completed',
+    readyForNextRequest: 'Ready for the next request',
+    passengerReachedDestination: 'Passenger has reached the destination.',
+    liveRequestTracking: 'Live request tracking',
+    waitingForNextStep: 'Waiting for the next step',
+    acceptRideToShowRouting: 'Accept a ride to show live pickup and destination routing.',
+  },
+
+  fr: {
+    liveRideInProgress: 'Trajet en direct',
+    passengerIsAwayEta: 'Le passager est à {distance} km · ETA {eta} min',
+    passengerLocationLive: 'La position du passager est en direct et se met à jour sur la carte.',
+    navigateToPickup: 'Aller au point de prise en charge',
+    openDestinationRoute: 'Ouvrir l’itinéraire vers la destination',
+    followDestinationRoute: 'Suivre l’itinéraire de destination',
+    arrivedAtPickup: 'Arrivé au point de prise en charge',
+    startTrip: 'Démarrer le trajet',
+    completeTrip: 'Terminer le trajet',
+    availableTransportModes: 'Modes de transport disponibles',
+    pickYourLiveRideType: 'Choisissez votre type de trajet en direct',
+    yourDriver: 'Votre chauffeur',
+    distanceUpdating: 'Distance en cours de mise à jour',
+    etaUpdating: 'ETA en cours de mise à jour',
+    tripRouteLive: 'L’itinéraire est maintenant en direct sur la carte jusqu’à la destination finale.',
+    signInAgainToSendRequest: 'Reconnectez-vous pour envoyer une demande de transport en direct.',
+    requestCouldNotBeCreated: 'La demande de trajet n’a pas pu être créée. Veuillez réessayer.',
+    driverAcceptedThisRequest: 'Vous avez accepté cette demande. Ouvrez la carte pour aller vers le passager, puis marquez l’arrivée et démarrez le trajet.',
+    openMapToDriveToPassenger: 'Ouvrir la carte pour aller vers le passager',
+    requestSentToDriver: 'Demande envoyée au chauffeur. En attente de réponse.',
+    waitingForAcceptOrRefuse: 'En attente d’acceptation ou de refus',
+    driverComingToPickup: 'Le chauffeur se dirige vers votre point de prise en charge et l’itinéraire est en direct.',
+    driverArrivedAtPickup: 'Le chauffeur est arrivé au point de prise en charge.',
+    driverTakingToFinalDestination: 'Le chauffeur vous conduit maintenant vers la destination finale.',
+    driverRefusedAnother: 'Le chauffeur a refusé cette demande. Choisissez un autre chauffeur disponible.',
+  },
+  de: {
+    liveRideInProgress: 'Live-Fahrt läuft',
+    passengerIsAwayEta: 'Der Fahrgast ist {distance} km entfernt · ETA {eta} Min',
+    passengerLocationLive: 'Die Position des Fahrgasts ist live und wird auf der Karte aktualisiert.',
+    navigateToPickup: 'Zum Abholpunkt navigieren',
+    openDestinationRoute: 'Zielfahrt öffnen',
+    followDestinationRoute: 'Zielfahrt verfolgen',
+    arrivedAtPickup: 'Am Abholpunkt angekommen',
+    startTrip: 'Fahrt starten',
+    completeTrip: 'Fahrt abschließen',
+    availableTransportModes: 'Verfügbare Transportarten',
+    pickYourLiveRideType: 'Wähle deinen Live-Fahrttyp',
+    yourDriver: 'Dein Fahrer',
+    distanceUpdating: 'Distanz wird aktualisiert',
+    etaUpdating: 'ETA wird aktualisiert',
+    tripRouteLive: 'Die Route ist jetzt live auf der Karte bis zum endgültigen Ziel.',
+    signInAgainToSendRequest: 'Bitte melde dich erneut an, um eine Live-Transportanfrage zu senden.',
+    requestCouldNotBeCreated: 'Die Fahranfrage konnte nicht erstellt werden. Bitte erneut versuchen.',
+    driverAcceptedThisRequest: 'Du hast diese Anfrage angenommen. Öffne die Karte, fahre zum Fahrgast und markiere dann die Ankunft und den Fahrtbeginn.',
+    openMapToDriveToPassenger: 'Karte öffnen, um zum Fahrgast zu fahren',
+    requestSentToDriver: 'Anfrage an den Fahrer gesendet. Warte auf Antwort.',
+    waitingForAcceptOrRefuse: 'Warte auf Annahme oder Ablehnung',
+    driverComingToPickup: 'Der Fahrer fährt zu deinem Abholpunkt und die Route ist live.',
+    driverArrivedAtPickup: 'Der Fahrer ist am Abholpunkt angekommen.',
+    driverTakingToFinalDestination: 'Der Fahrer bringt dich jetzt zum endgültigen Ziel.',
+    driverRefusedAnother: 'Der Fahrer hat diese Anfrage abgelehnt. Wähle einen anderen verfügbaren Chauffeur.',
+  },
+  es: {
+    liveRideInProgress: 'Viaje en vivo',
+    passengerIsAwayEta: 'El pasajero está a {distance} km · ETA {eta} min',
+    passengerLocationLive: 'La ubicación del pasajero está en vivo y se actualiza en el mapa.',
+    navigateToPickup: 'Ir al punto de recogida',
+    openDestinationRoute: 'Abrir ruta al destino',
+    followDestinationRoute: 'Seguir ruta al destino',
+    arrivedAtPickup: 'Llegó al punto de recogida',
+    startTrip: 'Iniciar viaje',
+    completeTrip: 'Completar viaje',
+    availableTransportModes: 'Modos de transporte disponibles',
+    pickYourLiveRideType: 'Elige tu tipo de viaje en vivo',
+    yourDriver: 'Tu conductor',
+    distanceUpdating: 'Distancia actualizándose',
+    etaUpdating: 'ETA actualizándose',
+    tripRouteLive: 'La ruta del viaje está en vivo en el mapa hasta el destino final.',
+    signInAgainToSendRequest: 'Vuelve a iniciar sesión para enviar una solicitud de transporte en vivo.',
+    requestCouldNotBeCreated: 'No se pudo crear la solicitud de viaje. Inténtalo de nuevo.',
+    driverAcceptedThisRequest: 'Aceptaste esta solicitud. Abre el mapa para ir al pasajero, luego marca la llegada y empieza el viaje.',
+    openMapToDriveToPassenger: 'Abrir el mapa para ir al pasajero',
+    requestSentToDriver: 'Solicitud enviada al conductor. Esperando respuesta.',
+    waitingForAcceptOrRefuse: 'Esperando aceptación o rechazo',
+    driverComingToPickup: 'El conductor va hacia tu punto de recogida y la ruta está en vivo.',
+    driverArrivedAtPickup: 'El conductor llegó al punto de recogida.',
+    driverTakingToFinalDestination: 'El conductor te lleva ahora al destino final.',
+    driverRefusedAnother: 'El conductor rechazó esta solicitud. Elige otro chofer disponible.',
+  },
+  pt: {
+    liveRideInProgress: 'Viagem ao vivo',
+    passengerIsAwayEta: 'O passageiro está a {distance} km · ETA {eta} min',
+    passengerLocationLive: 'A localização do passageiro está ao vivo e é atualizada no mapa.',
+    navigateToPickup: 'Ir para o ponto de embarque',
+    openDestinationRoute: 'Abrir rota para o destino',
+    followDestinationRoute: 'Seguir rota para o destino',
+    arrivedAtPickup: 'Chegou ao ponto de embarque',
+    startTrip: 'Iniciar viagem',
+    completeTrip: 'Concluir viagem',
+    availableTransportModes: 'Modos de transporte disponíveis',
+    pickYourLiveRideType: 'Escolha seu tipo de viagem ao vivo',
+    yourDriver: 'Seu motorista',
+    distanceUpdating: 'Distância atualizando',
+    etaUpdating: 'ETA atualizando',
+    tripRouteLive: 'A rota da viagem está ao vivo no mapa até o destino final.',
+    signInAgainToSendRequest: 'Entre novamente para enviar uma solicitação de transporte ao vivo.',
+    requestCouldNotBeCreated: 'Não foi possível criar a solicitação de viagem. Tente novamente.',
+    driverAcceptedThisRequest: 'Você aceitou esta solicitação. Abra o mapa para ir até o passageiro, depois marque a chegada e inicie a viagem.',
+    openMapToDriveToPassenger: 'Abrir o mapa para ir até o passageiro',
+    requestSentToDriver: 'Solicitação enviada ao motorista. Aguardando resposta.',
+    waitingForAcceptOrRefuse: 'Aguardando aceitar ou recusar',
+    driverComingToPickup: 'O motorista está indo até seu ponto de embarque e a rota está ao vivo.',
+    driverArrivedAtPickup: 'O motorista chegou ao ponto de embarque.',
+    driverTakingToFinalDestination: 'O motorista agora vai até o destino final.',
+    driverRefusedAnother: 'O motorista recusou esta solicitação. Escolha outro motorista disponível.',
+  },
+  ar: {
+    liveRideInProgress: 'الرحلة المباشرة جارية',
+    passengerIsAwayEta: 'الراكب يبعد {distance} كم · الوقت المتوقع {eta} دقيقة',
+    passengerLocationLive: 'موقع الراكب مباشر ويتم تحديثه على الخريطة.',
+    navigateToPickup: 'الانتقال إلى نقطة الالتقاط',
+    openDestinationRoute: 'فتح مسار الوجهة',
+    followDestinationRoute: 'متابعة مسار الوجهة',
+    arrivedAtPickup: 'وصل إلى نقطة الالتقاط',
+    startTrip: 'بدء الرحلة',
+    completeTrip: 'إنهاء الرحلة',
+    availableTransportModes: 'وسائل النقل المتاحة',
+    pickYourLiveRideType: 'اختر نوع الرحلة المباشرة',
+    yourDriver: 'سائقك',
+    distanceUpdating: 'المسافة قيد التحديث',
+    etaUpdating: 'الوقت المتوقع قيد التحديث',
+    tripRouteLive: 'مسار الرحلة مباشر الآن على الخريطة حتى الوجهة النهائية.',
+    signInAgainToSendRequest: 'سجّل الدخول مرة أخرى لإرسال طلب نقل مباشر.',
+    requestCouldNotBeCreated: 'تعذر إنشاء طلب الرحلة. حاول مرة أخرى.',
+    driverAcceptedThisRequest: 'لقد قبلت هذا الطلب. افتح الخريطة للتوجه إلى الراكب، ثم حدّد الوصول وابدأ الرحلة.',
+    openMapToDriveToPassenger: 'افتح الخريطة للتوجه إلى الراكب',
+    requestSentToDriver: 'تم إرسال الطلب إلى السائق. في انتظار الرد.',
+    waitingForAcceptOrRefuse: 'في انتظار القبول أو الرفض',
+    driverComingToPickup: 'السائق في طريقه إلى نقطة الالتقاط والمسار مباشر.',
+    driverArrivedAtPickup: 'وصل السائق إلى نقطة الالتقاط.',
+    driverTakingToFinalDestination: 'السائق ينقلك الآن إلى الوجهة النهائية.',
+    driverRefusedAnother: 'رفض السائق هذا الطلب. اختر سائقًا متاحًا آخر.',
+  },
+  zh: {
+    liveRideInProgress: '行程进行中',
+    passengerIsAwayEta: '乘客距离 {distance} 公里 · 预计 {eta} 分钟',
+    passengerLocationLive: '乘客位置正在实时更新到地图。',
+    navigateToPickup: '导航到接人点',
+    openDestinationRoute: '打开前往目的地的路线',
+    followDestinationRoute: '跟随目的地路线',
+    arrivedAtPickup: '已到达接人点',
+    startTrip: '开始行程',
+    completeTrip: '完成行程',
+    availableTransportModes: '可用交通方式',
+    pickYourLiveRideType: '选择你的实时行程类型',
+    yourDriver: '你的司机',
+    distanceUpdating: '距离更新中',
+    etaUpdating: '预计时间更新中',
+    tripRouteLive: '行程路线已在地图上实时显示，直到最终目的地。',
+    signInAgainToSendRequest: '请重新登录后再发送实时交通请求。',
+    requestCouldNotBeCreated: '无法创建行程请求，请重试。',
+    driverAcceptedThisRequest: '你已接受此请求。打开地图前往乘客，然后标记到达并开始行程。',
+    openMapToDriveToPassenger: '打开地图前往乘客',
+    requestSentToDriver: '请求已发送给司机，等待回复。',
+    waitingForAcceptOrRefuse: '等待接受或拒绝',
+    driverComingToPickup: '司机正前往接人点，路线为实时状态。',
+    driverArrivedAtPickup: '司机已到达接人点。',
+    driverTakingToFinalDestination: '司机现在正带你前往最终目的地。',
+    driverRefusedAnother: '司机拒绝了此请求。请选择其他可用司机。',
+  },
+  ru: {
+    liveRideInProgress: 'Поездка в реальном времени',
+    passengerIsAwayEta: 'Пассажир в {distance} км · ETA {eta} мин',
+    passengerLocationLive: 'Местоположение пассажира обновляется на карте в реальном времени.',
+    navigateToPickup: 'Проложить маршрут к месту подачи',
+    openDestinationRoute: 'Открыть маршрут к пункту назначения',
+    followDestinationRoute: 'Следовать маршруту к пункту назначения',
+    arrivedAtPickup: 'Прибыл к месту подачи',
+    startTrip: 'Начать поездку',
+    completeTrip: 'Завершить поездку',
+    availableTransportModes: 'Доступные виды транспорта',
+    pickYourLiveRideType: 'Выберите тип поездки в реальном времени',
+    yourDriver: 'Ваш водитель',
+    distanceUpdating: 'Расстояние обновляется',
+    etaUpdating: 'ETA обновляется',
+    tripRouteLive: 'Маршрут поездки теперь в реальном времени на карте до конечного пункта.',
+    signInAgainToSendRequest: 'Войдите снова, чтобы отправить запрос на транспорт в реальном времени.',
+    requestCouldNotBeCreated: 'Не удалось создать запрос на поездку. Попробуйте снова.',
+    driverAcceptedThisRequest: 'Вы приняли этот запрос. Откройте карту, чтобы ехать к пассажиру, затем отметьте прибытие и начните поездку.',
+    openMapToDriveToPassenger: 'Открыть карту, чтобы ехать к пассажиру',
+    requestSentToDriver: 'Запрос отправлен водителю. Ожидаем ответа.',
+    waitingForAcceptOrRefuse: 'Ожидание принятия или отказа',
+    driverComingToPickup: 'Водитель едет к месту подачи, маршрут в реальном времени.',
+    driverArrivedAtPickup: 'Водитель прибыл к месту подачи.',
+    driverTakingToFinalDestination: 'Водитель везёт вас к конечному пункту.',
+    driverRefusedAnother: 'Водитель отклонил этот запрос. Выберите другого доступного водителя.',
+  },
+} as const;
+
+function journeyText(locale: Locale, key: string, values?: Record<string, string | number>) {
+  const template = (J[locale] as Record<string, string>)[key] ?? (J.en as Record<string, string>)[key] ?? key;
+  return template.replace(/\{(\w+)\}/g, (_, name) => String(values?.[name] ?? ''));
+}
+
 function modeFromProvider(providerType: string): ModeKey {
   const normalized = providerType.toLowerCase();
   return modeCards.find((mode) => mode.regex.test(normalized))?.key ?? 'vtc';
@@ -38,45 +270,45 @@ function destinationLabelToQuery(match: MatchCard, label: string) {
   return `${label}, ${match.city}, ${match.country}`;
 }
 
-function rideStatusCopy(status?: RideRequestView['status'] | null) {
-  const meta = rideStatusStyle(status);
+function rideStatusCopy(locale: Locale, status?: RideRequestView['status'] | null) {
+  const meta = rideStatusStyle(status, locale);
   if (status === 'ACCEPTED') {
     return {
       badge: meta.label,
-      title: 'Driver is on the way',
-      subtitle: 'Live tracking begins now',
-      detail: 'Route to pickup is active and updates in real time.',
+      title: journeyText(locale, 'liveRideInProgress'),
+      subtitle: journeyText(locale, 'waitingForAcceptOrRefuse'),
+      detail: journeyText(locale, 'driverComingToPickup'),
     };
   }
   if (status === 'ARRIVED_AT_PICKUP') {
     return {
       badge: meta.label,
-      title: 'Driver arrived at pickup',
-      subtitle: 'Passenger is being collected',
-      detail: 'Hold position until the passenger confirms boarding.',
+      title: journeyText(locale, 'arrivedAtPickup'),
+      subtitle: journeyText(locale, 'driverArrivedAtPickup'),
+      detail: journeyText(locale, 'passengerLocationLive'),
     };
   }
   if (status === 'IN_PROGRESS') {
     return {
       badge: meta.label,
-      title: 'Trip in progress',
-      subtitle: 'Destination route is live',
-      detail: 'Follow the final route to the selected destination.',
+      title: journeyText(locale, 'tripInProgress'),
+      subtitle: journeyText(locale, 'tripRouteLive'),
+      detail: journeyText(locale, 'driverTakingToFinalDestination'),
     };
   }
   if (status === 'COMPLETED') {
     return {
       badge: meta.label,
-      title: 'Trip completed',
-      subtitle: 'Ready for the next request',
-      detail: 'Passenger has reached the destination.',
+      title: journeyText(locale, 'tripCompleted'),
+      subtitle: journeyText(locale, 'readyForNextRequest'),
+      detail: journeyText(locale, 'passengerReachedDestination'),
     };
   }
   return {
     badge: meta.label,
-    title: 'Live request tracking',
-    subtitle: 'Waiting for the next step',
-    detail: 'Accept a ride to show live pickup and destination routing.',
+    title: journeyText(locale, 'liveRequestTracking'),
+    subtitle: journeyText(locale, 'waitingForNextStep'),
+    detail: journeyText(locale, 'acceptRideToShowRouting'),
   };
 }
 
@@ -259,11 +491,11 @@ export function JourneyScreen({
         if (activeRequest) {
           setRideRequest(activeRequest);
           if (activeRequest.status === 'ACCEPTED') {
-            setStatusMessage(`${activeRequest.driverDisplayName ?? 'Driver'} accepted your request and is on the way.`);
+            setStatusMessage(`${activeRequest.driverDisplayName ?? journeyText(locale, 'yourDriver')} · ${journeyText(locale, 'driverComingToPickup')}`);
           } else if (activeRequest.status === 'ARRIVED_AT_PICKUP') {
-            setStatusMessage(`${activeRequest.driverDisplayName ?? 'Driver'} arrived at the pickup point.`);
+            setStatusMessage(`${activeRequest.driverDisplayName ?? journeyText(locale, 'yourDriver')} · ${journeyText(locale, 'driverArrivedAtPickup')}`);
           } else if (activeRequest.status === 'IN_PROGRESS') {
-            setStatusMessage(`${activeRequest.driverDisplayName ?? 'Driver'} is driving you to ${activeRequest.destinationLabel}.`);
+            setStatusMessage(`${activeRequest.driverDisplayName ?? journeyText(locale, 'yourDriver')} · ${journeyText(locale, 'driverTakingToFinalDestination')}`);
           }
         }
       } catch {
@@ -278,7 +510,7 @@ export function JourneyScreen({
       cancelled = true;
       clearInterval(timer);
     };
-  }, [currentSessionEmail]);
+  }, [currentSessionEmail, locale]);
 
   useEffect(() => {
     if (!rideRequest) return;
@@ -287,16 +519,16 @@ export function JourneyScreen({
         const current = await getRideRequest(rideRequest.id);
         setRideRequest(current);
         if (current.status === 'ACCEPTED') {
-          setStatusMessage(`${current.driverDisplayName ?? 'Driver'} accepted your request and is coming to your pickup point.`);
+          setStatusMessage(`${current.driverDisplayName ?? journeyText(locale, 'yourDriver')} · ${journeyText(locale, 'driverComingToPickup')}`);
         } else if (current.status === 'REFUSED') {
-          setStatusMessage('The driver refused this request. Select another available chauffeur.');
+          setStatusMessage(journeyText(locale, 'driverRefusedAnother'));
         }
       } catch {
         // keep last state
       }
     }, 3500);
     return () => clearInterval(timer);
-  }, [rideRequest]);
+  }, [rideRequest, locale]);
 
   const reserveRide = async (provider: TransportProviderView) => {
     if (!match) return;
@@ -313,7 +545,7 @@ export function JourneyScreen({
         return;
       }
       if (!me?.email && !hasToken) {
-        setRequestError('Sign in again to send a live transport request.');
+        setRequestError(journeyText(locale, 'signInAgainToSendRequest'));
         setRequestLoading(false);
         return;
       }
@@ -328,9 +560,9 @@ export function JourneyScreen({
         note: `Live ride request for ${provider.displayName}`,
       });
       setRideRequest(request);
-      setStatusMessage(`Request sent to ${provider.displayName}. Waiting for driver response.`);
+      setStatusMessage(`${provider.displayName} · ${journeyText(locale, 'requestSentToDriver')}`);
     } catch {
-      setRequestError('The ride request could not be created. Please try again.');
+      setRequestError(journeyText(locale, 'requestCouldNotBeCreated'));
     } finally {
       setRequestLoading(false);
     }
@@ -341,15 +573,15 @@ export function JourneyScreen({
     : null;
   const visibleDriverRequests = driverRequests.filter((request) => request.status !== 'ACCEPTED' || request.driverProfileId === currentDriverEmail);
   const activeDriverRequest = visibleDriverRequests.find((request) => request.status === 'ACCEPTED' && request.driverProfileId === currentDriverEmail) ?? null;
-  const activeDriverStatusMeta = rideStatusStyle(activeDriverRequest?.status);
-  const activeDriverStatus = rideStatusCopy(activeDriverRequest?.status);
+  const activeDriverStatusMeta = rideStatusStyle(activeDriverRequest?.status, locale);
+  const activeDriverStatus = rideStatusCopy(locale, activeDriverRequest?.status);
   const activeDriverNavigationLabel = activeDriverRequest
     ? activeDriverRequest.status === 'ACCEPTED'
-      ? 'Navigate to pickup'
+      ? journeyText(locale, 'navigateToPickup')
       : activeDriverRequest.status === 'ARRIVED_AT_PICKUP'
-        ? 'Open destination route'
+        ? journeyText(locale, 'openDestinationRoute')
         : activeDriverRequest.status === 'IN_PROGRESS'
-          ? 'Follow destination route'
+          ? journeyText(locale, 'followDestinationRoute')
           : null
     : null;
   const activeDriverRoute = buildRideRouteCoordinates(
@@ -363,8 +595,8 @@ export function JourneyScreen({
       ? { latitude: activeDriverRequest.destinationLatitude, longitude: activeDriverRequest.destinationLongitude }
       : null,
   );
-  const passengerStatusMeta = rideStatusStyle(rideRequest?.status);
-  const passengerStatus = rideStatusCopy(rideRequest?.status);
+  const passengerStatusMeta = rideStatusStyle(rideRequest?.status, locale);
+  const passengerStatus = rideStatusCopy(locale, rideRequest?.status);
   const passengerRoute = buildRideRouteCoordinates(
     rideRequest?.driverLatitude != null && rideRequest?.driverLongitude != null
       ? { latitude: rideRequest.driverLatitude, longitude: rideRequest.driverLongitude }
@@ -413,17 +645,17 @@ export function JourneyScreen({
                   <View style={styles.miniCard}>
                     <View style={styles.rowBetween}>
                       <View style={styles.rowLeft}>
-                        <Text style={styles.cardTitle}>Live ride in progress</Text>
+                        <Text style={styles.cardTitle}>{journeyText(locale, 'liveRideInProgress')}</Text>
                         <Text style={styles.muted}>{activeDriverRequest.passengerName}</Text>
                       </View>
-                      <Pill subtle>{activeDriverRequest.status}</Pill>
+                      <Pill subtle>{activeDriverStatus.badge}</Pill>
                     </View>
                     <Text style={styles.muted}>{activeDriverRequest.pickupLabel}</Text>
                     <Text style={styles.miniCardMeta}>{activeDriverRequest.destinationLabel}</Text>
                     <Text style={styles.helperText}>
-                      {activeDriverRequest.driverDistanceKm != null || activeDriverRequest.driverEtaMinutes != null
-                        ? `Passenger is ${activeDriverRequest.driverDistanceKm ?? '?'} km away · ETA ${activeDriverRequest.driverEtaMinutes ?? '?'} min`
-                        : 'Passenger location is live and will update on the map.'}
+                    {activeDriverRequest.driverDistanceKm != null || activeDriverRequest.driverEtaMinutes != null
+                      ? journeyText(locale, 'passengerIsAwayEta', { distance: activeDriverRequest.driverDistanceKm ?? '?', eta: activeDriverRequest.driverEtaMinutes ?? '?' })
+                      : journeyText(locale, 'passengerLocationLive')}
                     </Text>
                     {activeDriverNavigationLabel ? (
                       <View style={styles.ctaRow}>
@@ -441,9 +673,9 @@ export function JourneyScreen({
                       </View>
                     ) : null}
                     <View style={styles.ctaRow}>
-                      <SecondaryButton label="Arrived at pickup" onPress={() => void markRideRequestArrived(activeDriverRequest.id)} icon={<Ionicons name="location-outline" size={16} color="#1d3fb3" />} />
-                      <PrimaryButton label="Start trip" onPress={() => void startRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="navigate-outline" size={16} color="#172033" />} />
-                      <SecondaryButton label="Complete trip" onPress={() => void completeRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="checkmark-done-outline" size={16} color="#1d3fb3" />} />
+                      <SecondaryButton label={journeyText(locale, 'arrivedAtPickup')} onPress={() => void markRideRequestArrived(activeDriverRequest.id)} icon={<Ionicons name="location-outline" size={16} color="#1d3fb3" />} />
+                      <PrimaryButton label={journeyText(locale, 'startTrip')} onPress={() => void startRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="navigate-outline" size={16} color="#172033" />} />
+                      <SecondaryButton label={journeyText(locale, 'completeTrip')} onPress={() => void completeRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="checkmark-done-outline" size={16} color="#1d3fb3" />} />
                     </View>
                   </View>
                 ) : null}
@@ -454,9 +686,9 @@ export function JourneyScreen({
                       <Text style={styles.miniCardTitle}>{request.passengerName}</Text>
                       <Text style={styles.muted}>{request.pickupLabel}</Text>
                       <Text style={styles.miniCardMeta}>{request.destinationLabel}</Text>
-                      <Text style={styles.muted}>{request.status}</Text>
+                      <Text style={styles.muted}>{rideStatusCopy(locale, request.status).badge}</Text>
                       {isOwnAccepted ? (
-                        <Text style={styles.helperText}>You accepted this request. Open the map to drive to the passenger, then mark arrival and start the trip.</Text>
+                        <Text style={styles.helperText}>{journeyText(locale, 'driverAcceptedThisRequest')}</Text>
                       ) : null}
                       <View style={styles.ctaRow}>
                         {request.status === 'PENDING' ? (
@@ -482,7 +714,7 @@ export function JourneyScreen({
                           </>
                         ) : isOwnAccepted ? (
                           <SecondaryButton
-                            label={t(locale, 'common.openInMaps')}
+                            label={t(locale, 'common.openInGoogleMaps')}
                             onPress={() => void openGoogleMapsDirections(destinationLabelToQuery(match, request.pickupLabel))}
                             icon={<Feather name="map" size={16} color="#1d3fb3" />}
                           />
@@ -519,7 +751,7 @@ export function JourneyScreen({
                   </>
                 ) : null}
                 {activeDriverRequest?.driverLatitude != null && activeDriverRequest?.driverLongitude != null ? (
-                  <Marker coordinate={{ latitude: activeDriverRequest.driverLatitude, longitude: activeDriverRequest.driverLongitude }} title={activeDriverRequest.driverDisplayName || 'Driver'} pinColor="#1d3fb3" />
+                  <Marker coordinate={{ latitude: activeDriverRequest.driverLatitude, longitude: activeDriverRequest.driverLongitude }} title={activeDriverRequest.driverDisplayName || journeyText(locale, 'yourDriver')} pinColor="#1d3fb3" />
                 ) : null}
                 {activeDriverRequest?.pickupLatitude != null && activeDriverRequest?.pickupLongitude != null ? (
                   <Marker coordinate={{ latitude: activeDriverRequest.pickupLatitude, longitude: activeDriverRequest.pickupLongitude }} title={activeDriverRequest.pickupLabel} pinColor="#c8f36a" />
@@ -561,7 +793,7 @@ export function JourneyScreen({
                 ) : null}
                 {activeDriverRequest?.driverDistanceKm != null || activeDriverRequest?.driverEtaMinutes != null ? (
                   <Text style={styles.helperText}>
-                    {activeDriverRequest.driverDistanceKm != null ? `${activeDriverRequest.driverDistanceKm} km away` : 'Distance updating'} · {activeDriverRequest.driverEtaMinutes != null ? `${activeDriverRequest.driverEtaMinutes} min ETA` : 'ETA updating'}
+                    {activeDriverRequest.driverDistanceKm != null ? `${activeDriverRequest.driverDistanceKm} km away` : journeyText(locale, 'distanceUpdating')} · {activeDriverRequest.driverEtaMinutes != null ? `${activeDriverRequest.driverEtaMinutes} min ETA` : journeyText(locale, 'etaUpdating')}
                   </Text>
                 ) : null}
               </View>
@@ -620,7 +852,7 @@ export function JourneyScreen({
               {rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null ? (
                 <Marker
                   coordinate={{ latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude }}
-                  title="Passenger pickup"
+                  title={journeyText(locale, 'navigateToPickup')}
                   description={rideRequest.pickupLabel}
                   pinColor="#c8f36a"
                 />
@@ -628,7 +860,7 @@ export function JourneyScreen({
               {rideRequest?.driverLatitude != null && rideRequest?.driverLongitude != null ? (
                 <Marker
                   coordinate={{ latitude: rideRequest.driverLatitude, longitude: rideRequest.driverLongitude }}
-                  title={rideRequest.driverDisplayName || 'Driver'}
+                  title={rideRequest.driverDisplayName || journeyText(locale, 'yourDriver')}
                   description={rideRequest.driverVehiclePlate || rideRequest.driverPhone || ''}
                   pinColor="#1d3fb3"
                 />
@@ -653,23 +885,23 @@ export function JourneyScreen({
               </View>
               <Text style={styles.helperText}>{passengerStatus.detail}</Text>
               <Text style={styles.helperText}>
-                {rideRequest?.driverDisplayName || 'Your driver'}
+                {rideRequest?.driverDisplayName || journeyText(locale, 'yourDriver')}
                 {rideRequest?.driverVehiclePlate ? ` · ${rideRequest.driverVehiclePlate}` : ''}
-                {rideRequest?.driverDistanceKm != null ? ` · ${rideRequest.driverDistanceKm} km away` : ' · distance updating'}
-                {rideRequest?.driverEtaMinutes != null ? ` · ${rideRequest.driverEtaMinutes} min ETA` : ' · ETA updating'}
+                {rideRequest?.driverDistanceKm != null ? ` · ${rideRequest.driverDistanceKm} km away` : ` · ${journeyText(locale, 'distanceUpdating')}`}
+                {rideRequest?.driverEtaMinutes != null ? ` · ${rideRequest.driverEtaMinutes} min ETA` : ` · ${journeyText(locale, 'etaUpdating')}`}
               </Text>
               {rideRequest?.status === 'IN_PROGRESS' ? (
-                <Text style={styles.helperText}>The trip route is now live on the map until the final destination.</Text>
+                <Text style={styles.helperText}>{journeyText(locale, 'tripRouteLive')}</Text>
               ) : null}
               {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
               <View style={styles.ctaRow}>
-                <SecondaryButton label={t(locale, 'common.openInMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#1d3fb3" />} />
+                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#1d3fb3" />} />
               </View>
             </View>
           </View>
         </Card>
 
-        <Card title="Available transport modes" subtitle="Pick your live ride type" wide>
+        <Card title={journeyText(locale, 'availableTransportModes')} subtitle={journeyText(locale, 'pickYourLiveRideType')} wide>
           <View style={styles.chipsRow}>
             {modeCards.map((mode) => (
               <Pressable
@@ -742,30 +974,30 @@ export function JourneyScreen({
             <View style={styles.cardBody}>
               <View style={styles.rowBetween}>
                 <View style={styles.rowLeft}>
-                  <Text style={styles.cardTitle}>{rideRequest.status}</Text>
+                  <Text style={styles.cardTitle}>{passengerStatus.badge}</Text>
                   <Text style={styles.muted}>{requestSummary}</Text>
                 </View>
-                <Pill subtle={rideRequest.status === 'ACCEPTED'}>{rideRequest.status}</Pill>
+                <Pill subtle={rideRequest.status === 'ACCEPTED'}>{passengerStatus.badge}</Pill>
               </View>
               <Text style={styles.helperText}>
                 {rideRequest.status === 'PENDING'
-                  ? 'The request has been sent to the driver. Waiting for accept or refuse.'
+                  ? journeyText(locale, 'requestSentToDriver')
                   : rideRequest.status === 'ACCEPTED'
-                    ? 'The driver is coming to your pickup point and the route is live.'
+                    ? journeyText(locale, 'driverComingToPickup')
                     : rideRequest.status === 'ARRIVED_AT_PICKUP'
-                      ? 'The driver has arrived at the pickup point.'
+                      ? journeyText(locale, 'driverArrivedAtPickup')
                       : rideRequest.status === 'IN_PROGRESS'
-                        ? 'The driver is now taking you to the final destination.'
-                        : 'The driver refused the request. Select another available chauffeur.'}
+                        ? journeyText(locale, 'driverTakingToFinalDestination')
+                        : journeyText(locale, 'driverRefusedAnother')}
               </Text>
               {rideRequest.status === 'ACCEPTED' || rideRequest.status === 'ARRIVED_AT_PICKUP' || rideRequest.status === 'IN_PROGRESS' ? (
                 <Text style={styles.helperText}>
-                  {rideRequest.driverDisplayName || 'Driver'} · {rideRequest.driverVehiclePlate || 'plate pending'} · {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km away` : 'distance updating'} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : 'ETA updating'}
+                  {rideRequest.driverDisplayName || journeyText(locale, 'yourDriver')} · {rideRequest.driverVehiclePlate || 'plate pending'} · {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km away` : journeyText(locale, 'distanceUpdating')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
                 </Text>
               ) : null}
               {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
               <View style={styles.ctaRow}>
-                <SecondaryButton label={t(locale, 'common.openInMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#1d3fb3" />} />
+                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#1d3fb3" />} />
               </View>
             </View>
           ) : (
