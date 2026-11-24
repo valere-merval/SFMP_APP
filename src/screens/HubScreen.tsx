@@ -225,12 +225,13 @@ export function HubScreen({
     let mounted = true;
     const refresh = async () => {
       try {
-        const providerType = requestMode;
-        const [pending, assigned] = await Promise.all([
-          listDriverRideRequests(hero.id, providerType),
+        const providerTypes = ['Taxi', 'VTC'];
+        const [pendingBatches, assigned] = await Promise.all([
+          Promise.all(providerTypes.map((providerType) => listDriverRideRequests(hero.id, providerType).catch(() => []))),
           getSessionUser()?.email ? listAssignedDriverRideRequests(getSessionUser()!.email) : Promise.resolve([]),
         ]);
         if (!mounted) return;
+        const pending = pendingBatches.flat();
         const live = [...pending, ...assigned.filter((request) => request.matchId === hero.id)];
         const deduped = live.filter((request, index, list) => list.findIndex((item) => item.id === request.id) === index);
         setDriverRequests(deduped);
@@ -250,7 +251,7 @@ export function HubScreen({
       mounted = false;
       clearInterval(timer);
     };
-  }, [hero, isDriver, requestMode]);
+  }, [hero, isDriver]);
 
   const topAlert = useMemo(() => {
     const corridor = data?.traffic?.[0];

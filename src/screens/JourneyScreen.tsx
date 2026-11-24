@@ -204,12 +204,13 @@ export function JourneyScreen({
     const refresh = async () => {
       setDriverRequestsLoading(true);
       try {
-        const providerType = modeCards.find((mode) => mode.key === activeMode)?.label ?? 'VTC';
-        const [pending, assigned] = await Promise.all([
-          listDriverRideRequests(match.id, providerType),
+        const providerTypes = ['Taxi', 'VTC'];
+        const [pendingBatches, assigned] = await Promise.all([
+          Promise.all(providerTypes.map((providerType) => listDriverRideRequests(match.id, providerType).catch(() => []))),
           currentSessionEmail ? listAssignedDriverRideRequests(currentSessionEmail) : Promise.resolve([]),
         ]);
         if (!cancelled) {
+          const pending = pendingBatches.flat();
           const live = [...pending, ...assigned.filter((request) => request.matchId === match.id)];
           const deduped = live.filter((request, index, list) => list.findIndex((item) => item.id === request.id) === index);
           setDriverRequests(deduped);
@@ -232,7 +233,7 @@ export function JourneyScreen({
       cancelled = true;
       clearInterval(timer);
     };
-  }, [activeMode, isDriver, match, currentSessionEmail]);
+  }, [match, isDriver, currentSessionEmail]);
 
   useEffect(() => {
     if (!currentSessionEmail) return;
