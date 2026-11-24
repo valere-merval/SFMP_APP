@@ -663,7 +663,7 @@ export function JourneyScreen({
                   <View style={styles.miniCard}>
                     <View style={styles.rowBetween}>
                       <View style={styles.rowLeft}>
-                        <Text style={styles.cardTitle}>{journeyText(locale, 'liveRideInProgress')}</Text>
+                        <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{journeyText(locale, 'liveRideInProgress')}</Text>
                         <Text style={styles.muted}>{activeDriverRequest.passengerName}</Text>
                       </View>
                       <Pill subtle>{activeDriverStatus.badge}</Pill>
@@ -779,7 +779,7 @@ export function JourneyScreen({
               <View style={styles.mapOverlay}>
                 <View style={styles.rowBetween}>
                   <View style={styles.rowLeft}>
-                    <Text style={styles.cardTitle}>{activeDriverStatus.title}</Text>
+                    <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{activeDriverStatus.title}</Text>
                     <Text style={styles.muted}>{activeDriverStatus.subtitle}</Text>
                   </View>
                   <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: activeDriverStatusMeta.backgroundColor }}>
@@ -824,7 +824,7 @@ export function JourneyScreen({
                   <View style={styles.rowBetween}>
                     <View style={styles.rowLeft}>
                       <Text style={styles.kicker}>{t(locale, 'common.liveMap')}</Text>
-                      <Text style={styles.title}>{activeDriverStatus.title}</Text>
+                      <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">{activeDriverStatus.title}</Text>
                       <Text style={styles.subtitle}>{activeDriverStatus.subtitle}</Text>
                     </View>
                     <SecondaryButton label={t(locale, 'common.refuse')} onPress={() => setMapExpanded(false)} icon={<Feather name="x" size={16} color="#1d3fb3" />} />
@@ -852,7 +852,7 @@ export function JourneyScreen({
                   <View style={styles.mapOverlay}>
                     <View style={styles.rowBetween}>
                       <View style={styles.rowLeft}>
-                        <Text style={styles.cardTitle}>{activeDriverStatus.title}</Text>
+                        <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{activeDriverStatus.title}</Text>
                         <Text style={styles.muted}>{activeDriverStatus.subtitle}</Text>
                       </View>
                       <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: activeDriverStatusMeta.backgroundColor }}>
@@ -956,7 +956,7 @@ export function JourneyScreen({
             <View style={styles.mapOverlay}>
               <View style={styles.rowBetween}>
                 <View style={styles.rowLeft}>
-                  <Text style={styles.cardTitle}>{passengerStatus.title}</Text>
+                  <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{passengerStatus.title}</Text>
                   <Text style={styles.muted}>{passengerStatus.subtitle}</Text>
                 </View>
                 <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: passengerStatusMeta.backgroundColor }}>
@@ -1024,7 +1024,7 @@ export function JourneyScreen({
                   <View key={provider.id} style={styles.miniCard}>
                     <View style={styles.rowBetween}>
                       <View style={styles.rowLeft}>
-                        <Text style={styles.cardTitle}>{provider.displayName}</Text>
+                        <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{provider.displayName}</Text>
                         <Text style={styles.muted}>{provider.driverName} · {provider.vehicleLabel}</Text>
                       </View>
                       <Pill subtle={isReady}>{isReady ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}</Pill>
@@ -1054,7 +1054,7 @@ export function JourneyScreen({
             <View style={styles.cardBody}>
               <View style={styles.rowBetween}>
                 <View style={styles.rowLeft}>
-                  <Text style={styles.cardTitle}>{passengerStatus.badge}</Text>
+                  <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{passengerStatus.badge}</Text>
                   <Text style={styles.muted}>{requestSummary}</Text>
                 </View>
                 <Pill subtle={rideRequest.status === 'ACCEPTED'}>{passengerStatus.badge}</Pill>

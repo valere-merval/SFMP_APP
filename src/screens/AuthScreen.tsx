@@ -294,7 +294,7 @@ export function AuthScreen({
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.container, authStyles.authContainer]} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.kicker}>{t(locale, 'auth.brand')}</Text>
           <Text style={styles.title}>
@@ -442,6 +442,10 @@ export function AuthScreen({
 }
 
 const authStyles = StyleSheet.create({
+  authContainer: {
+    paddingTop: 18,
+    paddingBottom: 28,
+  },
   dropdown: {
     borderRadius: 18,
     paddingHorizontal: 14,
