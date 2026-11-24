@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
@@ -334,6 +334,15 @@ export function JourneyScreen({
   const copy = getScreenCopy(locale).journey;
   const match = selectedMatch ?? data?.matches?.[0] ?? null;
   const venueCoordinateQuery = match ? `${match.venue}, ${match.city}, ${match.country}` : 'stadium';
+  const driverMapRegion = useMemo(
+    () => ({
+      latitude: 40.4531,
+      longitude: -3.6883,
+      latitudeDelta: 0.03,
+      longitudeDelta: 0.03,
+    }),
+    [],
+  );
 
   const [providers, setProviders] = useState<TransportProviderView[]>([]);
   const [providersLoading, setProvidersLoading] = useState(false);
@@ -346,6 +355,7 @@ export function JourneyScreen({
   const [driverRequests, setDriverRequests] = useState<RideRequestView[]>([]);
   const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
   const [driverAvailability, setDriverAvailability] = useState<TransportAvailabilityView | null>(null);
+  const [mapExpanded, setMapExpanded] = useState(false);
   const currentSessionUser = getSessionUser();
   const currentSessionEmail = currentSessionUser?.email ?? '';
   const currentDriverEmail = currentSessionEmail;
@@ -740,14 +750,9 @@ export function JourneyScreen({
           <View style={styles.card}>
             <View style={styles.mapPanel}>
               <MapView
-                style={styles.mapView}
+                style={[styles.mapView, { height: 320 }]}
                 provider={PROVIDER_GOOGLE}
-                initialRegion={{
-                  latitude: 40.4531,
-                  longitude: -3.6883,
-                  latitudeDelta: 0.03,
-                  longitudeDelta: 0.03,
-                }}
+                initialRegion={driverMapRegion}
                 showsTraffic
                 showsCompass={false}
               >
@@ -768,6 +773,9 @@ export function JourneyScreen({
                   <Marker coordinate={{ latitude: activeDriverRequest.destinationLatitude, longitude: activeDriverRequest.destinationLongitude }} title={activeDriverRequest.destinationLabel} pinColor="#172033" />
                 ) : null}
               </MapView>
+              <Pressable onPress={() => setMapExpanded(true)} style={{ position: 'absolute', top: 12, right: 12, width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(16,27,45,0.9)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' }}>
+                <Feather name="maximize-2" size={16} color="#fff" />
+              </Pressable>
               <View style={styles.mapOverlay}>
                 <View style={styles.rowBetween}>
                   <View style={styles.rowLeft}>
@@ -801,13 +809,77 @@ export function JourneyScreen({
                 ) : null}
                 {activeDriverRequest?.driverDistanceKm != null || activeDriverRequest?.driverEtaMinutes != null ? (
                   <Text style={styles.helperText}>
-                    {activeDriverRequest.driverDistanceKm != null ? `${activeDriverRequest.driverDistanceKm} km away` : journeyText(locale, 'distanceUpdating')} · {activeDriverRequest.driverEtaMinutes != null ? `${activeDriverRequest.driverEtaMinutes} min ETA` : journeyText(locale, 'etaUpdating')}
+                    {activeDriverRequest.driverDistanceKm != null ? `${activeDriverRequest.driverDistanceKm} km` : journeyText(locale, 'distanceUpdating')} · {activeDriverRequest.driverEtaMinutes != null ? `${activeDriverRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
                   </Text>
                 ) : null}
               </View>
             </View>
             <Text style={styles.muted}>{t(locale, 'common.pickupTracking')}</Text>
           </View>
+
+          <Modal visible={mapExpanded} animationType="slide" presentationStyle="fullScreen" onRequestClose={() => setMapExpanded(false)}>
+            <SafeAreaView style={styles.safeArea}>
+              <View style={[styles.container, { paddingTop: 12 }]}> 
+                <View style={[styles.header, { marginBottom: 0 }]}> 
+                  <View style={styles.rowBetween}>
+                    <View style={styles.rowLeft}>
+                      <Text style={styles.kicker}>{t(locale, 'common.liveMap')}</Text>
+                      <Text style={styles.title}>{activeDriverStatus.title}</Text>
+                      <Text style={styles.subtitle}>{activeDriverStatus.subtitle}</Text>
+                    </View>
+                    <SecondaryButton label={t(locale, 'common.refuse')} onPress={() => setMapExpanded(false)} icon={<Feather name="x" size={16} color="#1d3fb3" />} />
+                  </View>
+                </View>
+                <View style={[styles.mapPanel, { minHeight: 540 }]}> 
+                  <MapView style={[styles.mapView, { height: 540 }]} provider={PROVIDER_GOOGLE} initialRegion={driverMapRegion} showsTraffic showsCompass={false}>
+                    <Marker coordinate={{ latitude: 40.4531, longitude: -3.6883 }} title={match.venue} description={`${match.city}, ${match.country}`} />
+                    {activeDriverRoute.length > 1 ? (
+                      <>
+                        <Polyline coordinates={activeDriverRoute} strokeColor="rgba(9, 17, 31, 0.42)" strokeWidth={9} geodesic lineCap="round" lineJoin="round" />
+                        <Polyline coordinates={activeDriverRoute} strokeColor="#1d3fb3" strokeWidth={5} geodesic lineCap="round" lineJoin="round" />
+                      </>
+                    ) : null}
+                    {activeDriverRequest?.driverLatitude != null && activeDriverRequest?.driverLongitude != null ? (
+                      <Marker coordinate={{ latitude: activeDriverRequest.driverLatitude, longitude: activeDriverRequest.driverLongitude }} title={activeDriverRequest.driverDisplayName || journeyText(locale, 'yourDriver')} pinColor="#1d3fb3" />
+                    ) : null}
+                    {activeDriverRequest?.pickupLatitude != null && activeDriverRequest?.pickupLongitude != null ? (
+                      <Marker coordinate={{ latitude: activeDriverRequest.pickupLatitude, longitude: activeDriverRequest.pickupLongitude }} title={activeDriverRequest.pickupLabel} pinColor="#c8f36a" />
+                    ) : null}
+                    {activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null ? (
+                      <Marker coordinate={{ latitude: activeDriverRequest.destinationLatitude, longitude: activeDriverRequest.destinationLongitude }} title={activeDriverRequest.destinationLabel} pinColor="#172033" />
+                    ) : null}
+                  </MapView>
+                  <View style={styles.mapOverlay}>
+                    <View style={styles.rowBetween}>
+                      <View style={styles.rowLeft}>
+                        <Text style={styles.cardTitle}>{activeDriverStatus.title}</Text>
+                        <Text style={styles.muted}>{activeDriverStatus.subtitle}</Text>
+                      </View>
+                      <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: activeDriverStatusMeta.backgroundColor }}>
+                        <Text style={{ color: activeDriverStatusMeta.color, fontFamily: 'Poppins-SemiBold' }}>{activeDriverStatus.badge}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.helperText}>{activeDriverStatus.detail}</Text>
+                    {activeDriverNavigationLabel ? (
+                      <View style={styles.ctaRow}>
+                        <SecondaryButton
+                          label={activeDriverNavigationLabel}
+                          onPress={() =>
+                            void openGoogleMapsDirections(
+                              activeDriverRequest?.status === 'ACCEPTED' || activeDriverRequest?.status === 'ARRIVED_AT_PICKUP'
+                                ? destinationLabelToQuery(match, activeDriverRequest.pickupLabel)
+                                : destinationLabelToQuery(match, activeDriverRequest?.destinationLabel || selectedDestination || match.venue),
+                            )
+                          }
+                          icon={<Feather name="navigation" size={16} color="#1d3fb3" />}
+                        />
+                      </View>
+                    ) : null}
+                  </View>
+                </View>
+              </View>
+            </SafeAreaView>
+          </Modal>
         </ScrollView>
       </SafeAreaView>
     );
