@@ -428,14 +428,14 @@ export function HubScreen({
                 <Text style={localStyles.sectionLabel}>{t(locale, 'common.passengerRequests')}</Text>
                 <Text style={localStyles.quickRequestText}>{t(locale, 'common.driverRequestsSubtitle')}</Text>
                 {driverRequestsLoading ? (
-                  <Text style={localStyles.mapOverlayText}>{t(locale, 'common.loading')}</Text>
+                  <Text numberOfLines={2} style={localStyles.mapOverlayText}>{t(locale, 'common.loading')}</Text>
                 ) : driverRequests.length ? (
                   driverRequests.map((request) => (
                     <View key={request.id}>
                       <View>
                         <Text style={localStyles.mapOverlayTitle}>{request.passengerName}</Text>
-                        <Text style={localStyles.mapOverlayText}>{request.pickupLabel} → {request.destinationLabel}</Text>
-                        <Text style={localStyles.mapOverlayText}>{request.status}</Text>
+                        <Text numberOfLines={2} style={localStyles.mapOverlayText}>{request.pickupLabel} → {request.destinationLabel}</Text>
+                        <Text numberOfLines={2} style={localStyles.mapOverlayText}>{request.status}</Text>
                       </View>
                       {request.status === 'PENDING' ? (
                         <View style={styles.ctaRow}>
@@ -582,7 +582,7 @@ export function HubScreen({
                     <View style={styles.rowBetween}>
                       <View>
                         <Text style={localStyles.mapOverlayTitle}>{rideRequest ? rideRequest.destinationLabel : (requestDestination || hero.venue)}</Text>
-                        <Text style={localStyles.mapOverlayText}>
+                        <Text numberOfLines={2} style={localStyles.mapOverlayText}>
                           {rideRequest
                             ? rideRequest.status === 'PENDING'
                               ? t(locale, 'common.requestPending')
@@ -599,13 +599,13 @@ export function HubScreen({
                       </View>
                     </View>
                     {rideRequest?.driverDisplayName ? (
-                      <Text style={localStyles.mapOverlayText}>{rideRequest.driverDisplayName}</Text>
+                      <Text numberOfLines={2} style={localStyles.mapOverlayText}>{rideRequest.driverDisplayName}</Text>
                     ) : null}
                     {rideRequest?.driverVehiclePlate ? (
-                      <Text style={localStyles.mapOverlayText}>{rideRequest.driverVehiclePlate}</Text>
+                      <Text numberOfLines={2} style={localStyles.mapOverlayText}>{rideRequest.driverVehiclePlate}</Text>
                     ) : null}
                     {(rideRequest?.driverDistanceKm != null || rideRequest?.driverEtaMinutes != null) ? (
-                      <Text style={localStyles.mapOverlayText}>
+                      <Text numberOfLines={2} style={localStyles.mapOverlayText}>
                         {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : t(locale, 'common.loading')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : t(locale, 'common.loading')}
                       </Text>
                     ) : null}
@@ -1035,10 +1035,13 @@ const localStyles = {
     color: '#fff',
     fontFamily: 'Poppins-SemiBold',
     fontSize: 13,
+    flexShrink: 1,
   },
   mapOverlayText: {
     color: '#c8f36a',
     fontFamily: 'Poppins-Medium',
     fontSize: 11,
+    flexShrink: 1,
+    maxWidth: '100%',
   },
 };
