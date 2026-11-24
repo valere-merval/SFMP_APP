@@ -86,17 +86,16 @@ const shellStyles = StyleSheet.create({
     flex: 1,
     paddingRight: 12,
   },
-  brandTitle: {
-    color: '#172033',
-    fontFamily: 'Poppins-ExtraBold',
-    fontSize: 17,
-    letterSpacing: 0.4,
-  },
-  brandSubtitle: {
-    color: '#60708b',
-    fontFamily: 'Poppins-Medium',
-    fontSize: 11,
-    marginTop: 2,
+  logoButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f6f8fc',
+    borderWidth: 1,
+    borderColor: '#dbe4ff',
+    overflow: 'hidden',
   },
   avatarButton: { width: 44, height: 44, borderRadius: 22, overflow: 'hidden' },
 });
@@ -333,13 +332,14 @@ function App(): React.JSX.Element {
         <View style={shellStyles.connectedShell}>
           <SafeAreaView style={shellStyles.topBarSafeArea} edges={['top', 'left', 'right']}>
             <View style={shellStyles.topBar}>
-            <View style={shellStyles.brandBlock}>
-              <BrandLogo compact />
-              <Text style={shellStyles.brandSubtitle}>{getAvatarFallbackName(userProfile)}</Text>
-            </View>
-            <Pressable style={shellStyles.avatarButton} onPress={() => setSession('app')} accessibilityRole="button" accessibilityLabel="Open profile area">
+              <View style={shellStyles.brandBlock}>
+                <Pressable style={shellStyles.logoButton} accessibilityRole="imagebutton" accessibilityLabel="Smart Fan Mobility logo">
+                  <BrandLogo compact />
+                </Pressable>
+              </View>
+              <Pressable style={shellStyles.avatarButton} onPress={() => setSession('app')} accessibilityRole="button" accessibilityLabel="Open profile area">
               <AvatarPhoto uri={userProfile?.photoUrl} label={getAvatarFallbackName(userProfile)} />
-            </Pressable>
+              </Pressable>
             </View>
           </SafeAreaView>
           {session === 'catalog' ? (
