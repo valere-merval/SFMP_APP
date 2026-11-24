@@ -310,7 +310,7 @@ export function HubScreen({
         matchTitle: `${hero.homeTeam} vs ${hero.awayTeam}`,
         passengerEmail: me?.email,
         passengerName: me?.fullName,
-        providerType: requestMode,
+        providerType: 'Taxi/VTC',
         pickupLabel: `${hero.city} · ${t(locale, 'common.liveMap')}`,
         destinationLabel: requestDestination || hero.venue,
         note: `${requestMode} request started from Hub`,
