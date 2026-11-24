@@ -858,7 +858,7 @@ const localStyles = {
   vsText: {
     color: '#172033',
     fontSize: 18,
-    fontFamily: 'Poppins-ExtraBold',
+    fontFamily: 'Teko',
   },
   venueText: {
     color: '#cbd5e1',
@@ -870,7 +870,7 @@ const localStyles = {
     fontSize: 12,
     letterSpacing: 1.2,
     textTransform: 'uppercase' as const,
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Teko',
   },
   tileGrid: {
     flexDirection: 'row' as const,
@@ -901,7 +901,7 @@ const localStyles = {
     color: '#fff',
     fontSize: 14,
     lineHeight: 18,
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Teko',
   },
   infoValueAccent: {
     color: '#c8f36a',
@@ -929,7 +929,7 @@ const localStyles = {
   },
   primaryActionText: {
     color: '#172033',
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Poppins-SemiBold',
     fontSize: 14,
   },
   secondaryAction: {
@@ -947,7 +947,7 @@ const localStyles = {
   },
   secondaryActionText: {
     color: '#fff',
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Poppins-SemiBold',
     fontSize: 14,
   },
   quickRequestCard: {
