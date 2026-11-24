@@ -207,7 +207,7 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'journey.taxiLabel': 'Taxi',
     'journey.taxiSubtitle': 'Reserve now',
     'journey.vtcLabel': 'VTC',
-    'journey.vtcSubtitle': 'Ride-hailing',
+    'journey.vtcSubtitle': 'On-demand transport',
     'journey.shuttleLabel': 'Shuttle',
     'journey.shuttleSubtitle': 'Matchday bus',
     'journey.busLabel': 'Bus',

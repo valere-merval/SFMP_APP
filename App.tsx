@@ -1,12 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Platform, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, Text, View, Image, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { clearAuthToken, hydrateAuthToken } from './src/api';
+import { clearAuthToken, getSessionUser, hydrateAuthToken, loadUserProfile, type UserProfileView } from './src/api';
 import { fetchCatalog } from './src/catalog';
 import { detectLanguage, t, type Locale } from './src/i18n';
 import { EventCatalogScreen } from './src/screens/EventCatalogScreen';
@@ -43,6 +43,8 @@ type CatalogShellState = {
   onChangeEvent: () => void;
 };
 
+type AppUserProfile = UserProfileView | null;
+
 const CatalogShellContext = createContext<CatalogShellState | null>(null);
 
 const AppStack = createBottomTabNavigator<TabParamList>();
@@ -64,6 +66,60 @@ const bootstrapStyles = StyleSheet.create({
     color: '#60708b',
     fontFamily: 'Poppins-Regular',
     marginTop: 8,
+  },
+});
+
+const shellStyles = StyleSheet.create({
+  connectedShell: {
+    flex: 1,
+    backgroundColor: '#f6f8fc',
+  },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#dbe4ff',
+    backgroundColor: '#ffffff',
+  },
+  brandBlock: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  brandTitle: {
+    color: '#172033',
+    fontFamily: 'Poppins-ExtraBold',
+    fontSize: 17,
+    letterSpacing: 0.4,
+  },
+  brandSubtitle: {
+    color: '#60708b',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  avatarButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    overflow: 'hidden',
+    backgroundColor: '#172033',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#c8f36a',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarFallback: {
+    color: '#ffffff',
+    fontFamily: 'Poppins-ExtraBold',
+    fontSize: 15,
   },
 });
 
@@ -107,9 +163,9 @@ function WayfindingRoute({ locale }: { locale: Locale }) {
   return <WayfindingScreen locale={locale} venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} />;
 }
 
-function ProfileRoute({ locale }: { locale: Locale }) {
+function ProfileRoute({ locale, onProfileUpdated }: { locale: Locale; onProfileUpdated?: () => void }) {
   const { catalog, catalogLoading } = useCatalogShell();
-  return <ProfileScreen locale={locale} data={catalog} loading={catalogLoading} />;
+  return <ProfileScreen locale={locale} data={catalog} loading={catalogLoading} onProfileUpdated={onProfileUpdated} />;
 }
 
 function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
@@ -129,6 +185,23 @@ function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
   }
 }
 
+function getAvatarFallbackName(profile: AppUserProfile) {
+  const name = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ').trim();
+  if (name) return name;
+  const sessionUser = getSessionUser();
+  return sessionUser?.fullName ?? sessionUser?.email ?? 'SF';
+}
+
+function getAvatarInitials(label: string) {
+  return label
+    .split(/\s+/)
+    .map((part) => part.trim().charAt(0))
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
+
 function App(): React.JSX.Element {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<'auth' | 'catalog' | 'matches' | 'app'>('auth');
@@ -138,6 +211,23 @@ function App(): React.JSX.Element {
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [selectedCatalogId, setSelectedCatalogId] = useState<string | null>(null);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<AppUserProfile>(null);
+
+  const refreshUserProfile = useCallback(async () => {
+    try {
+      const profile = await loadUserProfile();
+      setUserProfile(profile);
+      return profile;
+    } catch {
+      const sessionUser = getSessionUser();
+      setUserProfile(
+        sessionUser
+          ? { email: sessionUser.email ?? '', firstName: '', lastName: '', country: '', city: '', phonePrefix: '', phone: '', preferredLanguage: 'en', photoUrl: null }
+          : null,
+      );
+      return null;
+    }
+  }, []);
 
   const handleLocaleChange = useCallback(async (nextLocale: Locale) => {
     setLocale(nextLocale);
@@ -207,8 +297,9 @@ function App(): React.JSX.Element {
 
   const handleAuthenticated = useCallback(async () => {
     await loadCatalog();
+    await refreshUserProfile();
     setSession('catalog');
-  }, [loadCatalog]);
+  }, [loadCatalog, refreshUserProfile]);
 
   const handleSelectCatalog = useCallback((catalogItem: EventCatalogCard) => {
     setSelectedCatalogId(catalogItem.id);
@@ -235,6 +326,7 @@ function App(): React.JSX.Element {
     setCatalogError(null);
     setSelectedCatalogId(null);
     setSelectedMatchId(null);
+    setUserProfile(null);
     setSession('auth');
   }, []);
 
@@ -269,46 +361,63 @@ function App(): React.JSX.Element {
         : React.createElement(StatusBar as any, { barStyle: 'dark-content' })}
       {session === 'auth' ? (
         <AuthScreen locale={locale} onLocaleChange={handleLocaleChange} onAuthenticated={handleAuthenticated} />
-      ) : session === 'catalog' ? (
-        <EventCatalogScreen locale={locale} catalogs={catalog?.eventCatalogs ?? []} onSelectCatalog={handleSelectCatalog} onSignOut={handleSignOut} />
-      ) : session === 'matches' ? (
-        <MatchListScreen
-          locale={locale}
-          catalog={selectedCatalog}
-          matches={catalog?.matches.filter((item) => item.catalogId === selectedCatalogId) ?? []}
-          onSelectMatch={handleSelectMatch}
-          onBack={handleBackToCatalog}
-          onBackToCatalog={handleBackToCatalog}
-        />
       ) : (
-        <CatalogShellContext.Provider value={shellValue}>
-          <NavigationContainer>
-            <AppStack.Navigator
-              screenOptions={({ route }) => ({
-                headerShown: false,
-                tabBarActiveTintColor: '#c8f36a',
-                tabBarInactiveTintColor: '#7183a1',
-                tabBarLabelStyle: { fontFamily: fonts.tab, fontSize: 11, marginBottom: 2 },
-                tabBarStyle: {
-                  borderTopWidth: 1,
-                  borderTopColor: '#dbe4ff',
-                  backgroundColor: '#ffffff',
-                  height: 64,
-                  paddingTop: 8,
-                  paddingBottom: 8,
-                },
-                tabBarLabel: getTabLabel(locale, route.name as keyof TabParamList),
-                tabBarIcon: ({ color, size }) => renderTabIcon(route.name as keyof TabParamList, color, size),
-              })}
-            >
-              <AppStack.Screen name="Hub">{() => <HubRoute locale={locale} />}</AppStack.Screen>
-              <AppStack.Screen name="Wayfinding">{() => <WayfindingRoute locale={locale} />}</AppStack.Screen>
-              <AppStack.Screen name="Journey">{() => <JourneyRoute locale={locale} />}</AppStack.Screen>
-              <AppStack.Screen name="Transport">{() => <TransportRoute locale={locale} />}</AppStack.Screen>
-              <AppStack.Screen name="Profile">{() => <ProfileRoute locale={locale} />}</AppStack.Screen>
-            </AppStack.Navigator>
-          </NavigationContainer>
-        </CatalogShellContext.Provider>
+        <View style={shellStyles.connectedShell}>
+          <View style={shellStyles.topBar}>
+            <View style={shellStyles.brandBlock}>
+              <Text style={shellStyles.brandTitle}>SMART FAN MOBILITY</Text>
+              <Text style={shellStyles.brandSubtitle}>{getAvatarFallbackName(userProfile)}</Text>
+            </View>
+            <Pressable style={shellStyles.avatarButton} onPress={() => setSession('app')} accessibilityRole="button" accessibilityLabel="Open profile area">
+              {userProfile?.photoUrl ? (
+                <Image source={{ uri: userProfile.photoUrl }} style={shellStyles.avatarImage} />
+              ) : (
+                <Text style={shellStyles.avatarFallback}>{getAvatarInitials(getAvatarFallbackName(userProfile))}</Text>
+              )}
+            </Pressable>
+          </View>
+          {session === 'catalog' ? (
+            <EventCatalogScreen locale={locale} catalogs={catalog?.eventCatalogs ?? []} onSelectCatalog={handleSelectCatalog} onSignOut={handleSignOut} />
+          ) : session === 'matches' ? (
+            <MatchListScreen
+              locale={locale}
+              catalog={selectedCatalog}
+              matches={catalog?.matches.filter((item) => item.catalogId === selectedCatalogId) ?? []}
+              onSelectMatch={handleSelectMatch}
+              onBack={handleBackToCatalog}
+              onBackToCatalog={handleBackToCatalog}
+            />
+          ) : (
+            <CatalogShellContext.Provider value={shellValue}>
+              <NavigationContainer>
+                <AppStack.Navigator
+                  screenOptions={({ route }) => ({
+                    headerShown: false,
+                    tabBarActiveTintColor: '#c8f36a',
+                    tabBarInactiveTintColor: '#7183a1',
+                    tabBarLabelStyle: { fontFamily: fonts.tab, fontSize: 11, marginBottom: 2 },
+                    tabBarStyle: {
+                      borderTopWidth: 1,
+                      borderTopColor: '#dbe4ff',
+                      backgroundColor: '#ffffff',
+                      height: 64,
+                      paddingTop: 8,
+                      paddingBottom: 8,
+                    },
+                    tabBarLabel: getTabLabel(locale, route.name as keyof TabParamList),
+                    tabBarIcon: ({ color, size }) => renderTabIcon(route.name as keyof TabParamList, color, size),
+                  })}
+                >
+                  <AppStack.Screen name="Hub">{() => <HubRoute locale={locale} />}</AppStack.Screen>
+                  <AppStack.Screen name="Wayfinding">{() => <WayfindingRoute locale={locale} />}</AppStack.Screen>
+                  <AppStack.Screen name="Journey">{() => <JourneyRoute locale={locale} />}</AppStack.Screen>
+                  <AppStack.Screen name="Transport">{() => <TransportRoute locale={locale} />}</AppStack.Screen>
+                  <AppStack.Screen name="Profile">{() => <ProfileRoute locale={locale} onProfileUpdated={refreshUserProfile} />}</AppStack.Screen>
+                </AppStack.Navigator>
+              </NavigationContainer>
+            </CatalogShellContext.Provider>
+          )}
+        </View>
       )}
     </SafeAreaProvider>
   );

@@ -181,7 +181,7 @@ function SearchableDropdown({
   );
 }
 
-export function ProfileScreen({ data, loading, locale }: { data: LiveData | null; loading: boolean; locale: Locale }) {
+export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { data: LiveData | null; loading: boolean; locale: Locale; onProfileUpdated?: () => void }) {
   const copy = getScreenCopy(locale).profile;
   const [draft, setDraft] = useState<Draft>(() => emptyDraft());
   const [assets, setAssets] = useState<Assets>(emptyAssets);
@@ -316,6 +316,7 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
         photoUrl: saved.photoUrl || '',
       });
       setUserMessage(t(locale, 'profile.userSaved'));
+      onProfileUpdated?.();
     } catch (caught: any) {
       setUserError(caught?.message ?? t(locale, 'profile.userSaveFailed'));
     } finally {
@@ -331,6 +332,7 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
       await deleteUserProfile();
       setUserDraft(emptyUserDraft());
       setUserMessage(t(locale, 'profile.userDeleted'));
+      onProfileUpdated?.();
     } catch (caught: any) {
       setUserError(caught?.message ?? t(locale, 'profile.userDeleteFailed'));
     } finally {
@@ -359,6 +361,7 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
       });
       setUserDraft((current) => ({ ...current, photoUrl: uploaded.url }));
       setUserMessage(t(locale, 'profile.photoUploaded'));
+      onProfileUpdated?.();
     } catch (caught: any) {
       setUserError(caught?.message ?? t(locale, 'profile.photoUploadFailed'));
     }
@@ -468,6 +471,7 @@ export function ProfileScreen({ data, loading, locale }: { data: LiveData | null
     try {
       await saveTransportProfile({ ...draft, zone: '' });
       setMessage(t(locale, 'profile.driverSaved'));
+      onProfileUpdated?.();
       setShowDriverForm(false);
     } catch (caught: any) {
       setError(caught?.message ?? t(locale, 'profile.saveFailed'));

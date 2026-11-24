@@ -101,6 +101,7 @@ export function HubScreen({
       .map((provider) => provider.providerType?.trim())
       .filter((providerType): providerType is string => Boolean(providerType))
       .filter((providerType) => /taxi|vtc|chauffeur|driver/i.test(providerType))
+      .flatMap((providerType) => [providerType, 'Taxi/VTC'])
       .filter((providerType) => {
         if (seen.has(providerType)) return false;
         seen.add(providerType);
@@ -343,13 +344,13 @@ export function HubScreen({
         ) : null}
 
         {error ? (
-          <Card title="Catalog unavailable" subtitle="Backend sync">
-            <EmptyState icon="cloud-offline-outline" title="Live catalog did not load" subtitle={error} />
+          <Card title={t(locale, 'common.backendUnavailable')} subtitle={t(locale, 'common.loadingSession')}>
+            <EmptyState icon="cloud-offline-outline" title={t(locale, 'common.backendUnavailable')} subtitle={error} />
             <PrimaryButton label={copy.retryCatalog} onPress={onRetryCatalog} icon={<Ionicons name="refresh-outline" size={16} color="#fff" />} />
           </Card>
         ) : loading && !hero ? (
           <Card title={copy.loadingTitle} subtitle={copy.loadingSubtitle}>
-            <EmptyState icon="sync-outline" title={copy.loadingTitle} subtitle="The app is loading catalog data directly from the backend." />
+            <EmptyState icon="sync-outline" title={copy.loadingTitle} subtitle={t(locale, 'common.loadingSession')} />
           </Card>
         ) : hero ? (
           <View style={localStyles.ticketCard}>
@@ -555,7 +556,7 @@ export function HubScreen({
                         rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null ? { latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude } : null,
                         rideRequest?.destinationLatitude != null && rideRequest?.destinationLongitude != null ? { latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude } : null,
                       );
-                      const routeColor = rideStatusStyle(rideRequest?.status).color;
+                      const routeColor = rideStatusStyle(rideRequest?.status, locale).color;
                       return route.length > 1 ? (
                         <>
                           <Polyline coordinates={route} strokeColor="rgba(9, 17, 31, 0.42)" strokeWidth={9} geodesic lineCap="round" lineJoin="round" />
@@ -594,8 +595,8 @@ export function HubScreen({
                             : t(locale, 'common.pickupTracking')}
                         </Text>
                       </View>
-                      <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: rideStatusStyle(rideRequest?.status).backgroundColor }}>
-                        <Text style={{ color: rideStatusStyle(rideRequest?.status).color, fontFamily: 'Poppins-SemiBold' }}>{rideStatusStyle(rideRequest?.status).label}</Text>
+                      <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: rideStatusStyle(rideRequest?.status, locale).backgroundColor }}>
+                        <Text numberOfLines={2} style={{ color: rideStatusStyle(rideRequest?.status, locale).color, fontFamily: 'Poppins-SemiBold' }}>{rideStatusStyle(rideRequest?.status, locale).label}</Text>
                       </View>
                     </View>
                     {rideRequest?.driverDisplayName ? (
@@ -623,7 +624,7 @@ export function HubScreen({
               <Text style={styles.muted}>{ticket.message}</Text>
             </View>
           ) : ticketError ? (
-            <EmptyState icon="card-outline" title="Ticket checkout unavailable" subtitle={ticketError} />
+            <EmptyState icon="card-outline" title={t(locale, 'common.backendUnavailable')} subtitle={ticketError} />
           ) : (
             <EmptyState icon="card-outline" title={copy.readyToPayTitle} subtitle={copy.readyToPayBody} />
           )}
@@ -637,11 +638,11 @@ export function HubScreen({
               ))}
             </View>
           ) : (
-            <EmptyState icon="bus-outline" title="No route catalog yet" subtitle="Transit options will render once the backend returns live mobility data." />
+            <EmptyState icon="bus-outline" title={t(locale, 'common.noProviders')} subtitle={t(locale, 'common.backendUnavailable')} />
           )}
         </Card>
 
-        <Card title="Registered operators" subtitle="Taxi and VTC" wide>
+        <Card title={t(locale, 'common.registeredOperators')} subtitle={`${t(locale, 'journey.taxiLabel')} · ${t(locale, 'journey.vtcLabel')}`} wide>
           {liveTransportProviders.length ? (
             <View style={styles.grid2}>
               {liveTransportProviders.map((provider) => (
@@ -654,26 +655,26 @@ export function HubScreen({
               ))}
             </View>
           ) : (
-            <EmptyState icon="car-sport-outline" title="No operators registered" subtitle="Taxi and VTC providers will appear here once they register for this match." />
+            <EmptyState icon="car-sport-outline" title={t(locale, 'common.noOperatorsRegistered')} subtitle={t(locale, 'common.backendUnavailable')} />
           )}
         </Card>
 
         <Card title={copy.telemetryTitle} subtitle={copy.telemetrySubtitle}>
           {data ? data.operations.map((item) => (
-            <Row key={item.id} leftTitle={item.label} leftSubtitle={item.trend} rightTitle={item.value} rightSubtitle="Live" />
-          )) : <EmptyState icon="pulse-outline" title="No operations feed" subtitle="Live telemetry is pulled from the backend catalog." />}
+            <Row key={item.id} leftTitle={item.label} leftSubtitle={item.trend} rightTitle={item.value} rightSubtitle={t(locale, 'common.live')} />
+          )) : <EmptyState icon="pulse-outline" title={t(locale, 'common.noOperationsFeed')} subtitle={t(locale, 'common.backendUnavailable')} />}
         </Card>
 
         <Card title={copy.gatesTitle} subtitle={copy.gatesSubtitle} wide>
           <View style={styles.cardBody}>
             {hero ? (
               <>
-                <Row leftTitle={hero.gate} leftSubtitle={hero.sector} rightTitle="Open" rightSubtitle="Access" />
-                <Row leftTitle="North Esplanade" leftSubtitle="4 min queue" rightTitle="Guide" rightSubtitle="Route" />
-                <Row leftTitle="Reserved fan lane" leftSubtitle="Accessible access" rightTitle="Ready" rightSubtitle="Access" />
+                <Row leftTitle={hero.gate} leftSubtitle={hero.sector} rightTitle={t(locale, 'common.live')} rightSubtitle={t(locale, 'common.destination')} />
+                <Row leftTitle="North Esplanade" leftSubtitle="4 min queue" rightTitle={t(locale, 'common.navigation')} rightSubtitle={t(locale, 'common.destination')} />
+                <Row leftTitle="Reserved fan lane" leftSubtitle="Accessible access" rightTitle={t(locale, 'common.available')} rightSubtitle={t(locale, 'common.destination')} />
               </>
             ) : (
-              <EmptyState icon="map-outline" title="No gate data yet" subtitle="Select a match to render the live gate and wayfinding panel." />
+              <EmptyState icon="map-outline" title={t(locale, 'common.noGateData')} subtitle={t(locale, 'common.selectMatchFirstBody')} />
             )}
           </View>
         </Card>
@@ -684,10 +685,10 @@ export function HubScreen({
               <MiniCard title="Locker P3" subtitle="A4 max size" meta="Quick drop-off" />
               <MiniCard title="Parking P4" subtitle="78 spots left" meta="Reserved access" />
               <MiniCard title="Fan zones" subtitle="Plaza Mayor" meta="Food and meet-up" />
-              <MiniCard title={t(locale, 'common.registeredOperators')} subtitle={t(locale, 'common.noOperatorsRegistered')} meta="Taxi and VTC" />
+              <MiniCard title={t(locale, 'common.registeredOperators')} subtitle={t(locale, 'common.noOperatorsRegistered')} meta={`${t(locale, 'journey.taxiLabel')} · ${t(locale, 'journey.vtcLabel')}`} />
             </View>
           ) : (
-            <EmptyState icon="compass-outline" title="No essentials yet" subtitle="This panel is filled from the selected match and backend data." />
+            <EmptyState icon="compass-outline" title={t(locale, 'common.noEssentials')} subtitle={t(locale, 'common.backendUnavailable')} />
           )}
         </Card>
 
@@ -695,21 +696,21 @@ export function HubScreen({
           {data ? (
             <>
               {data.traffic.map((item) => (
-                <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={`${item.status} · ${item.impact}`} rightTitle={item.recommendation} rightSubtitle="Traffic" />
+                <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={`${item.status} · ${item.impact}`} rightTitle={item.recommendation} rightSubtitle={t(locale, 'common.live')} />
               ))}
               {data.routeAdaptations.map((item) => (
-                <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={item.reason} rightTitle={item.change} rightSubtitle="Route" />
+                <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={item.reason} rightTitle={item.change} rightSubtitle={t(locale, 'common.navigation')} />
               ))}
             </>
           ) : (
-            <EmptyState icon="navigate-outline" title="No live signals" subtitle="Traffic and route recommendations are loaded from backend data only." />
+            <EmptyState icon="navigate-outline" title={t(locale, 'common.noLiveSignals')} subtitle={t(locale, 'common.backendUnavailable')} />
           )}
         </Card>
 
         <Card title={copy.messagesTitle} subtitle={copy.messagesSubtitle}>
           {data ? data.contextualMessages.map((item) => (
-            <Row key={item.message} leftTitle={item.audience} leftSubtitle={`${item.channel} · ${item.timing}`} rightTitle={item.message} rightSubtitle="Message" />
-          )) : <EmptyState icon="chatbubbles-outline" title="No contextual messaging" subtitle="The message queue is populated by the backend catalog." />}
+            <Row key={item.message} leftTitle={item.audience} leftSubtitle={`${item.channel} · ${item.timing}`} rightTitle={item.message} rightSubtitle={t(locale, 'common.navigation')} />
+          )) : <EmptyState icon="chatbubbles-outline" title={t(locale, 'common.noContextualMessaging')} subtitle={t(locale, 'common.backendUnavailable')} />}
         </Card>
 
         <Card title={copy.changeSelectionTitle} subtitle={copy.changeSelectionSubtitle} wide>
