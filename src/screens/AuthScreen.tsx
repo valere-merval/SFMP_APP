@@ -462,7 +462,7 @@ const authStyles = StyleSheet.create({
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(16,27,45,0.45)', justifyContent: 'flex-end' },
   modalBackdropPress: { ...StyleSheet.absoluteFill },
   modalSheet: { backgroundColor: '#f6f8fc', padding: 18, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '78%' },
-  modalTitle: { color: '#172033', fontSize: 18, fontFamily: 'Poppins-Bold', marginBottom: 10 },
+  modalTitle: { color: '#172033', fontSize: 18, fontFamily: 'Teko', marginBottom: 10 },
   modalSearch: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#dce5f5', color: '#172033', paddingHorizontal: 14, paddingVertical: 12, fontFamily: 'Poppins-Regular', marginBottom: 12 },
   modalList: { maxHeight: 360 },
   modalOption: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#e6eaf0', paddingHorizontal: 14, paddingVertical: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
