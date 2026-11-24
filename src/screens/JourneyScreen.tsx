@@ -190,6 +190,19 @@ export function JourneyScreen({
     return counts;
   }, [providers]);
 
+  const driverRequestProviderTypes = useMemo(() => {
+    const seen = new Set<string>();
+    return providers
+      .map((provider) => provider.providerType?.trim())
+      .filter((providerType): providerType is string => Boolean(providerType))
+      .filter((providerType) => modeFromProvider(providerType) === 'vtc' || /taxi|vtc|chauffeur|driver/i.test(providerType))
+      .filter((providerType) => {
+        if (seen.has(providerType)) return false;
+        seen.add(providerType);
+        return true;
+      });
+  }, [providers]);
+
   const filteredProviders = useMemo(
     () => providers.filter((provider) => modeFromProvider(provider.providerType) === activeMode),
     [providers, activeMode],
@@ -204,7 +217,7 @@ export function JourneyScreen({
     const refresh = async () => {
       setDriverRequestsLoading(true);
       try {
-        const providerTypes = ['Taxi', 'VTC'];
+        const providerTypes = driverRequestProviderTypes.length ? driverRequestProviderTypes : ['Taxi', 'VTC'];
         const [pendingBatches, assigned] = await Promise.all([
           Promise.all(providerTypes.map((providerType) => listDriverRideRequests(match.id, providerType).catch(() => []))),
           currentSessionEmail ? listAssignedDriverRideRequests(currentSessionEmail) : Promise.resolve([]),
@@ -233,7 +246,7 @@ export function JourneyScreen({
       cancelled = true;
       clearInterval(timer);
     };
-  }, [match, isDriver, currentSessionEmail]);
+  }, [match, isDriver, currentSessionEmail, driverRequestProviderTypes]);
 
   useEffect(() => {
     if (!currentSessionEmail) return;

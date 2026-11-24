@@ -95,6 +95,19 @@ export function HubScreen({
     [hero],
   );
 
+  const driverRequestProviderTypes = useMemo(() => {
+    const seen = new Set<string>();
+    return liveTransportProviders
+      .map((provider) => provider.providerType?.trim())
+      .filter((providerType): providerType is string => Boolean(providerType))
+      .filter((providerType) => /taxi|vtc|chauffeur|driver/i.test(providerType))
+      .filter((providerType) => {
+        if (seen.has(providerType)) return false;
+        seen.add(providerType);
+        return true;
+      });
+  }, [liveTransportProviders]);
+
   useEffect(() => {
     if (!hero) {
       setCountdown('LIVE');
@@ -225,7 +238,7 @@ export function HubScreen({
     let mounted = true;
     const refresh = async () => {
       try {
-        const providerTypes = ['Taxi', 'VTC'];
+        const providerTypes = driverRequestProviderTypes.length ? driverRequestProviderTypes : ['Taxi', 'VTC'];
         const [pendingBatches, assigned] = await Promise.all([
           Promise.all(providerTypes.map((providerType) => listDriverRideRequests(hero.id, providerType).catch(() => []))),
           getSessionUser()?.email ? listAssignedDriverRideRequests(getSessionUser()!.email) : Promise.resolve([]),
@@ -251,7 +264,7 @@ export function HubScreen({
       mounted = false;
       clearInterval(timer);
     };
-  }, [hero, isDriver]);
+  }, [hero, isDriver, driverRequestProviderTypes]);
 
   const topAlert = useMemo(() => {
     const corridor = data?.traffic?.[0];
