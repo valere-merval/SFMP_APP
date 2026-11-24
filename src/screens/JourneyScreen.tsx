@@ -37,6 +37,7 @@ const J = {
     availableTransportModes: 'Available transport modes',
     pickYourLiveRideType: 'Pick your live ride type',
     yourDriver: 'Your driver',
+    vehiclePlatePending: 'Plate pending',
     distanceUpdating: 'Distance updating',
     etaUpdating: 'ETA updating',
     tripRouteLive: 'The trip route is now live on the map until the final destination.',
@@ -72,6 +73,7 @@ const J = {
     availableTransportModes: 'Modes de transport disponibles',
     pickYourLiveRideType: 'Choisissez votre type de trajet en direct',
     yourDriver: 'Votre chauffeur',
+    vehiclePlatePending: 'Plaque en attente',
     distanceUpdating: 'Distance en cours de mise à jour',
     etaUpdating: 'ETA en cours de mise à jour',
     tripRouteLive: 'L’itinéraire est maintenant en direct sur la carte jusqu’à la destination finale.',
@@ -99,6 +101,7 @@ const J = {
     availableTransportModes: 'Verfügbare Transportarten',
     pickYourLiveRideType: 'Wähle deinen Live-Fahrttyp',
     yourDriver: 'Dein Fahrer',
+    vehiclePlatePending: 'Kennzeichen ausstehend',
     distanceUpdating: 'Distanz wird aktualisiert',
     etaUpdating: 'ETA wird aktualisiert',
     tripRouteLive: 'Die Route ist jetzt live auf der Karte bis zum endgültigen Ziel.',
@@ -126,6 +129,7 @@ const J = {
     availableTransportModes: 'Modos de transporte disponibles',
     pickYourLiveRideType: 'Elige tu tipo de viaje en vivo',
     yourDriver: 'Tu conductor',
+    vehiclePlatePending: 'Matrícula pendiente',
     distanceUpdating: 'Distancia actualizándose',
     etaUpdating: 'ETA actualizándose',
     tripRouteLive: 'La ruta del viaje está en vivo en el mapa hasta el destino final.',
@@ -153,6 +157,7 @@ const J = {
     availableTransportModes: 'Modos de transporte disponíveis',
     pickYourLiveRideType: 'Escolha seu tipo de viagem ao vivo',
     yourDriver: 'Seu motorista',
+    vehiclePlatePending: 'Placa pendente',
     distanceUpdating: 'Distância atualizando',
     etaUpdating: 'ETA atualizando',
     tripRouteLive: 'A rota da viagem está ao vivo no mapa até o destino final.',
@@ -180,6 +185,7 @@ const J = {
     availableTransportModes: 'وسائل النقل المتاحة',
     pickYourLiveRideType: 'اختر نوع الرحلة المباشرة',
     yourDriver: 'سائقك',
+    vehiclePlatePending: 'اللوحة قيد الانتظار',
     distanceUpdating: 'المسافة قيد التحديث',
     etaUpdating: 'الوقت المتوقع قيد التحديث',
     tripRouteLive: 'مسار الرحلة مباشر الآن على الخريطة حتى الوجهة النهائية.',
@@ -207,6 +213,7 @@ const J = {
     availableTransportModes: '可用交通方式',
     pickYourLiveRideType: '选择你的实时行程类型',
     yourDriver: '你的司机',
+    vehiclePlatePending: '车牌待定',
     distanceUpdating: '距离更新中',
     etaUpdating: '预计时间更新中',
     tripRouteLive: '行程路线已在地图上实时显示，直到最终目的地。',
@@ -234,6 +241,7 @@ const J = {
     availableTransportModes: 'Доступные виды транспорта',
     pickYourLiveRideType: 'Выберите тип поездки в реальном времени',
     yourDriver: 'Ваш водитель',
+    vehiclePlatePending: 'Номерной знак ожидается',
     distanceUpdating: 'Расстояние обновляется',
     etaUpdating: 'ETA обновляется',
     tripRouteLive: 'Маршрут поездки теперь в реальном времени на карте до конечного пункта.',
@@ -705,7 +713,7 @@ export function JourneyScreen({
                                 void acceptRideRequest(request.id).then((accepted) => {
                                   setDriverRequests((current) => current.map((item) => (item.id === accepted.id ? accepted : item)));
                                   setStatusMessage(
-                                    `${accepted.passengerName} is waiting${accepted.driverDistanceKm != null ? ` · ${accepted.driverDistanceKm} km away` : ''}${accepted.driverEtaMinutes != null ? ` · ETA ${accepted.driverEtaMinutes} min` : ''}`,
+                                    `${accepted.passengerName}${accepted.driverDistanceKm != null ? ` · ${accepted.driverDistanceKm} km` : ''}${accepted.driverEtaMinutes != null ? ` · ${accepted.driverEtaMinutes} min` : ''}`,
                                   );
                                 });
                               }}
@@ -887,8 +895,8 @@ export function JourneyScreen({
               <Text style={styles.helperText}>
                 {rideRequest?.driverDisplayName || journeyText(locale, 'yourDriver')}
                 {rideRequest?.driverVehiclePlate ? ` · ${rideRequest.driverVehiclePlate}` : ''}
-                {rideRequest?.driverDistanceKm != null ? ` · ${rideRequest.driverDistanceKm} km away` : ` · ${journeyText(locale, 'distanceUpdating')}`}
-                {rideRequest?.driverEtaMinutes != null ? ` · ${rideRequest.driverEtaMinutes} min ETA` : ` · ${journeyText(locale, 'etaUpdating')}`}
+                {rideRequest?.driverDistanceKm != null ? ` · ${rideRequest.driverDistanceKm} km` : ` · ${journeyText(locale, 'distanceUpdating')}`}
+                {rideRequest?.driverEtaMinutes != null ? ` · ${rideRequest.driverEtaMinutes} min` : ` · ${journeyText(locale, 'etaUpdating')}`}
               </Text>
               {rideRequest?.status === 'IN_PROGRESS' ? (
                 <Text style={styles.helperText}>{journeyText(locale, 'tripRouteLive')}</Text>
@@ -913,7 +921,7 @@ export function JourneyScreen({
                   <View style={styles.buttonIcon}>{mode.icon}</View>
                   <Text style={[styles.tabChipText, activeMode === mode.key && styles.tabChipTextActive]}>{mode.label}</Text>
                 </View>
-                <Text style={styles.helperText}>{availableModes.get(mode.key) ?? 0} available · {mode.subtitle}</Text>
+                <Text style={styles.helperText}>{availableModes.get(mode.key) ?? 0} {t(locale, 'common.available')} · {mode.subtitle}</Text>
               </Pressable>
             ))}
           </View>
@@ -992,7 +1000,7 @@ export function JourneyScreen({
               </Text>
               {rideRequest.status === 'ACCEPTED' || rideRequest.status === 'ARRIVED_AT_PICKUP' || rideRequest.status === 'IN_PROGRESS' ? (
                 <Text style={styles.helperText}>
-                  {rideRequest.driverDisplayName || journeyText(locale, 'yourDriver')} · {rideRequest.driverVehiclePlate || 'plate pending'} · {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km away` : journeyText(locale, 'distanceUpdating')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
+                  {rideRequest.driverDisplayName || journeyText(locale, 'yourDriver')} · {rideRequest.driverVehiclePlate || journeyText(locale, 'vehiclePlatePending')} · {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : journeyText(locale, 'distanceUpdating')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
                 </Text>
               ) : null}
               {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}

@@ -451,7 +451,7 @@ export function HubScreen({
                               void acceptRideRequest(request.id).then((accepted) => {
                                 setDriverRequests((current) => current.map((item) => (item.id === accepted.id ? accepted : item)));
                                 setRequestStatus(
-                                  `${accepted.passengerName} is waiting${accepted.driverDistanceKm != null ? ` · ${accepted.driverDistanceKm} km away` : ''}${accepted.driverEtaMinutes != null ? ` · ETA ${accepted.driverEtaMinutes} min` : ''}`,
+                                  `${accepted.passengerName}${accepted.driverDistanceKm != null ? ` · ${accepted.driverDistanceKm} km` : ''}${accepted.driverEtaMinutes != null ? ` · ${accepted.driverEtaMinutes} min` : ''}`,
                                 );
                               });
                             }}
@@ -606,7 +606,7 @@ export function HubScreen({
                     ) : null}
                     {(rideRequest?.driverDistanceKm != null || rideRequest?.driverEtaMinutes != null) ? (
                       <Text style={localStyles.mapOverlayText}>
-                        {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km away` : 'Distance updating'} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min ETA` : 'ETA updating'}
+                        {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : t(locale, 'common.loading')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : t(locale, 'common.loading')}
                       </Text>
                     ) : null}
                   </View>
