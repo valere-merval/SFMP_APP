@@ -343,6 +343,15 @@ export function JourneyScreen({
   const activeDriverRequest = visibleDriverRequests.find((request) => request.status === 'ACCEPTED' && request.driverProfileId === currentDriverEmail) ?? null;
   const activeDriverStatusMeta = rideStatusStyle(activeDriverRequest?.status);
   const activeDriverStatus = rideStatusCopy(activeDriverRequest?.status);
+  const activeDriverNavigationLabel = activeDriverRequest
+    ? activeDriverRequest.status === 'ACCEPTED'
+      ? 'Navigate to pickup'
+      : activeDriverRequest.status === 'ARRIVED_AT_PICKUP'
+        ? 'Open destination route'
+        : activeDriverRequest.status === 'IN_PROGRESS'
+          ? 'Follow destination route'
+          : null
+    : null;
   const activeDriverRoute = buildRideRouteCoordinates(
     activeDriverRequest?.driverLatitude != null && activeDriverRequest?.driverLongitude != null
       ? { latitude: activeDriverRequest.driverLatitude, longitude: activeDriverRequest.driverLongitude }
@@ -416,6 +425,21 @@ export function JourneyScreen({
                         ? `Passenger is ${activeDriverRequest.driverDistanceKm ?? '?'} km away · ETA ${activeDriverRequest.driverEtaMinutes ?? '?'} min`
                         : 'Passenger location is live and will update on the map.'}
                     </Text>
+                    {activeDriverNavigationLabel ? (
+                      <View style={styles.ctaRow}>
+                        <SecondaryButton
+                          label={activeDriverNavigationLabel}
+                          onPress={() =>
+                            void openGoogleMapsDirections(
+                              activeDriverRequest.status === 'ACCEPTED' || activeDriverRequest.status === 'ARRIVED_AT_PICKUP'
+                                ? destinationLabelToQuery(match, activeDriverRequest.pickupLabel)
+                                : destinationLabelToQuery(match, activeDriverRequest.destinationLabel),
+                            )
+                          }
+                          icon={<Feather name="navigation" size={16} color="#1d3fb3" />}
+                        />
+                      </View>
+                    ) : null}
                     <View style={styles.ctaRow}>
                       <SecondaryButton label="Arrived at pickup" onPress={() => void markRideRequestArrived(activeDriverRequest.id)} icon={<Ionicons name="location-outline" size={16} color="#1d3fb3" />} />
                       <PrimaryButton label="Start trip" onPress={() => void startRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="navigate-outline" size={16} color="#172033" />} />
@@ -515,6 +539,21 @@ export function JourneyScreen({
                   </View>
                 </View>
                 <Text style={styles.helperText}>{activeDriverStatus.detail}</Text>
+                {activeDriverNavigationLabel ? (
+                  <View style={styles.ctaRow}>
+                    <SecondaryButton
+                      label={activeDriverNavigationLabel}
+                      onPress={() =>
+                        void openGoogleMapsDirections(
+                          activeDriverRequest?.status === 'ACCEPTED' || activeDriverRequest?.status === 'ARRIVED_AT_PICKUP'
+                            ? destinationLabelToQuery(match, activeDriverRequest.pickupLabel)
+                            : destinationLabelToQuery(match, activeDriverRequest?.destinationLabel || selectedDestination || match.venue),
+                        )
+                      }
+                      icon={<Feather name="navigation" size={16} color="#1d3fb3" />}
+                    />
+                  </View>
+                ) : null}
                 {activeDriverRequest ? (
                   <Text style={styles.helperText}>
                     {activeDriverRequest.passengerName} · {activeDriverRequest.pickupLabel} · {activeDriverRequest.destinationLabel}
