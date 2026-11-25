@@ -1,6 +1,5 @@
 import React from 'react';
 import { Linking, Platform, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -52,7 +51,7 @@ export function WayfindingScreen({
         <Card title={copy.linesTitle} subtitle={copy.linesSubtitle} wide>
           {data ? (
             <View style={styles.grid2}>
-              {data.mobility.map(item => (
+              {data.mobility.filter(item => /bus|train/i.test(item.mode)).map(item => (
                 <MiniCard
                   key={item.id}
                   title={item.mode}

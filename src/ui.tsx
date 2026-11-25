@@ -222,6 +222,7 @@ export const styles = StyleSheet.create({
     elevation: 2,
   },
   cardWide: { width: '100%' },
+  cardBody: { gap: 12 },
   cardKicker: {
     color: '#66758f',
     textTransform: 'uppercase',

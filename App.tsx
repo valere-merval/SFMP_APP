@@ -15,8 +15,8 @@ import { JourneyScreen } from './src/screens/JourneyScreen';
 import { MatchListScreen } from './src/screens/MatchListScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
-import { TransportScreen } from './src/screens/TransportScreen';
 import { WayfindingScreen } from './src/screens/WayfindingScreen';
+import { MicroMobilityScreen } from './src/screens/MicroMobilityScreen';
 import type { EventCatalogCard, LiveData, MatchCard } from './src/types';
 import { AvatarPhoto, BrandLogo } from './src/ui';
 
@@ -30,7 +30,7 @@ type TabParamList = {
   Hub: undefined;
   Wayfinding: undefined;
   Journey: undefined;
-  Transport: undefined;
+  Mobility: undefined;
   Profile: undefined;
 };
 
@@ -129,9 +129,9 @@ function JourneyRoute({ locale }: { locale: Locale }) {
   return <JourneyScreen locale={locale} data={catalog} loading={catalogLoading} selectedMatch={selectedMatch} />;
 }
 
-function TransportRoute({ locale }: { locale: Locale }) {
-  const { catalog, catalogLoading, onRetryCatalog } = useCatalogShell();
-  return <TransportScreen locale={locale} data={catalog} loading={catalogLoading} onReload={onRetryCatalog} />;
+function MobilityRoute({ locale }: { locale: Locale }) {
+  const { catalog, selectedMatch } = useCatalogShell();
+  return <MicroMobilityScreen locale={locale} data={catalog} venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} />;
 }
 
 function WayfindingRoute({ locale }: { locale: Locale }) {
@@ -139,9 +139,9 @@ function WayfindingRoute({ locale }: { locale: Locale }) {
   return <WayfindingScreen locale={locale} venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} data={catalog} />;
 }
 
-function ProfileRoute({ locale, onProfileUpdated }: { locale: Locale; onProfileUpdated?: () => void }) {
+function ProfileRoute({ locale, onProfileUpdated, onLocaleChange }: { locale: Locale; onProfileUpdated?: () => void; onLocaleChange?: (locale: Locale) => void }) {
   const { catalog, catalogLoading } = useCatalogShell();
-  return <ProfileScreen locale={locale} data={catalog} loading={catalogLoading} onProfileUpdated={onProfileUpdated} />;
+  return <ProfileScreen locale={locale} data={catalog} loading={catalogLoading} onProfileUpdated={onProfileUpdated} onLocaleChange={onLocaleChange} />;
 }
 
 function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
@@ -152,8 +152,8 @@ function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
       return <Ionicons name="bus-outline" color={color} size={size} />;
     case 'Journey':
       return <Feather name="map" color={color} size={size} />;
-    case 'Transport':
-      return <Ionicons name="car-outline" color={color} size={size} />;
+    case 'Mobility':
+      return <Ionicons name="bicycle-outline" color={color} size={size} />;
     case 'Profile':
       return <Feather name="user" color={color} size={size} />;
     default:
@@ -425,14 +425,15 @@ function App(): React.JSX.Element {
                   <AppStack.Screen name="Journey">
                     {() => <JourneyRoute locale={locale} />}
                   </AppStack.Screen>
-                  <AppStack.Screen name="Transport">
-                    {() => <TransportRoute locale={locale} />}
+                  <AppStack.Screen name="Mobility">
+                    {() => <MobilityRoute locale={locale} />}
                   </AppStack.Screen>
                   <AppStack.Screen name="Profile">
                     {() => (
                       <ProfileRoute
                         locale={locale}
                         onProfileUpdated={refreshUserProfile}
+                        onLocaleChange={setLocale}
                       />
                     )}
                   </AppStack.Screen>
@@ -454,8 +455,8 @@ function getTabLabel(locale: Locale, name: keyof TabParamList): string {
       return t(locale, 'nav.wayfinding');
     case 'Journey':
       return t(locale, 'nav.journey');
-    case 'Transport':
-      return t(locale, 'nav.transport');
+    case 'Mobility':
+      return t(locale, 'nav.mobility');
     case 'Profile':
       return t(locale, 'nav.profile');
     default:

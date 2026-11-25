@@ -7,6 +7,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { loadTransportProfile, saveTransportProfile, uploadDocument, type CurrentUser, type TransportProfileView, getSessionUser, deleteUserProfile, loadUserProfile, saveUserProfile } from '../api';
 import { getScreenCopy } from '../screenCopy';
+import { TransportScreen } from './TransportScreen';
 import { type LiveData } from '../types';
 import { AvatarPhoto, Card, EmptyState, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
 import { t, type Locale } from '../i18n';
@@ -182,7 +183,7 @@ function SearchableDropdown({
   );
 }
 
-export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { data: LiveData | null; loading: boolean; locale: Locale; onProfileUpdated?: () => void }) {
+export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocaleChange }: { data: LiveData | null; loading: boolean; locale: Locale; onProfileUpdated?: () => void; onLocaleChange?: (locale: Locale) => void }) {
   const copy = getScreenCopy(locale).profile;
   const [draft, setDraft] = useState<Draft>(() => emptyDraft());
   const [assets, setAssets] = useState<Assets>(emptyAssets);
@@ -195,6 +196,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
   const [error, setError] = useState<string | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [showDriverForm, setShowDriverForm] = useState(false);
+  const [showTransportPanel, setShowTransportPanel] = useState(false);
   const [countryCode, setCountryCode] = useState('');
   const [account, setAccount] = useState<CurrentUser | null>(null);
   const [userDraft, setUserDraft] = useState<UserDraft>(() => emptyUserDraft());
@@ -208,10 +210,12 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
     let mounted = true;
     (async () => {
       try {
-        const me = getSessionUser();
         const profile = await loadUserProfile();
         if (!mounted) return;
+        const me = getSessionUser();
+        const nextCountryCode = resolveCountryCode(profile.country || '');
         setAccount(me ? (me as CurrentUser) : null);
+        setCountryCode(nextCountryCode);
         setUserDraft({
           firstName: profile.firstName || '',
           lastName: profile.lastName || '',
@@ -222,6 +226,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
           preferredLanguage: profile.preferredLanguage || 'en',
           photoUrl: profile.photoUrl || '',
         });
+        onLocaleChange?.((profile.preferredLanguage || 'en') as Locale);
       } catch {
         if (!mounted) return;
         setAccount((getSessionUser() as unknown as CurrentUser) ?? null);
@@ -233,7 +238,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [onLocaleChange]);
 
   useEffect(() => {
     let mounted = true;
@@ -533,7 +538,10 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
               options={supportedLanguages}
               searchPlaceholder={t(locale, 'profile.languageSearch')}
               emptyLabel={t(locale, 'profile.noSearchResults')}
-              onSelect={(option) => updateUser('preferredLanguage', option.key)}
+              onSelect={(option) => {
+                updateUser('preferredLanguage', option.key);
+                onLocaleChange?.(option.key as Locale);
+              }}
             />
             <SearchableDropdown
               label={t(locale, 'profile.phonePrefixLabel')}
@@ -589,6 +597,11 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
               </Text>
             </Pressable>
             <Text style={styles.helperText}>{showDriverForm ? t(locale, 'profile.driverFormHint') : hasDriverProfile ? t(locale, 'profile.driverFormEditPrompt') : t(locale, 'profile.driverFormPrompt')}</Text>
+            <PrimaryButton
+              label={t(locale, 'nav.transport')}
+              onPress={() => setShowTransportPanel(true)}
+              icon={<Feather name="truck" size={16} color="#0f172a" />}
+            />
           </View>
         </Card>
 
@@ -675,6 +688,15 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
                   <SecondaryButton label={t(locale, 'profile.uploadChoiceCancel')} onPress={() => setUploadPickerOpen(false)} />
                 </View>
               </View>
+            </Modal>
+
+            <Modal visible={showTransportPanel} animationType="slide" onRequestClose={() => setShowTransportPanel(false)}>
+              <SafeAreaView style={styles.safeArea}>
+                <TransportScreen locale={locale} data={data} loading={loading} onReload={() => onProfileUpdated?.()} />
+                <View style={screenStyles.modalFooter}>
+                  <SecondaryButton label={t(locale, 'common.close')} onPress={() => setShowTransportPanel(false)} />
+                </View>
+              </SafeAreaView>
             </Modal>
 
             <Card title={t(locale, 'profile.visibilityTitle')} subtitle={t(locale, 'profile.visibilitySubtitle')}>
@@ -826,4 +848,5 @@ const screenStyles = StyleSheet.create({
   toggleText: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
   toggleTextActive: { color: '#172033' },
   ctaRow: { flexDirection: 'row', gap: 12 },
+  modalFooter: { paddingHorizontal: 20, paddingBottom: 16, backgroundColor: '#f7f7fb' },
 });
