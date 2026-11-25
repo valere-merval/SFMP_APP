@@ -293,53 +293,124 @@ export function AuthScreen({
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={[styles.container, authStyles.authContainer]} showsVerticalScrollIndicator={false}>
+    <View>
+      <ScrollView
+        contentContainerStyle={[styles.container, authStyles.authContainer]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <BrandLogo compact />
           <Text style={styles.kicker}>{t(locale, 'auth.brand')}</Text>
           <Text style={styles.title}>
-            {mode === 'register' ? t(locale, 'auth.create.title') : mode === 'reset' ? t(locale, 'auth.reset.title') : t(locale, 'auth.signin.title')}
+            {mode === 'register'
+              ? t(locale, 'auth.create.title')
+              : mode === 'reset'
+              ? t(locale, 'auth.reset.title')
+              : t(locale, 'auth.signin.title')}
           </Text>
           <Text style={styles.subtitle}>
-            {mode === 'register' ? t(locale, 'auth.create.subtitle') : mode === 'reset' ? t(locale, 'auth.reset.subtitle') : t(locale, 'auth.signin.subtitle')}
+            {mode === 'register'
+              ? t(locale, 'auth.create.subtitle')
+              : mode === 'reset'
+              ? t(locale, 'auth.reset.subtitle')
+              : t(locale, 'auth.signin.subtitle')}
           </Text>
         </View>
 
         <Card title={t(locale, 'auth.brand')} subtitle="Secure access">
           <View style={styles.chipsRow}>
-            <Pressable style={[styles.tabChip, mode === 'signin' && styles.tabChipActive]} onPress={() => setMode('signin')}>
-              <Text style={[styles.tabChipText, mode === 'signin' && styles.tabChipTextActive]}>{t(locale, 'auth.switch.signin')}</Text>
+            <Pressable
+              style={[
+                styles.tabChip,
+                mode === 'signin' && styles.tabChipActive,
+              ]}
+              onPress={() => setMode('signin')}
+            >
+              <Text
+                style={[
+                  styles.tabChipText,
+                  mode === 'signin' && styles.tabChipTextActive,
+                ]}
+              >
+                {t(locale, 'auth.switch.signin')}
+              </Text>
             </Pressable>
-            <Pressable style={[styles.tabChip, mode === 'register' && styles.tabChipActive]} onPress={() => setMode('register')}>
-              <Text style={[styles.tabChipText, mode === 'register' && styles.tabChipTextActive]}>{t(locale, 'auth.switch.register')}</Text>
+            <Pressable
+              style={[
+                styles.tabChip,
+                mode === 'register' && styles.tabChipActive,
+              ]}
+              onPress={() => setMode('register')}
+            >
+              <Text
+                style={[
+                  styles.tabChipText,
+                  mode === 'register' && styles.tabChipTextActive,
+                ]}
+              >
+                {t(locale, 'auth.switch.register')}
+              </Text>
             </Pressable>
-            <Pressable style={[styles.tabChip, mode === 'reset' && styles.tabChipActive]} onPress={() => setMode('reset')}>
-              <Text style={[styles.tabChipText, mode === 'reset' && styles.tabChipTextActive]}>{t(locale, 'auth.switch.reset')}</Text>
+            <Pressable
+              style={[styles.tabChip, mode === 'reset' && styles.tabChipActive]}
+              onPress={() => setMode('reset')}
+            >
+              <Text
+                style={[
+                  styles.tabChipText,
+                  mode === 'reset' && styles.tabChipTextActive,
+                ]}
+              >
+                {t(locale, 'auth.switch.reset')}
+              </Text>
             </Pressable>
           </View>
 
           <View style={styles.chipsRow}>
-            {SUPPORTED_LANGUAGES.map((code) => (
+            {SUPPORTED_LANGUAGES.map(code => (
               <Pressable
                 key={code}
-                style={[styles.langChip, locale === code && styles.langChipActive]}
+                style={[
+                  styles.langChip,
+                  locale === code && styles.langChipActive,
+                ]}
                 onPress={() => {
                   onLocaleChange(code as Locale);
                   setPreferredLanguage(code as Locale);
                 }}
               >
-                <Text style={[styles.langChipText, locale === code && styles.langChipTextActive]}>{code.toUpperCase()}</Text>
+                <Text
+                  style={[
+                    styles.langChipText,
+                    locale === code && styles.langChipTextActive,
+                  ]}
+                >
+                  {code.toUpperCase()}
+                </Text>
               </Pressable>
             ))}
           </View>
 
-          <Input placeholder={t(locale, 'auth.email')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+          <Input
+            placeholder={t(locale, 'auth.email')}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
           {mode === 'register' ? (
             <>
-              <Input placeholder={t(locale, 'auth.firstName')} value={firstName} onChangeText={setFirstName} />
-              <Input placeholder={t(locale, 'auth.lastName')} value={lastName} onChangeText={setLastName} />
+              <Input
+                placeholder={t(locale, 'auth.firstName')}
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+              <Input
+                placeholder={t(locale, 'auth.lastName')}
+                value={lastName}
+                onChangeText={setLastName}
+              />
               <SearchableDropdown
                 label={t(locale, 'auth.country')}
                 value={country}
@@ -348,18 +419,31 @@ export function AuthScreen({
                 emptyLabel={t(locale, 'profile.noSearchResults')}
                 options={countryOptions}
                 selectedKey={countryCode}
-                onSelect={(option) => onCountrySelect(option.key, option.label.replace(/\s*\(.*\)$/, ''))}
+                onSelect={option =>
+                  onCountrySelect(
+                    option.key,
+                    option.label.replace(/\s*\(.*\)$/, ''),
+                  )
+                }
               />
               <SearchableDropdown
                 label={t(locale, 'auth.city')}
                 value={city}
-                placeholder={countryCode ? t(locale, 'auth.cityPlaceholder') : t(locale, 'profile.chooseCountryFirst')}
+                placeholder={
+                  countryCode
+                    ? t(locale, 'auth.cityPlaceholder')
+                    : t(locale, 'profile.chooseCountryFirst')
+                }
                 searchPlaceholder={t(locale, 'auth.searchCities')}
-                emptyLabel={countryCode ? t(locale, 'profile.noSearchResults') : t(locale, 'profile.chooseCountryFirst')}
+                emptyLabel={
+                  countryCode
+                    ? t(locale, 'profile.noSearchResults')
+                    : t(locale, 'profile.chooseCountryFirst')
+                }
                 options={cityOptions}
                 disabled={!countryCode}
                 selectedKey={city}
-                onSelect={(option) => setCity(option.label)}
+                onSelect={option => setCity(option.label)}
               />
               <SearchableDropdown
                 label={t(locale, 'auth.language')}
@@ -369,7 +453,7 @@ export function AuthScreen({
                 emptyLabel={t(locale, 'profile.noSearchResults')}
                 options={languageOptions}
                 selectedKey={preferredLanguage}
-                onSelect={(option) => {
+                onSelect={option => {
                   setPreferredLanguage(option.key as Locale);
                   onLocaleChange(option.key as Locale);
                 }}
@@ -382,32 +466,67 @@ export function AuthScreen({
                 emptyLabel={t(locale, 'profile.noSearchResults')}
                 options={phonePrefixOptions}
                 selectedKey={phonePrefixCode}
-                onSelect={(option) => {
-                  const selected = allCountries.find((item) => item.key === option.key);
+                onSelect={option => {
+                  const selected = allCountries.find(
+                    item => item.key === option.key,
+                  );
                   setPhonePrefix(selected ? selected.dialCode : option.label);
                   setPhonePrefixCode(option.key);
                 }}
               />
-              <Input placeholder={t(locale, 'auth.phone')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+              <Input
+                placeholder={t(locale, 'auth.phone')}
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+              />
               <Pressable style={authStyles.photoButton} onPress={pickPhoto}>
-                <Feather name="camera" size={18} color="#2457e6" />
-                <Text style={authStyles.photoButtonText}>{photoUrl ? t(locale, 'auth.photoChange') : t(locale, 'auth.photoUpload')}</Text>
+                <Feather name="camera" size={18} color="#0B1F5B" />
+                <Text style={authStyles.photoButtonText}>
+                  {photoUrl
+                    ? t(locale, 'auth.photoChange')
+                    : t(locale, 'auth.photoUpload')}
+                </Text>
               </Pressable>
               <View style={authStyles.photoPreview}>
-                <AvatarPhoto uri={photoUrl || null} label={`${firstName} ${lastName}`.trim() || email || t(locale, 'auth.photoUpload')} size={72} />
+                <AvatarPhoto
+                  uri={photoUrl || null}
+                  label={
+                    `${firstName} ${lastName}`.trim() ||
+                    email ||
+                    t(locale, 'auth.photoUpload')
+                  }
+                  size={72}
+                />
                 <View style={authStyles.photoPreviewText}>
-                  <Text style={styles.helperText}>{photoUrl ? t(locale, 'auth.photoUploaded') : t(locale, 'auth.photoHint')}</Text>
-                  <Text style={styles.helperText}>{photoUrl ? t(locale, 'auth.photoChange') : t(locale, 'auth.photoUpload')}</Text>
+                  <Text style={styles.helperText}>
+                    {photoUrl
+                      ? t(locale, 'auth.photoUploaded')
+                      : t(locale, 'auth.photoHint')}
+                  </Text>
+                  <Text style={styles.helperText}>
+                    {photoUrl
+                      ? t(locale, 'auth.photoChange')
+                      : t(locale, 'auth.photoUpload')}
+                  </Text>
                 </View>
               </View>
             </>
           ) : null}
 
           <PasswordField
-            label={mode === 'reset' ? t(locale, 'auth.newPassword') : t(locale, 'auth.password')}
+            label={
+              mode === 'reset'
+                ? t(locale, 'auth.newPassword')
+                : t(locale, 'auth.password')
+            }
             value={password}
             onChangeText={setPassword}
-            placeholder={mode === 'reset' ? t(locale, 'auth.newPassword') : t(locale, 'auth.password')}
+            placeholder={
+              mode === 'reset'
+                ? t(locale, 'auth.newPassword')
+                : t(locale, 'auth.password')
+            }
           />
           {mode !== 'signin' ? (
             <PasswordField
@@ -420,38 +539,79 @@ export function AuthScreen({
 
           {error ? <ErrorText>{error}</ErrorText> : null}
           <PrimaryButton
-            label={mode === 'register' ? t(locale, 'auth.create.button') : mode === 'reset' ? t(locale, 'auth.reset.button') : t(locale, 'auth.signin.button')}
+            label={
+              mode === 'register'
+                ? t(locale, 'auth.create.button')
+                : mode === 'reset'
+                ? t(locale, 'auth.reset.button')
+                : t(locale, 'auth.signin.button')
+            }
             onPress={submit}
-            icon={<Feather name={mode === 'register' ? 'user-plus' : mode === 'reset' ? 'unlock' : 'log-in'} size={16} color="#fff" />}
+            icon={
+              <Feather
+                name={
+                  mode === 'register'
+                    ? 'user-plus'
+                    : mode === 'reset'
+                    ? 'unlock'
+                    : 'log-in'
+                }
+                size={16}
+                color="#fff"
+              />
+            }
           />
           <View style={styles.rowBetween}>
             <Text style={styles.muted}>
-              {mode === 'register' ? t(locale, 'auth.help.register') : mode === 'reset' ? t(locale, 'auth.help.reset') : t(locale, 'auth.help.signin')}
+              {mode === 'register'
+                ? t(locale, 'auth.help.register')
+                : mode === 'reset'
+                ? t(locale, 'auth.help.reset')
+                : t(locale, 'auth.help.signin')}
             </Text>
             <SecondaryButton
-              label={mode === 'register' ? t(locale, 'auth.switch.signin') : mode === 'reset' ? t(locale, 'auth.switch.signin') : t(locale, 'auth.switch.reset')}
-              onPress={() => setMode(mode === 'register' ? 'signin' : mode === 'reset' ? 'signin' : 'reset')}
-              icon={<Feather name="arrow-right" size={16} color="#1d3fb3" />}
+              label={
+                mode === 'register'
+                  ? t(locale, 'auth.switch.signin')
+                  : mode === 'reset'
+                  ? t(locale, 'auth.switch.signin')
+                  : t(locale, 'auth.switch.reset')
+              }
+              onPress={() =>
+                setMode(
+                  mode === 'register'
+                    ? 'signin'
+                    : mode === 'reset'
+                    ? 'signin'
+                    : 'reset',
+                )
+              }
             />
           </View>
         </Card>
 
         <Card title={t(locale, 'auth.whatYouGet')} subtitle="Overview">
-          {overview.map((item) => (
+          {overview.map(item => (
             <Bullet key={item}>{item}</Bullet>
           ))}
         </Card>
-        <Text style={styles.helperText}>{loading ? t(locale, 'common.loading') : t(locale, 'common.live')}</Text>
-        {photoUploading ? <Text style={styles.helperText}>{t(locale, 'common.processing')}</Text> : null}
+        <Text style={styles.helperText}>
+          {loading ? t(locale, 'common.loading') : t(locale, 'common.live')}
+        </Text>
+        {photoUploading ? (
+          <Text style={styles.helperText}>
+            {t(locale, 'common.processing')}
+          </Text>
+        ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const authStyles = StyleSheet.create({
   authContainer: {
-    paddingTop: 18,
-    paddingBottom: 28,
+    paddingBottom: 50,
+    marginBottom: 20
   },
   dropdown: {
     borderRadius: 18,
@@ -467,25 +627,114 @@ const authStyles = StyleSheet.create({
   },
   dropdownDisabled: { opacity: 0.7 },
   dropdownTextBlock: { flex: 1, gap: 2 },
-  dropdownLabel: { color: '#60708b', fontFamily: 'Poppins-SemiBold', fontSize: 12, textTransform: 'uppercase' },
+  dropdownLabel: {
+    color: '#60708b',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 12,
+    textTransform: 'uppercase',
+  },
   dropdownValue: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
   dropdownPlaceholder: { color: '#94a3b8' },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(16,27,45,0.45)', justifyContent: 'flex-end' },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(16,27,45,0.45)',
+    justifyContent: 'flex-end',
+  },
   modalBackdropPress: { ...StyleSheet.absoluteFill },
-  modalSheet: { backgroundColor: '#f6f8fc', padding: 18, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '78%' },
-  modalTitle: { color: '#172033', fontSize: 18, fontFamily: 'Teko', marginBottom: 10 },
-  modalSearch: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#dce5f5', color: '#172033', paddingHorizontal: 14, paddingVertical: 12, fontFamily: 'Poppins-Regular', marginBottom: 12 },
+  modalSheet: {
+    backgroundColor: '#f6f8fc',
+    padding: 18,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '78%',
+  },
+  modalTitle: {
+    color: '#172033',
+    fontSize: 18,
+    fontFamily: 'Teko',
+    marginBottom: 10,
+  },
+  modalSearch: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#dce5f5',
+    color: '#172033',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontFamily: 'Poppins-Regular',
+    marginBottom: 12,
+  },
   modalList: { maxHeight: 360 },
-  modalOption: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#e6eaf0', paddingHorizontal: 14, paddingVertical: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  modalOptionText: { color: '#172033', fontFamily: 'Poppins-SemiBold', flex: 1 },
-  modalEmpty: { color: '#60708b', fontFamily: 'Poppins-Medium', paddingVertical: 12 },
+  modalOption: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e6eaf0',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  modalOptionText: {
+    color: '#172033',
+    fontFamily: 'Poppins-SemiBold',
+    flex: 1,
+  },
+  modalEmpty: {
+    color: '#60708b',
+    fontFamily: 'Poppins-Medium',
+    paddingVertical: 12,
+  },
   passwordField: { gap: 6 },
-  passwordLabel: { color: '#60708b', fontFamily: 'Poppins-SemiBold', fontSize: 12, textTransform: 'uppercase' },
-  passwordRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#dbe4ff', backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 14 },
-  passwordInput: { flex: 1, color: '#172033', paddingVertical: 12, fontFamily: 'Poppins-Medium' },
+  passwordLabel: {
+    color: '#60708b',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 12,
+    textTransform: 'uppercase',
+  },
+  passwordRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#dbe4ff',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+  },
+  passwordInput: {
+    flex: 1,
+    color: '#172033',
+    paddingVertical: 12,
+    fontFamily: 'Poppins-Medium',
+  },
   eyeButton: { padding: 8 },
-  photoButton: { borderRadius: 16, borderWidth: 1, borderColor: '#dbe4ff', paddingVertical: 14, paddingHorizontal: 14, backgroundColor: '#edf2ff', flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'center' },
-  photoButtonText: { color: '#2457e6', fontFamily: 'Poppins-SemiBold' },
-  photoPreview: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, borderWidth: 1, borderColor: '#dbe4ff', backgroundColor: '#fff' },
+  photoButton: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#dbe4ff',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    backgroundColor: '#94A3B8',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    justifyContent: 'center',
+  },
+  photoButtonText: { color: '#0B1F5B', fontFamily: 'Poppins-SemiBold' },
+  photoPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#dbe4ff',
+    backgroundColor: '#fff',
+  },
   photoPreviewText: { flex: 1, gap: 4 },
 });

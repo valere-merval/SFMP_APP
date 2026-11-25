@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Platform, StatusBar, StyleSheet, Text, View, Pressable } from 'react-native';
+import { StatusBar, StyleSheet, Text, View, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -77,14 +77,13 @@ const shellStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#dbe4ff',
-    backgroundColor: '#ffffff',
+    borderBottomColor: '#D946EF',
+    backgroundColor: '#D946EF',
   },
-  topBarSafeArea: { backgroundColor: '#ffffff' },
+  topBarSafeArea: { backgroundColor: '#D946EF' },
+  statusBar: { backgroundColor: '#D946EF' },
   brandBlock: {
     flex: 1,
-    paddingRight: 12,
   },
   logoButton: {
     width: 48,
@@ -136,8 +135,8 @@ function TransportRoute({ locale }: { locale: Locale }) {
 }
 
 function WayfindingRoute({ locale }: { locale: Locale }) {
-  const { selectedMatch } = useCatalogShell();
-  return <WayfindingScreen locale={locale} venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} />;
+  const {catalog,  selectedMatch } = useCatalogShell();
+  return <WayfindingScreen locale={locale} venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} data={catalog} />;
 }
 
 function ProfileRoute({ locale, onProfileUpdated }: { locale: Locale; onProfileUpdated?: () => void }) {
@@ -150,7 +149,7 @@ function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
     case 'Hub':
       return <Ionicons name="grid-outline" color={color} size={size} />;
     case 'Wayfinding':
-      return <Feather name="map" color={color} size={size} />;
+      return <Ionicons name="bus-outline" color={color} size={size} />;
     case 'Journey':
       return <Feather name="map" color={color} size={size} />;
     case 'Transport':
@@ -323,32 +322,63 @@ function App(): React.JSX.Element {
 
   return (
     <SafeAreaProvider>
-      {Platform.OS === 'android'
-        ? React.createElement(StatusBar as any, { barStyle: 'dark-content', backgroundColor: '#f6f8fc', translucent: false })
-        : React.createElement(StatusBar as any, { barStyle: 'dark-content' })}
+      <SafeAreaView
+        edges={['top', 'bottom']}
+        style={{ backgroundColor: '#D946EF' }}
+      >
+        {/* Header content */}
+      </SafeAreaView>
+      <StatusBar
+        showHideTransition={'slide'}
+        barStyle={'dark-content'}
+        animated={true}
+      />
       {session === 'auth' ? (
-        <AuthScreen locale={locale} onLocaleChange={handleLocaleChange} onAuthenticated={handleAuthenticated} />
+        <AuthScreen
+          locale={locale}
+          onLocaleChange={handleLocaleChange}
+          onAuthenticated={handleAuthenticated}
+        />
       ) : (
         <View style={shellStyles.connectedShell}>
-          <SafeAreaView style={shellStyles.topBarSafeArea} edges={['top', 'left', 'right']}>
-            <View style={shellStyles.topBar}>
-              <View style={shellStyles.brandBlock}>
-                <Pressable style={shellStyles.logoButton} accessibilityRole="imagebutton" accessibilityLabel="Smart Fan Mobility logo">
-                  <BrandLogo compact />
-                </Pressable>
-              </View>
-              <Pressable style={shellStyles.avatarButton} onPress={() => setSession('app')} accessibilityRole="button" accessibilityLabel="Open profile area">
-              <AvatarPhoto uri={userProfile?.photoUrl} label={getAvatarFallbackName(userProfile)} />
+          <View style={shellStyles.topBar}>
+            <View style={shellStyles.brandBlock}>
+              <Pressable
+                style={shellStyles.logoButton}
+                accessibilityRole="imagebutton"
+                accessibilityLabel="Smart Fan Mobility logo"
+              >
+                <BrandLogo compact />
               </Pressable>
             </View>
-          </SafeAreaView>
+            <Pressable
+              style={shellStyles.avatarButton}
+              onPress={() => setSession('app')}
+              accessibilityRole="button"
+              accessibilityLabel="Open profile area"
+            >
+              <AvatarPhoto
+                uri={userProfile?.photoUrl}
+                label={getAvatarFallbackName(userProfile)}
+              />
+            </Pressable>
+          </View>
           {session === 'catalog' ? (
-            <EventCatalogScreen locale={locale} catalogs={catalog?.eventCatalogs ?? []} onSelectCatalog={handleSelectCatalog} onSignOut={handleSignOut} />
+            <EventCatalogScreen
+              locale={locale}
+              catalogs={catalog?.eventCatalogs ?? []}
+              onSelectCatalog={handleSelectCatalog}
+              onSignOut={handleSignOut}
+            />
           ) : session === 'matches' ? (
             <MatchListScreen
               locale={locale}
               catalog={selectedCatalog}
-              matches={catalog?.matches.filter((item) => item.catalogId === selectedCatalogId) ?? []}
+              matches={
+                catalog?.matches.filter(
+                  item => item.catalogId === selectedCatalogId,
+                ) ?? []
+              }
               onSelectMatch={handleSelectMatch}
               onBack={handleBackToCatalog}
               onBackToCatalog={handleBackToCatalog}
@@ -359,9 +389,13 @@ function App(): React.JSX.Element {
                 <AppStack.Navigator
                   screenOptions={({ route }) => ({
                     headerShown: false,
-                    tabBarActiveTintColor: '#c8f36a',
+                    tabBarActiveTintColor: '#D946EF',
                     tabBarInactiveTintColor: '#7183a1',
-                    tabBarLabelStyle: { fontFamily: fonts.tab, fontSize: 11, marginBottom: 2 },
+                    tabBarLabelStyle: {
+                      fontFamily: fonts.tab,
+                      fontSize: 11,
+                      marginBottom: 2,
+                    },
                     tabBarStyle: {
                       borderTopWidth: 1,
                       borderTopColor: '#dbe4ff',
@@ -370,15 +404,38 @@ function App(): React.JSX.Element {
                       paddingTop: 8,
                       paddingBottom: 8,
                     },
-                    tabBarLabel: getTabLabel(locale, route.name as keyof TabParamList),
-                    tabBarIcon: ({ color, size }) => renderTabIcon(route.name as keyof TabParamList, color, size),
+                    tabBarLabel: getTabLabel(
+                      locale,
+                      route.name as keyof TabParamList,
+                    ),
+                    tabBarIcon: ({ color, size }) =>
+                      renderTabIcon(
+                        route.name as keyof TabParamList,
+                        color,
+                        size,
+                      ),
                   })}
                 >
-                  <AppStack.Screen name="Hub">{() => <HubRoute locale={locale} />}</AppStack.Screen>
-                  <AppStack.Screen name="Wayfinding">{() => <WayfindingRoute locale={locale} />}</AppStack.Screen>
-                  <AppStack.Screen name="Journey">{() => <JourneyRoute locale={locale} />}</AppStack.Screen>
-                  <AppStack.Screen name="Transport">{() => <TransportRoute locale={locale} />}</AppStack.Screen>
-                  <AppStack.Screen name="Profile">{() => <ProfileRoute locale={locale} onProfileUpdated={refreshUserProfile} />}</AppStack.Screen>
+                  <AppStack.Screen name="Hub">
+                    {() => <HubRoute locale={locale} />}
+                  </AppStack.Screen>
+                  <AppStack.Screen name="Wayfinding">
+                    {() => <WayfindingRoute locale={locale} />}
+                  </AppStack.Screen>
+                  <AppStack.Screen name="Journey">
+                    {() => <JourneyRoute locale={locale} />}
+                  </AppStack.Screen>
+                  <AppStack.Screen name="Transport">
+                    {() => <TransportRoute locale={locale} />}
+                  </AppStack.Screen>
+                  <AppStack.Screen name="Profile">
+                    {() => (
+                      <ProfileRoute
+                        locale={locale}
+                        onProfileUpdated={refreshUserProfile}
+                      />
+                    )}
+                  </AppStack.Screen>
                 </AppStack.Navigator>
               </NavigationContainer>
             </CatalogShellContext.Provider>

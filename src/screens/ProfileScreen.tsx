@@ -482,7 +482,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.kicker}>{copy.eyebrow}</Text>
@@ -719,7 +719,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated }: { dat
           {data ? data.events.map((item) => <Text key={item.id} style={styles.helperText}>{item.title} · {item.city}</Text>) : loading ? <EmptyState icon="time-outline" title={copy.loadingTitle} subtitle={copy.loadingBody} /> : <EmptyState icon="person-outline" title={copy.emptyTitle} subtitle={copy.emptyBody} />}
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

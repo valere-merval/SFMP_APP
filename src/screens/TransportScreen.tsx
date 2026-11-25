@@ -150,7 +150,7 @@ export function TransportScreen({
   };
 
   return (
-    <SafeAreaView style={screenStyles.screen}>
+    <View style={screenStyles.screen}>
       <ScrollView contentContainerStyle={screenStyles.container} showsVerticalScrollIndicator={false}>
         <View style={screenStyles.hero}>
           <Text style={screenStyles.kicker}>TRANSPORT</Text>
@@ -257,7 +257,7 @@ export function TransportScreen({
           )}
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -272,37 +272,132 @@ function SummaryPill({ label, value, active }: { label: string; value: number; a
 
 const screenStyles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f6f8fc' },
-  container: { padding: 18, gap: 14, backgroundColor: '#f6f8fc', paddingBottom: 28 },
-  hero: { backgroundColor: '#101b2d', borderRadius: 24, padding: 20, gap: 10, borderTopWidth: 4, borderTopColor: '#c8f36a' },
-  kicker: { color: '#c8f36a', letterSpacing: 1.2, fontSize: 12, fontFamily: 'Poppins-Bold' },
-  title: { color: '#fff', fontSize: 30, lineHeight: 36, fontFamily: 'Poppins-Bold' },
-  subtitle: { color: '#d4def0', fontSize: 15, lineHeight: 22, fontFamily: 'Poppins-Regular' },
+  container: { gap: 14, backgroundColor: '#f6f8fc', paddingBottom: 28 },
+  hero: { backgroundColor: '#D946EF', padding: 20, gap: 10 },
+  kicker: {
+    color: '#0B1F5B',
+    letterSpacing: 1.2,
+    fontSize: 12,
+    fontFamily: 'Poppins-Bold',
+  },
+  title: {
+    color: '#fff',
+    fontSize: 30,
+    lineHeight: 36,
+    fontFamily: 'Poppins-Bold',
+  },
+  subtitle: {
+    color: '#020B2D',
+    fontSize: 15,
+    lineHeight: 22,
+    fontFamily: 'Poppins-Regular',
+  },
   rowGap: { gap: 12 },
   listGap: { gap: 12 },
-  driverSummary: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#dce5f5', gap: 4 },
-  driverSummaryTitle: { color: '#172033', fontSize: 16, fontFamily: 'Poppins-Bold' },
+  driverSummary: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#dce5f5',
+    gap: 4,
+  },
+  driverSummaryTitle: {
+    color: '#172033',
+    fontSize: 16,
+    fontFamily: 'Poppins-Bold',
+  },
   driverSummaryBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
-  availabilityButton: { borderRadius: 28, paddingVertical: 24, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', gap: 16, borderWidth: 1, width: '100%', minHeight: 112 },
-  availabilityButtonOn: { backgroundColor: '#c8f36a', borderColor: '#b9e840', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
-  availabilityButtonOff: { backgroundColor: '#172033', borderColor: '#101827', shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
+  availabilityButton: {
+    borderRadius: 28,
+    paddingVertical: 24,
+    paddingHorizontal: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    borderWidth: 1,
+    width: '100%',
+    minHeight: 112,
+  },
+  availabilityButtonOn: {
+    backgroundColor: '#06B6D4',
+    borderColor: '#06B6D4',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  availabilityButtonOff: {
+    backgroundColor: '#172033',
+    borderColor: '#101827',
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
   availabilityButtonTextBlock: { flex: 1, gap: 4 },
-  availabilityButtonTitle: { color: '#172033', fontFamily: 'Poppins-Bold', fontSize: 22 },
+  availabilityButtonTitle: {
+    color: '#172033',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 22,
+  },
   availabilityButtonTitleOff: { color: '#f8fafc' },
-  availabilityButtonSubtitle: { color: '#172033', fontFamily: 'Poppins-Medium', fontSize: 13 },
+  availabilityButtonSubtitle: {
+    color: '#172033',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 13,
+  },
   availabilityButtonSubtitleOff: { color: '#d4def0' },
   success: { color: '#14532d', fontFamily: 'Poppins-Medium' },
   error: { color: '#b42318', fontFamily: 'Poppins-Medium' },
-  providerCard: { padding: 14, borderRadius: 18, borderWidth: 1, borderColor: '#e6eaf0', backgroundColor: '#fff', gap: 8 },
-  providerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  providerBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#e8f7bf', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
-  providerBadgeText: { color: '#172033', fontFamily: 'Poppins-Bold', fontSize: 12 },
-  providerStatus: { color: '#2457e6', fontFamily: 'Poppins-SemiBold' },
+  providerCard: {
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#06B6D4',
+    backgroundColor: '#fff',
+    gap: 8,
+  },
+  providerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  providerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#94A3B8',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  providerBadgeText: {
+    color: '#172033',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 12,
+  },
+  providerStatus: { color: '#D946EF', fontFamily: 'Oswald-SemiBold' },
   providerTitle: { color: '#172033', fontFamily: 'Poppins-Bold', fontSize: 16 },
   providerBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
   providerNotes: { color: '#172033', fontFamily: 'Poppins-Medium' },
   summaryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  summaryPill: { minWidth: 78, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 16, backgroundColor: '#fff', borderWidth: 1, borderColor: '#dce5f5' },
-  summaryPillActive: { backgroundColor: '#edf8c1', borderColor: '#c8f36a' },
-  summaryLabel: { color: '#60708b', fontSize: 12, fontFamily: 'Poppins-SemiBold' },
+  summaryPill: {
+    minWidth: 78,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#dce5f5',
+  },
+  summaryPillActive: { backgroundColor: '#06B6D4', borderColor: '#94A3B8' },
+  summaryLabel: {
+    color: '#60708b',
+    fontSize: 12,
+    fontFamily: 'Poppins-SemiBold',
+  },
   summaryValue: { color: '#172033', fontSize: 18, fontFamily: 'Poppins-Bold' },
 });

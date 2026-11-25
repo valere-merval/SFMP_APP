@@ -5,10 +5,12 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
   en: {
     'auth.brand': 'SMART FAN MOBILITY',
     'auth.signin.title': 'Sign in to matchday mobility',
-    'auth.signin.subtitle': 'Authenticate with your email to load live journeys, operations and wayfinding.',
+    'auth.signin.subtitle':
+      'Authenticate with your email to load live journeys, operations and wayfinding.',
     'auth.signin.button': 'Sign in',
     'auth.create.title': 'Create your account',
-    'auth.create.subtitle': 'Join fans from anywhere in the world with a global profile.',
+    'auth.create.subtitle':
+      'Join fans from anywhere in the world with a global profile.',
     'auth.create.button': 'Create account',
     'auth.reset.title': 'Reset your password',
     'auth.reset.subtitle': 'Use your email to set a new password.',
@@ -53,9 +55,9 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.feature.pass': 'Ticket and transit pass',
     'auth.feature.operations': 'Operations visibility',
     'nav.hub': 'Hub',
-    'nav.wayfinding': 'Maps',
+    'nav.wayfinding': 'Transport',
     'nav.journey': 'Journey',
-    'nav.transport': 'Transport',
+    'nav.transport': 'My car',
     'nav.pass': 'Pass',
     'nav.profile': 'Profile',
     'common.loading': 'Loading',
@@ -77,19 +79,22 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.ticketsRemaining': 'tickets remaining',
     'common.ticketsUnavailable': 'Tickets not available on platform',
     'common.transportModes': 'Transport modes',
-    'common.tapOneToSeeAvailableProviders': 'Tap one to see available providers',
+    'common.tapOneToSeeAvailableProviders':
+      'Tap one to see available providers',
     'common.reserveNow': 'Reserve now',
     'common.notAvailable': 'Not available',
     'common.noLiveReservation': 'No live reservation yet',
     'common.liveMap': 'Live map',
     'common.pickupTracking': 'Pick-up and live driver tracking',
     'common.selectMatchFirst': 'Select a match first',
-    'common.selectMatchFirstBody': 'Choose an event to unlock live transport and pickup reservations.',
+    'common.selectMatchFirstBody':
+      'Choose an event to unlock live transport and pickup reservations.',
     'common.openInGoogleMaps': 'Open in Google Maps',
     'common.findVenue': 'Find venue',
     'common.availableChauffeurs': 'Available chauffeurs',
     'common.passengerRequests': 'Passenger requests',
-    'common.driverRequestsSubtitle': 'Approve or refuse live ride requests from fans',
+    'common.driverRequestsSubtitle':
+      'Approve or refuse live ride requests from fans',
     'common.liveTracking': 'Reserve and follow the driver',
     'common.active': 'Active',
     'common.paused': 'Paused',
@@ -124,10 +129,13 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Accept',
     'common.refuse': 'Refuse',
     'common.navigate': 'Navigate',
-    'transport.driverAvailabilityHint': 'Tap to switch your status immediately.',
+    'transport.driverAvailabilityHint':
+      'Tap to switch your status immediately.',
     'profile.userProfileTitle': 'User profile',
-    'profile.userProfileSubtitle': 'Manage your personal account separately from your driver profile.',
-    'profile.userProfileBody': 'This section is for your personal account information.',
+    'profile.userProfileSubtitle':
+      'Manage your personal account separately from your driver profile.',
+    'profile.userProfileBody':
+      'This section is for your personal account information.',
     'profile.userProfileRole': 'Normal user account',
     'profile.profileMissing': 'No personal profile filled yet.',
     'profile.emailUnknown': 'Email not available.',
@@ -151,13 +159,17 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'profile.userDeleteFailed': 'Unable to delete the personal profile.',
     'profile.photoUploaded': 'Profile photo uploaded.',
     'profile.photoUploadFailed': 'Profile photo upload failed.',
-    'profile.driverFormPrompt': 'Tap the button to reveal the driver registration form.',
+    'profile.driverFormPrompt':
+      'Tap the button to reveal the driver registration form.',
     'profile.closeDriverForm': 'Close driver form',
-    'profile.driverFormHint': 'Open the driver form to fill your chauffeur and vehicle details.',
+    'profile.driverFormHint':
+      'Open the driver form to fill your chauffeur and vehicle details.',
     'profile.editDriverProfile': 'Edit chauffeur profile',
-    'profile.driverFormEditPrompt': 'Review or update your chauffeur registration details.',
+    'profile.driverFormEditPrompt':
+      'Review or update your chauffeur registration details.',
     'profile.driverFormTitle': 'Driver registration',
-    'profile.driverFormSubtitle': 'Fill in your chauffeur identity and vehicle details.',
+    'profile.driverFormSubtitle':
+      'Fill in your chauffeur identity and vehicle details.',
     'profile.displayName': 'Public operator name',
     'profile.driverName': 'Driver name',
     'profile.vehicleLabel': 'Vehicle model / label',
@@ -169,8 +181,10 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'profile.chooseCountryFirst': 'Choose a country first',
     'profile.noSearchResults': 'No result',
     'profile.noCitiesAvailable': 'No cities available for this country',
-    'profile.countryHint': 'Choose the country first; the city list will adapt automatically.',
-    'profile.cityHint': 'Select the city that matches your current operating country.',
+    'profile.countryHint':
+      'Choose the country first; the city list will adapt automatically.',
+    'profile.cityHint':
+      'Select the city that matches your current operating country.',
     'profile.securityDocsTitle': 'Security documents',
     'profile.securityDocsSubtitle': 'Upload + scan',
     'profile.uploading': 'Uploading...',
@@ -179,16 +193,20 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'profile.uploadPermit': 'Operating permit',
     'profile.uploadVehicleImage': 'Vehicle image',
     'profile.scanPlaceholder': 'OCR / scan text',
-    'profile.scanHint': 'Upload documents, then paste OCR text to autofill sensitive fields.',
+    'profile.scanHint':
+      'Upload documents, then paste OCR text to autofill sensitive fields.',
     'profile.autofillScan': 'Autofill from scan',
-    'profile.scanFirst': 'Paste OCR text or extracted document info before autofill.',
-    'profile.scanFilled': 'Detected fields have been pre-filled. Review and validate.',
+    'profile.scanFirst':
+      'Paste OCR text or extracted document info before autofill.',
+    'profile.scanFilled':
+      'Detected fields have been pre-filled. Review and validate.',
     'profile.documentUploaded': 'Document uploaded.',
     'profile.selectionCancelled': 'File selection cancelled.',
     'profile.uploadFailed': 'Upload failed.',
     'profile.visibilityTitle': 'Visibility',
     'profile.visibilitySubtitle': 'Fan + match control',
-    'profile.visibilityBody': 'The profile is global. Then in Transport, choose which match you are available for and whether you are ready.',
+    'profile.visibilityBody':
+      'The profile is global. Then in Transport, choose which match you are available for and whether you are ready.',
     'profile.currentMatch': 'Current match',
     'profile.internalNotes': 'Internal notes',
     'profile.publicNotes': 'Public message for fans',
@@ -196,11 +214,14 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'profile.validationSubtitle': 'Backend save',
     'profile.saveDriverProfile': 'Save driver profile',
     'profile.savingDriverProfile': 'Saving...',
-    'profile.driverSaved': 'Driver profile saved. You can then declare your availability for each match in Transport.',
-    'profile.completeRequired': 'Fill in the public name, driver and plate before validating.',
+    'profile.driverSaved':
+      'Driver profile saved. You can then declare your availability for each match in Transport.',
+    'profile.completeRequired':
+      'Fill in the public name, driver and plate before validating.',
     'profile.saveFailed': 'Unable to save the profile.',
     'profile.uploadChoiceTitle': 'Choose upload source',
-    'profile.uploadChoiceSubtitle': 'Select whether you want to pick an image from the gallery or a file from storage.',
+    'profile.uploadChoiceSubtitle':
+      'Select whether you want to pick an image from the gallery or a file from storage.',
     'profile.uploadChoiceImage': 'Image gallery',
     'profile.uploadChoiceFile': 'Files',
     'profile.uploadChoiceCancel': 'Cancel',
@@ -220,10 +241,12 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
   es: {
     'auth.brand': 'SMART FAN MOBILITY',
     'auth.signin.title': 'Inicia sesión para la movilidad del partido',
-    'auth.signin.subtitle': 'Autentícate con tu correo para cargar trayectos, operaciones y mapas en vivo.',
+    'auth.signin.subtitle':
+      'Autentícate con tu correo para cargar trayectos, operaciones y mapas en vivo.',
     'auth.signin.button': 'Entrar',
     'auth.create.title': 'Crea tu cuenta',
-    'auth.create.subtitle': 'Únete a aficionados de cualquier parte del mundo con un perfil global.',
+    'auth.create.subtitle':
+      'Únete a aficionados de cualquier parte del mundo con un perfil global.',
     'auth.create.button': 'Crear cuenta',
     'auth.reset.title': 'Restablece tu contraseña',
     'auth.reset.subtitle': 'Usa tu correo para definir una nueva contraseña.',
@@ -268,7 +291,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.feature.pass': 'Boleto y pase de transporte',
     'auth.feature.operations': 'Visibilidad operativa',
     'nav.hub': 'Inicio',
-    'nav.wayfinding': 'Mapas',
+    'nav.wayfinding': 'Transporte',
+    'nav.transport': 'Mi coche',
     'nav.journey': 'Viaje',
     'nav.pass': 'Pase',
     'nav.profile': 'Perfil',
@@ -278,7 +302,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.destination': 'Destino',
     'common.chooseFinalDestination': 'Elige el destino final de este trayecto',
     'common.passengerRequests': 'Solicitudes de pasajeros',
-    'common.driverRequestsSubtitle': 'Aprueba o rechaza solicitudes de viaje en vivo',
+    'common.driverRequestsSubtitle':
+      'Aprueba o rechaza solicitudes de viaje en vivo',
     'common.sendRequest': 'Enviar solicitud',
     'common.requestSent': 'Solicitud enviada',
     'common.requestPending': 'Esperando respuesta del conductor',
@@ -290,11 +315,14 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Aceptar',
     'common.refuse': 'Rechazar',
     'common.navigate': 'Navegar',
-    'transport.driverAvailabilityHint': 'Toca para cambiar tu estado al instante.',
+    'transport.driverAvailabilityHint':
+      'Toca para cambiar tu estado al instante.',
     'profile.editDriverProfile': 'Editar perfil de conductor',
-    'profile.driverFormEditPrompt': 'Revisa o actualiza tus datos de registro como conductor.',
+    'profile.driverFormEditPrompt':
+      'Revisa o actualiza tus datos de registro como conductor.',
     'profile.uploadChoiceTitle': 'Elige el origen de la subida',
-    'profile.uploadChoiceSubtitle': 'Elige si quieres tomar una imagen de la galería o un archivo del dispositivo.',
+    'profile.uploadChoiceSubtitle':
+      'Elige si quieres tomar una imagen de la galería o un archivo del dispositivo.',
     'profile.uploadChoiceImage': 'Galería de imágenes',
     'profile.uploadChoiceFile': 'Archivos',
     'profile.uploadChoiceCancel': 'Cancelar',
@@ -302,13 +330,16 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
   fr: {
     'auth.brand': 'SMART FAN MOBILITY',
     'auth.signin.title': 'Connexion à la mobilité du match',
-    'auth.signin.subtitle': 'Authentifiez-vous avec votre e-mail pour charger les trajets, les opérations et la navigation en direct.',
+    'auth.signin.subtitle':
+      'Authentifiez-vous avec votre e-mail pour charger les trajets, les opérations et la navigation en direct.',
     'auth.signin.button': 'Se connecter',
     'auth.create.title': 'Créer un compte',
-    'auth.create.subtitle': 'Rejoignez des fans du monde entier avec un profil global.',
+    'auth.create.subtitle':
+      'Rejoignez des fans du monde entier avec un profil global.',
     'auth.create.button': 'Créer le compte',
     'auth.reset.title': 'Réinitialiser le mot de passe',
-    'auth.reset.subtitle': 'Utilisez votre e-mail pour définir un nouveau mot de passe.',
+    'auth.reset.subtitle':
+      'Utilisez votre e-mail pour définir un nouveau mot de passe.',
     'auth.reset.button': 'Réinitialiser',
     'auth.email': 'E-mail',
     'auth.password': 'Mot de passe',
@@ -340,9 +371,12 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.help.register': 'Pas encore de compte ?',
     'auth.help.signin': 'Vous avez déjà un compte ?',
     'auth.warning.passwordMismatch': 'Les mots de passe ne correspondent pas.',
-    'auth.warning.registerFields': "Veuillez saisir votre e-mail et votre mot de passe.",
-    'auth.warning.resetFields': 'Veuillez saisir votre e-mail et votre nouveau mot de passe.',
-    'auth.warning.loginFields': 'Veuillez saisir votre e-mail et votre mot de passe.',
+    'auth.warning.registerFields':
+      'Veuillez saisir votre e-mail et votre mot de passe.',
+    'auth.warning.resetFields':
+      'Veuillez saisir votre e-mail et votre nouveau mot de passe.',
+    'auth.warning.loginFields':
+      'Veuillez saisir votre e-mail et votre mot de passe.',
     'auth.error.generic': 'Une erreur est survenue. Réessayez.',
     'auth.whatYouGet': 'Ce que vous obtenez',
     'auth.feature.journey': 'Planification du trajet',
@@ -350,18 +384,20 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.feature.pass': 'Billet et pass transport',
     'auth.feature.operations': 'Visibilité opérationnelle',
     'nav.hub': 'Accueil',
-    'nav.wayfinding': 'Cartes',
+    'nav.wayfinding': 'Transports',
     'nav.journey': 'Trajet',
-    'nav.transport': 'Transport',
+    'nav.transport': 'Ma voiture',
     'nav.pass': 'Pass',
     'nav.profile': 'Profil',
     'common.loading': 'Chargement',
     'common.live': 'EN DIRECT',
     'common.retry': 'Réessayer',
     'common.destination': 'Destination',
-    'common.chooseFinalDestination': 'Choisissez la destination finale de ce trajet',
+    'common.chooseFinalDestination':
+      'Choisissez la destination finale de ce trajet',
     'common.passengerRequests': 'Demandes des passagers',
-    'common.driverRequestsSubtitle': 'Acceptez ou refusez les demandes de trajet en direct',
+    'common.driverRequestsSubtitle':
+      'Acceptez ou refusez les demandes de trajet en direct',
     'common.sendRequest': 'Envoyer la demande',
     'common.requestSent': 'Demande envoyée',
     'common.requestPending': 'En attente de la réponse du chauffeur',
@@ -373,11 +409,14 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Accepter',
     'common.refuse': 'Refuser',
     'common.navigate': 'Naviguer',
-    'transport.driverAvailabilityHint': 'Appuyez pour basculer votre statut immédiatement.',
+    'transport.driverAvailabilityHint':
+      'Appuyez pour basculer votre statut immédiatement.',
     'profile.editDriverProfile': 'Modifier le profil chauffeur',
-    'profile.driverFormEditPrompt': 'Vérifiez ou mettez à jour vos informations chauffeur.',
+    'profile.driverFormEditPrompt':
+      'Vérifiez ou mettez à jour vos informations chauffeur.',
     'profile.uploadChoiceTitle': 'Choisissez la source du téléversement',
-    'profile.uploadChoiceSubtitle': 'Choisissez si vous voulez prendre une image depuis la galerie ou un fichier depuis le stockage.',
+    'profile.uploadChoiceSubtitle':
+      'Choisissez si vous voulez prendre une image depuis la galerie ou un fichier depuis le stockage.',
     'profile.uploadChoiceImage': 'Galerie d’images',
     'profile.uploadChoiceFile': 'Fichiers',
     'profile.uploadChoiceCancel': 'Annuler',
@@ -385,13 +424,16 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
   de: {
     'auth.brand': 'SMART FAN MOBILITY',
     'auth.signin.title': 'Anmelden für die Spieltag-Mobilität',
-    'auth.signin.subtitle': 'Melde dich mit deiner E-Mail an, um Live-Routen, Betrieb und Navigation zu laden.',
+    'auth.signin.subtitle':
+      'Melde dich mit deiner E-Mail an, um Live-Routen, Betrieb und Navigation zu laden.',
     'auth.signin.button': 'Anmelden',
     'auth.create.title': 'Konto erstellen',
-    'auth.create.subtitle': 'Verbinde dich mit Fans aus aller Welt mit einem globalen Profil.',
+    'auth.create.subtitle':
+      'Verbinde dich mit Fans aus aller Welt mit einem globalen Profil.',
     'auth.create.button': 'Konto erstellen',
     'auth.reset.title': 'Passwort zurücksetzen',
-    'auth.reset.subtitle': 'Nutze deine E-Mail, um ein neues Passwort zu setzen.',
+    'auth.reset.subtitle':
+      'Nutze deine E-Mail, um ein neues Passwort zu setzen.',
     'auth.reset.button': 'Zurücksetzen',
     'auth.email': 'E-Mail',
     'auth.password': 'Passwort',
@@ -433,7 +475,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.feature.pass': 'Ticket und Fahrtpass',
     'auth.feature.operations': 'Betriebsübersicht',
     'nav.hub': 'Start',
-    'nav.wayfinding': 'Map',
+    'nav.wayfinding': 'Transport',
+    'nav.transport': 'Mein Auto',
     'nav.journey': 'Reise',
     'nav.pass': 'Pass',
     'nav.profile': 'Profil',
@@ -441,7 +484,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.live': 'LIVE',
     'common.retry': 'Erneut versuchen',
     'common.destination': 'Ziel',
-    'common.chooseFinalDestination': 'Wähle das endgültige Ziel für diese Fahrt',
+    'common.chooseFinalDestination':
+      'Wähle das endgültige Ziel für diese Fahrt',
     'common.passengerRequests': 'Fahrgastanfragen',
     'common.driverRequestsSubtitle': 'Live-Fahrten annehmen oder ablehnen',
     'common.sendRequest': 'Anfrage senden',
@@ -455,11 +499,14 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Annehmen',
     'common.refuse': 'Ablehnen',
     'common.navigate': 'Navigieren',
-    'transport.driverAvailabilityHint': 'Tippe, um deinen Status sofort umzuschalten.',
+    'transport.driverAvailabilityHint':
+      'Tippe, um deinen Status sofort umzuschalten.',
     'profile.editDriverProfile': 'Fahrerprofil bearbeiten',
-    'profile.driverFormEditPrompt': 'Überprüfe oder aktualisiere deine Chauffeurregistrierung.',
+    'profile.driverFormEditPrompt':
+      'Überprüfe oder aktualisiere deine Chauffeurregistrierung.',
     'profile.uploadChoiceTitle': 'Upload-Quelle wählen',
-    'profile.uploadChoiceSubtitle': 'Wähle, ob du ein Bild aus der Galerie oder eine Datei aus dem Speicher auswählen möchtest.',
+    'profile.uploadChoiceSubtitle':
+      'Wähle, ob du ein Bild aus der Galerie oder eine Datei aus dem Speicher auswählen möchtest.',
     'profile.uploadChoiceImage': 'Bildergalerie',
     'profile.uploadChoiceFile': 'Dateien',
     'profile.uploadChoiceCancel': 'Abbrechen',
@@ -467,10 +514,12 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
   pt: {
     'auth.brand': 'SMART FAN MOBILITY',
     'auth.signin.title': 'Entrar na mobilidade do jogo',
-    'auth.signin.subtitle': 'Autentique-se com seu e-mail para carregar rotas, operações e navegação ao vivo.',
+    'auth.signin.subtitle':
+      'Autentique-se com seu e-mail para carregar rotas, operações e navegação ao vivo.',
     'auth.signin.button': 'Entrar',
     'auth.create.title': 'Criar conta',
-    'auth.create.subtitle': 'Entre em uma plataforma global para torcedores do mundo todo.',
+    'auth.create.subtitle':
+      'Entre em uma plataforma global para torcedores do mundo todo.',
     'auth.create.button': 'Criar conta',
     'auth.reset.title': 'Redefinir senha',
     'auth.reset.subtitle': 'Use seu e-mail para definir uma nova senha.',
@@ -515,8 +564,9 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.feature.pass': 'Ingresso e passe de transporte',
     'auth.feature.operations': 'Visibilidade operacional',
     'nav.hub': 'Início',
-    'nav.wayfinding': 'Mapas',
+    'nav.wayfinding': 'Transporte',
     'nav.journey': 'Viagem',
+    'nav.transport': 'Meu carro',
     'nav.pass': 'Passe',
     'nav.profile': 'Perfil',
     'common.loading': 'Carregando',
@@ -525,7 +575,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.destination': 'Destino',
     'common.chooseFinalDestination': 'Escolha o destino final desta viagem',
     'common.passengerRequests': 'Pedidos de passageiros',
-    'common.driverRequestsSubtitle': 'Aprove ou recuse pedidos de viagem ao vivo',
+    'common.driverRequestsSubtitle':
+      'Aprove ou recuse pedidos de viagem ao vivo',
     'common.sendRequest': 'Enviar solicitação',
     'common.requestSent': 'Solicitação enviada',
     'common.requestPending': 'Aguardando resposta do motorista',
@@ -537,11 +588,14 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Aceitar',
     'common.refuse': 'Recusar',
     'common.navigate': 'Navegar',
-    'transport.driverAvailabilityHint': 'Toque para alternar seu status imediatamente.',
+    'transport.driverAvailabilityHint':
+      'Toque para alternar seu status imediatamente.',
     'profile.editDriverProfile': 'Editar perfil de motorista',
-    'profile.driverFormEditPrompt': 'Revise ou atualize seus dados de cadastro como motorista.',
+    'profile.driverFormEditPrompt':
+      'Revise ou atualize seus dados de cadastro como motorista.',
     'profile.uploadChoiceTitle': 'Escolha a origem do upload',
-    'profile.uploadChoiceSubtitle': 'Escolha se quer pegar uma imagem da galeria ou um arquivo do armazenamento.',
+    'profile.uploadChoiceSubtitle':
+      'Escolha se quer pegar uma imagem da galeria ou um arquivo do armazenamento.',
     'profile.uploadChoiceImage': 'Galeria de imagens',
     'profile.uploadChoiceFile': 'Arquivos',
     'profile.uploadChoiceCancel': 'Cancelar',
@@ -549,7 +603,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
   ar: {
     'auth.brand': 'SMART FAN MOBILITY',
     'auth.signin.title': 'تسجيل الدخول إلى تنقل المباراة',
-    'auth.signin.subtitle': 'سجّل الدخول باستخدام بريدك الإلكتروني لتحميل المسارات المباشرة والعمليات والملاحة.',
+    'auth.signin.subtitle':
+      'سجّل الدخول باستخدام بريدك الإلكتروني لتحميل المسارات المباشرة والعمليات والملاحة.',
     'auth.signin.button': 'تسجيل الدخول',
     'auth.create.title': 'إنشاء حساب',
     'auth.create.subtitle': 'انضم إلى جماهير من جميع أنحاء العالم بملف عالمي.',
@@ -588,7 +643,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.help.signin': 'لديك حساب بالفعل؟',
     'auth.warning.passwordMismatch': 'كلمتا المرور غير متطابقتين.',
     'auth.warning.registerFields': 'يرجى إدخال البريد الإلكتروني وكلمة المرور.',
-    'auth.warning.resetFields': 'يرجى إدخال البريد الإلكتروني وكلمة المرور الجديدة.',
+    'auth.warning.resetFields':
+      'يرجى إدخال البريد الإلكتروني وكلمة المرور الجديدة.',
     'auth.warning.loginFields': 'يرجى إدخال البريد الإلكتروني وكلمة المرور.',
     'auth.error.generic': 'حدث خطأ ما. حاول مرة أخرى.',
     'auth.whatYouGet': 'ما الذي ستحصل عليه',
@@ -597,7 +653,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.feature.pass': 'التذكرة وتصريح النقل',
     'auth.feature.operations': 'رؤية العمليات',
     'nav.hub': 'الرئيسية',
-    'nav.wayfinding': 'الخرائط',
+    'nav.wayfinding': 'ينقل',
+    'nav.transport': 'سيارتي',
     'nav.journey': 'الرحلة',
     'nav.pass': 'التصريح',
     'nav.profile': 'الملف',
@@ -605,7 +662,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.live': 'مباشر',
     'common.retry': 'إعادة المحاولة',
     'common.passengerRequests': 'طلبات الركاب',
-    'common.driverRequestsSubtitle': 'وافق على طلبات الرحلات المباشرة أو ارفضها',
+    'common.driverRequestsSubtitle':
+      'وافق على طلبات الرحلات المباشرة أو ارفضها',
     'common.instantBooking': 'حجز رحلة مباشر',
     'common.requestAccepted': 'قبل السائق الطلب',
     'common.requestInProgress': 'الرحلة جارية',
@@ -619,7 +677,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'profile.editDriverProfile': 'تعديل ملف السائق',
     'profile.driverFormEditPrompt': 'راجع أو حدّث بيانات تسجيلك كسائق.',
     'profile.uploadChoiceTitle': 'اختر مصدر الرفع',
-    'profile.uploadChoiceSubtitle': 'اختر ما إذا كنت تريد صورة من المعرض أو ملفًا من التخزين.',
+    'profile.uploadChoiceSubtitle':
+      'اختر ما إذا كنت تريد صورة من المعرض أو ملفًا من التخزين.',
     'profile.uploadChoiceImage': 'معرض الصور',
     'profile.uploadChoiceFile': 'الملفات',
     'profile.uploadChoiceCancel': 'إلغاء',
@@ -675,7 +734,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.feature.pass': '车票与交通通行证',
     'auth.feature.operations': '运营可视化',
     'nav.hub': '首页',
-    'nav.wayfinding': '地图',
+    'nav.wayfinding': '运输',
+    'nav.transport': '我的车',
     'nav.journey': '行程',
     'nav.pass': '通行证',
     'nav.profile': '我的',
@@ -697,7 +757,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'profile.editDriverProfile': '编辑司机资料',
     'profile.driverFormEditPrompt': '查看或更新你的司机注册信息。',
     'profile.uploadChoiceTitle': '选择上传来源',
-    'profile.uploadChoiceSubtitle': '请选择从相册上传图片，还是从存储中选择文件。',
+    'profile.uploadChoiceSubtitle':
+      '请选择从相册上传图片，还是从存储中选择文件。',
     'profile.uploadChoiceImage': '图片相册',
     'profile.uploadChoiceFile': '文件',
     'profile.uploadChoiceCancel': '取消',
@@ -705,10 +766,12 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
   ru: {
     'auth.brand': 'SMART FAN MOBILITY',
     'auth.signin.title': 'Войти в матчевую мобильность',
-    'auth.signin.subtitle': 'Войдите по e-mail, чтобы загрузить маршруты, операции и навигацию в реальном времени.',
+    'auth.signin.subtitle':
+      'Войдите по e-mail, чтобы загрузить маршруты, операции и навигацию в реальном времени.',
     'auth.signin.button': 'Войти',
     'auth.create.title': 'Создать аккаунт',
-    'auth.create.subtitle': 'Присоединяйтесь к болельщикам со всего мира с глобальным профилем.',
+    'auth.create.subtitle':
+      'Присоединяйтесь к болельщикам со всего мира с глобальным профилем.',
     'auth.create.button': 'Создать аккаунт',
     'auth.reset.title': 'Сбросить пароль',
     'auth.reset.subtitle': 'Используйте e-mail, чтобы задать новый пароль.',
@@ -753,7 +816,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'auth.feature.pass': 'Билет и транспортный пропуск',
     'auth.feature.operations': 'Видимость операций',
     'nav.hub': 'Главная',
-    'nav.wayfinding': 'Карты',
+    'nav.wayfinding': 'Транспорт',
+    'nav.transport': 'Мой автомобиль',
     'nav.journey': 'Поездка',
     'nav.pass': 'Пропуск',
     'nav.profile': 'Профиль',
@@ -761,7 +825,8 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.live': 'LIVE',
     'common.retry': 'Повторить',
     'common.passengerRequests': 'Запросы пассажиров',
-    'common.driverRequestsSubtitle': 'Подтвердите или отклоните живые запросы на поездку',
+    'common.driverRequestsSubtitle':
+      'Подтвердите или отклоните живые запросы на поездку',
     'common.instantBooking': 'Бронирование поездки в реальном времени',
     'common.requestAccepted': 'Водитель принял',
     'common.requestInProgress': 'Поездка в процессе',
@@ -771,11 +836,14 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Принять',
     'common.refuse': 'Отклонить',
     'common.navigate': 'Навигация',
-    'transport.driverAvailabilityHint': 'Нажмите, чтобы сразу переключить свой статус.',
+    'transport.driverAvailabilityHint':
+      'Нажмите, чтобы сразу переключить свой статус.',
     'profile.editDriverProfile': 'Редактировать профиль водителя',
-    'profile.driverFormEditPrompt': 'Проверьте или обновите данные вашей регистрации водителя.',
+    'profile.driverFormEditPrompt':
+      'Проверьте или обновите данные вашей регистрации водителя.',
     'profile.uploadChoiceTitle': 'Выберите источник загрузки',
-    'profile.uploadChoiceSubtitle': 'Выберите: изображение из галереи или файл из памяти устройства.',
+    'profile.uploadChoiceSubtitle':
+      'Выберите: изображение из галереи или файл из памяти устройства.',
     'profile.uploadChoiceImage': 'Галерея изображений',
     'profile.uploadChoiceFile': 'Файлы',
     'profile.uploadChoiceCancel': 'Отмена',

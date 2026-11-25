@@ -629,13 +629,13 @@ export function JourneyScreen({
 
   if (!match) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <View style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
           <Card title={copy.title} subtitle={copy.subtitle} wide>
             <EmptyState icon="calendar-outline" title={t(locale, 'common.noMatchSelected')} subtitle={t(locale, 'common.selectMatchFirstBody')} />
           </Card>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -643,7 +643,7 @@ export function JourneyScreen({
 
   if (isDriver) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <View style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
           <View style={styles.heroRow}>
             <View style={[styles.card, styles.cardWide]}>
@@ -881,12 +881,12 @@ export function JourneyScreen({
             </SafeAreaView>
           </Modal>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.kicker}>{copy.eyebrow}</Text>
@@ -1087,6 +1087,6 @@ export function JourneyScreen({
           {requestLoading ? <Text style={styles.helperText}>{t(locale, 'common.loading')}</Text> : null}
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

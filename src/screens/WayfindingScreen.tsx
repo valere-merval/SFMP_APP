@@ -6,15 +6,26 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getScreenCopy } from '../screenCopy';
 import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
-import { Card, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
-import type { Locale } from '../i18n';
+import {
+  Card,
+  EmptyState,
+  MiniCard,
+  Pill,
+  PrimaryButton,
+  SecondaryButton,
+  styles,
+} from '../ui';
+import { Locale, t } from '../i18n';
+import type { LiveData } from '../types.ts';
 
 export function WayfindingScreen({
+  data,
   locale,
   venueName = 'Estadio Metropolitano',
   city = 'Madrid',
   country = 'Spain',
 }: {
+  data: LiveData | null;
   locale: Locale;
   venueName?: string;
   city?: string;
@@ -28,13 +39,36 @@ export function WayfindingScreen({
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.safeArea}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.kicker}>{copy.eyebrow}</Text>
           <Text style={styles.title}>{copy.title}</Text>
           <Text style={styles.subtitle}>{copy.subtitle}</Text>
         </View>
+        <Card title={copy.linesTitle} subtitle={copy.linesSubtitle} wide>
+          {data ? (
+            <View style={styles.grid2}>
+              {data.mobility.map(item => (
+                <MiniCard
+                  key={item.id}
+                  title={item.mode}
+                  subtitle={item.badge}
+                  meta={`${item.duration} · ${item.price}`}
+                />
+              ))}
+            </View>
+          ) : (
+            <EmptyState
+              icon="bus-outline"
+              title={t(locale, 'common.noProviders')}
+              subtitle={t(locale, 'common.backendUnavailable')}
+            />
+          )}
+        </Card>
         <Card title={copy.mapTitle} subtitle={copy.mapSubtitle} wide>
           <View style={styles.mapPanel}>
             <MapView
@@ -49,11 +83,17 @@ export function WayfindingScreen({
               showsCompass={false}
               showsTraffic
             >
-              <Marker coordinate={venueCoordinate} title={title} description="Match venue" />
+              <Marker
+                coordinate={venueCoordinate}
+                title={title}
+                description="Match venue"
+              />
             </MapView>
             <View style={styles.mapOverlay}>
               <Text style={styles.cardTitle}>{venueName}</Text>
-              <Text style={styles.muted}>{city}, {country}</Text>
+              <Text style={styles.muted}>
+                {city}, {country}
+              </Text>
               <Text style={styles.muted}>{copy.mapBody}</Text>
             </View>
           </View>
@@ -65,7 +105,9 @@ export function WayfindingScreen({
             />
             <SecondaryButton
               label={copy.directions}
-              onPress={() => openGoogleMapsDirections(title, 'Madrid city center')}
+              onPress={() =>
+                openGoogleMapsDirections(title, 'Madrid city center')
+              }
               icon={<Feather name="external-link" size={16} color="#1d3fb3" />}
             />
           </View>
@@ -88,10 +130,19 @@ export function WayfindingScreen({
             <Text style={styles.muted}>{copy.fallbackBody}</Text>
           </View>
           <View style={styles.ctaRow}>
-            <SecondaryButton label={copy.searchVenue} onPress={() => Linking.openURL('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(title))} icon={<Feather name="search" size={16} color="#1d3fb3" />} />
+            <SecondaryButton
+              label={copy.searchVenue}
+              onPress={() =>
+                Linking.openURL(
+                  'https://www.google.com/maps/search/?api=1&query=' +
+                    encodeURIComponent(title),
+                )
+              }
+              icon={<Feather name="search" size={16} color="#1d3fb3" />}
+            />
           </View>
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

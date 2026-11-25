@@ -9,6 +9,8 @@ platform :ios, '15.1'
 prepare_react_native_project!
 
 target 'SFMPAppBare' do
+    rn_maps_path = '../node_modules/react-native-maps'
+    pod 'react-native-maps/Google', :path => rn_maps_path
   config = use_native_modules!
 
   use_react_native!(

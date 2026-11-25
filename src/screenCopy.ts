@@ -132,6 +132,8 @@ export type ScreenCopy = {
     fastest: string;
     freePass: string;
     stepFree: string;
+    linesTitle: string;
+    linesSubtitle: string;
     handoffTitle: string;
     handoffSubtitle: string;
     nativeMapBody: string;

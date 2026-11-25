@@ -1,6 +1,5 @@
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getScreenCopy } from '../screenCopy';
@@ -10,7 +9,7 @@ import { t, type Locale } from '../i18n';
 export function PassScreen({ locale }: { locale: Locale }) {
   const copy = getScreenCopy(locale).pass;
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.kicker}>{copy.eyebrow}</Text>
@@ -43,6 +42,6 @@ export function PassScreen({ locale }: { locale: Locale }) {
           <EmptyState icon="document-lock-outline" title={copy.emptyTitle} subtitle={copy.emptyBody} />
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

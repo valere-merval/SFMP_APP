@@ -31,8 +31,11 @@ export function EventCatalogScreen({
   }, [ascending, catalogs, search]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+    <View style={styles.safeArea}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.kicker}>{copy.eyebrow}</Text>
           <Text style={styles.title}>{copy.title}</Text>
@@ -40,30 +43,47 @@ export function EventCatalogScreen({
         </View>
 
         <Card title={copy.cardTitle} subtitle={copy.cardSubtitle} wide>
-          <Input placeholder={copy.searchPlaceholder} value={search} onChangeText={setSearch} keyboardType="default" />
+          <Input
+            placeholder={copy.searchPlaceholder}
+            value={search}
+            onChangeText={setSearch}
+            keyboardType="default"
+          />
           <View style={styles.rowBetween}>
-            <Text style={styles.muted}>{items.length} {copy.countSuffix}</Text>
+            <Text style={styles.muted}>
+              {items.length} {copy.countSuffix}
+            </Text>
             <SecondaryButton
               label={ascending ? copy.sortAsc : copy.sortDesc}
-              onPress={() => setAscending((value) => !value)}
-              icon={<Feather name="arrow-down" size={16} color="#1d3fb3" />}
+              onPress={() => setAscending(value => !value)}
+              icon={<Feather name="arrow-down" size={16} color="#0B1F5B" />}
             />
           </View>
         </Card>
 
         <View style={localStyles.grid}>
-          {items.map((catalog) => (
-            <Pressable key={catalog.id} style={localStyles.card} onPress={() => { trackTelemetry('catalog_selected', 'EventCatalog', { catalogId: catalog.id, title: catalog.title }); onSelectCatalog(catalog); }}>
-              <Image source={{ uri: catalog.imageUrl }} style={localStyles.image} />
+          {items.map(catalog => (
+            <Pressable
+              key={catalog.id}
+              style={localStyles.card}
+              onPress={() => {
+                trackTelemetry('catalog_selected', 'EventCatalog', {
+                  catalogId: catalog.id,
+                  title: catalog.title,
+                });
+                onSelectCatalog(catalog);
+              }}
+            >
+              <Image
+                source={{ uri: catalog.imageUrl }}
+                style={localStyles.image}
+              />
               <View style={localStyles.overlay}>
                 <View style={styles.rowBetween}>
                   <Text style={localStyles.badge}>{catalog.badge}</Text>
                   <Text style={localStyles.liveTag}>LIVE</Text>
                 </View>
                 <Text style={localStyles.title}>{catalog.title}</Text>
-                <Text style={localStyles.meta}>{catalog.sport} · {catalog.country}</Text>
-                <Text style={localStyles.count}>{catalog.eventCount} {t(locale, 'common.matches')}</Text>
-                <Text style={localStyles.description}>{catalog.description}</Text>
               </View>
             </Pressable>
           ))}
@@ -72,12 +92,20 @@ export function EventCatalogScreen({
         <Card title={copy.helperTitle} subtitle={copy.helperTitle} wide>
           <Text style={styles.muted}>{copy.helperBody}</Text>
           <View style={styles.ctaRow}>
-            <PrimaryButton label={copy.continue} onPress={() => undefined} icon={<Feather name="arrow-right" size={16} color="#fff" />} />
-            <SecondaryButton label={copy.signOut} onPress={onSignOut} icon={<Feather name="log-out" size={16} color="#1d3fb3" />} />
+            <PrimaryButton
+              label={copy.continue}
+              onPress={() => undefined}
+              icon={<Feather name="arrow-right" size={16} color="#fff" />}
+            />
+            <SecondaryButton
+              label={copy.signOut}
+              onPress={onSignOut}
+              icon={<Feather name="log-out" size={16} color="#1d3fb3" />}
+            />
           </View>
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -118,7 +146,7 @@ const localStyles = {
     fontSize: 12,
   },
   liveTag: {
-    backgroundColor: '#c8f36a',
+    backgroundColor: '#06B6D4',
     color: '#172033',
     paddingHorizontal: 10,
     paddingVertical: 5,
