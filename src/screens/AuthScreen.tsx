@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
@@ -298,7 +297,7 @@ export function AuthScreen({
         contentContainerStyle={[styles.container, authStyles.authContainer]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
+        <View style={[styles.header, authStyles.authHeader]}>
           <BrandLogo compact />
           <Text style={styles.kicker}>{t(locale, 'auth.brand')}</Text>
           <Text style={styles.title}>
@@ -609,9 +608,15 @@ export function AuthScreen({
 }
 
 const authStyles = StyleSheet.create({
+  authHeader: {
+    paddingTop: 14,
+    paddingBottom: 14,
+    gap: 6,
+  },
   authContainer: {
-    paddingBottom: 50,
-    marginBottom: 20
+    paddingTop: 0,
+    paddingBottom: 36,
+    marginBottom: 0,
   },
   dropdown: {
     borderRadius: 18,

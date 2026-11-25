@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { StatusBar, StyleSheet, Text, View, Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -171,6 +171,7 @@ function getAvatarFallbackName(profile: AppUserProfile) {
 function App(): React.JSX.Element {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<'auth' | 'catalog' | 'matches' | 'app'>('auth');
+  const [activeTab, setActiveTab] = useState<keyof TabParamList>('Hub');
   const [locale, setLocale] = useState<Locale>(() => detectLanguage());
   const [catalog, setCatalog] = useState<LiveData | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
@@ -178,6 +179,7 @@ function App(): React.JSX.Element {
   const [selectedCatalogId, setSelectedCatalogId] = useState<string | null>(null);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<AppUserProfile>(null);
+  const navigationRef = useRef<any>(null);
 
   const refreshUserProfile = useCallback(async () => {
     try {
@@ -286,6 +288,14 @@ function App(): React.JSX.Element {
     setSession('matches');
   }, []);
 
+  const handleOpenProfile = useCallback(() => {
+    setActiveTab('Profile');
+    setSession('app');
+    requestAnimationFrame(() => {
+      navigationRef.current?.navigate?.('Profile');
+    });
+  }, []);
+
   const handleSignOut = useCallback(async () => {
     await clearAuthToken();
     setCatalog(null);
@@ -353,7 +363,7 @@ function App(): React.JSX.Element {
             </View>
             <Pressable
               style={shellStyles.avatarButton}
-              onPress={() => setSession('app')}
+              onPress={handleOpenProfile}
               accessibilityRole="button"
               accessibilityLabel="Open profile area"
             >
@@ -385,9 +395,18 @@ function App(): React.JSX.Element {
             />
           ) : (
             <CatalogShellContext.Provider value={shellValue}>
-              <NavigationContainer>
-                <AppStack.Navigator
-                  screenOptions={({ route }) => ({
+            <NavigationContainer
+              ref={navigationRef}
+              onStateChange={() => {
+                const current = navigationRef.current?.getCurrentRoute?.();
+                if (current?.name && ['Hub', 'Wayfinding', 'Journey', 'Mobility', 'Profile'].includes(current.name)) {
+                  setActiveTab(current.name as keyof TabParamList);
+                }
+              }}
+            >
+              <AppStack.Navigator
+                initialRouteName={activeTab}
+                screenOptions={({ route }) => ({
                     headerShown: false,
                     tabBarActiveTintColor: '#D946EF',
                     tabBarInactiveTintColor: '#7183a1',
@@ -433,7 +452,13 @@ function App(): React.JSX.Element {
                       <ProfileRoute
                         locale={locale}
                         onProfileUpdated={refreshUserProfile}
-                        onLocaleChange={setLocale}
+                        onLocaleChange={(nextLocale) => {
+                          setLocale(nextLocale);
+                          setActiveTab('Profile');
+                          requestAnimationFrame(() => {
+                            navigationRef.current?.navigate?.('Profile');
+                          });
+                        }}
                       />
                     )}
                   </AppStack.Screen>

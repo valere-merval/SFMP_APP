@@ -226,7 +226,10 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocal
           preferredLanguage: profile.preferredLanguage || 'en',
           photoUrl: profile.photoUrl || '',
         });
-        onLocaleChange?.((profile.preferredLanguage || 'en') as Locale);
+        const nextLocale = (profile.preferredLanguage || 'en') as Locale;
+        if (nextLocale !== locale) {
+          onLocaleChange?.(nextLocale);
+        }
       } catch {
         if (!mounted) return;
         setAccount((getSessionUser() as unknown as CurrentUser) ?? null);
@@ -238,7 +241,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocal
     return () => {
       mounted = false;
     };
-  }, [onLocaleChange]);
+  }, [locale, onLocaleChange]);
 
   useEffect(() => {
     let mounted = true;
