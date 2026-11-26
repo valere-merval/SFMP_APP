@@ -602,6 +602,10 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
               </Text>
             </Pressable>
             <Text style={styles.helperText}>{showDriverForm ? t(locale, 'profile.driverFormHint') : hasDriverProfile ? t(locale, 'profile.driverFormEditPrompt') : t(locale, 'profile.driverFormPrompt')}</Text>
+            <View style={screenStyles.rowGap}>
+              {currentMatch ? <Text style={styles.helperText}>{t(locale, 'profile.currentMatch')}: {('homeTeam' in currentMatch && 'awayTeam' in currentMatch) ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}` : currentMatch.title}</Text> : null}
+              <Text style={styles.helperText}>{t(locale, 'profile.visibilityBody')}</Text>
+            </View>
             <PrimaryButton
               label={t(locale, 'nav.transport')}
               onPress={() => setShowTransportPanel(true)}

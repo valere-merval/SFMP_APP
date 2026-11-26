@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapboxNaviView from '../components/MapboxNaviView';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { acceptRideRequest, createRideRequest, getRideRequest, getSessionUser, getAuthToken, listAssignedDriverRideRequests, listDriverRideRequests, listPassengerRideRequests, listPublicTransportProfiles, loadTransportAvailability, markRideRequestArrived, postJson, refuseRideRequest, startRideRequestTrip, completeRideRequestTrip } from '../api';
 import { getScreenCopy } from '../screenCopy';
@@ -711,105 +711,50 @@ export function HubScreen({
               </View>
             )}
             <View style={localStyles.mapPanel}>
-              <MapView
-                style={localStyles.mapView}
-                provider={PROVIDER_GOOGLE}
-                initialRegion={{
-                  latitude: 40.4531,
-                  longitude: -3.6883,
-                  latitudeDelta: 0.03,
-                  longitudeDelta: 0.03,
-                }}
-                showsTraffic
-                showsCompass={false}
-              >
-                <Marker
-                  coordinate={{ latitude: 40.4531, longitude: -3.6883 }}
-                  title={hero.venue}
-                  description={`${hero.city}, ${hero.country}`}
-                />
-                {(() => {
-                  const route = buildRideRouteCoordinates(
-                    rideRequest?.pickupLatitude != null &&
-                      rideRequest?.pickupLongitude != null
-                      ? {
-                          latitude: rideRequest.pickupLatitude,
-                          longitude: rideRequest.pickupLongitude,
-                        }
-                      : null,
-                    rideRequest?.destinationLatitude != null &&
-                      rideRequest?.destinationLongitude != null
-                      ? {
-                          latitude: rideRequest.destinationLatitude,
-                          longitude: rideRequest.destinationLongitude,
-                        }
-                      : null,
-                  );
-                  const routeColor = rideStatusStyle(
-                    rideRequest?.status,
-                    locale,
-                  ).color;
-                  return route.length > 1 ? (
-                    <>
-                      <Polyline
-                        coordinates={route}
-                        strokeColor="rgba(9, 17, 31, 0.42)"
-                        strokeWidth={9}
-                        geodesic
-                        lineCap="round"
-                        lineJoin="round"
-                      />
-                      <Polyline
-                        coordinates={route}
-                        strokeColor={routeColor}
-                        strokeWidth={5}
-                        geodesic
-                        lineCap="round"
-                        lineJoin="round"
-                      />
-                    </>
-                  ) : null;
-                })()}
-                {rideRequest?.pickupLatitude != null &&
-                rideRequest?.pickupLongitude != null ? (
-                  <Marker
-                    coordinate={{
-                      latitude: rideRequest.pickupLatitude,
-                      longitude: rideRequest.pickupLongitude,
-                    }}
-                    title={rideRequest.pickupLabel}
-                    pinColor="#c8f36a"
-                  />
-                ) : null}
-                {rideRequest?.destinationLatitude != null &&
-                rideRequest?.destinationLongitude != null ? (
-                  <Marker
-                    coordinate={{
-                      latitude: rideRequest.destinationLatitude,
-                      longitude: rideRequest.destinationLongitude,
-                    }}
-                    title={rideRequest.destinationLabel}
-                    pinColor="#4da3ff"
-                  />
-                ) : null}
-              </MapView>
+              <MapboxNaviView
+                height={320}
+                origin={{ latitude: 40.4531, longitude: -3.6883 }}
+                destination={
+                  rideRequest?.destinationLatitude != null && rideRequest?.destinationLongitude != null
+                    ? {
+                        latitude: rideRequest.destinationLatitude,
+                        longitude: rideRequest.destinationLongitude,
+                      }
+                    : { latitude: 40.4531, longitude: -3.6883 }
+                }
+                route={buildRideRouteCoordinates(
+                  rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null
+                    ? {
+                        latitude: rideRequest.pickupLatitude,
+                        longitude: rideRequest.pickupLongitude,
+                      }
+                    : null,
+                  rideRequest?.destinationLatitude != null && rideRequest?.destinationLongitude != null
+                    ? {
+                        latitude: rideRequest.destinationLatitude,
+                        longitude: rideRequest.destinationLongitude,
+                      }
+                    : null,
+                )}
+                title={rideRequest ? rideRequest.destinationLabel : requestDestination || hero.venue}
+                subtitle={rideRequest ? `${rideRequest.pickupLabel} → ${rideRequest.destinationLabel}` : `${hero.city}, ${hero.country}`}
+                liveLabel={rideRequest ? rideStatusStyle(rideRequest?.status, locale).label : t(locale, 'common.pickupTracking')}
+              />
               <View style={localStyles.mapOverlay}>
                 <View style={styles.rowBetween}>
                   <View>
                     <Text style={localStyles.mapOverlayTitle}>
-                      {rideRequest
-                        ? rideRequest.destinationLabel
-                        : requestDestination || hero.venue}
+                      {rideRequest ? rideRequest.destinationLabel : requestDestination || hero.venue}
                     </Text>
                     <Text numberOfLines={2} style={localStyles.mapOverlayText}>
                       {rideRequest
                         ? rideRequest.status === 'PENDING'
                           ? t(locale, 'common.requestPending')
                           : rideRequest.status === 'ACCEPTED'
-                          ? t(locale, 'common.requestAccepted')
-                          : rideRequest.status === 'IN_PROGRESS'
-                          ? t(locale, 'common.requestInProgress')
-                          : t(locale, 'common.requestRefused')
+                            ? t(locale, 'common.requestAccepted')
+                            : rideRequest.status === 'IN_PROGRESS'
+                              ? t(locale, 'common.requestInProgress')
+                              : t(locale, 'common.requestRefused')
                         : t(locale, 'common.pickupTracking')}
                     </Text>
                   </View>
@@ -818,17 +763,13 @@ export function HubScreen({
                       paddingHorizontal: 5,
                       paddingVertical: 8,
                       borderRadius: 999,
-                      backgroundColor: rideStatusStyle(
-                        rideRequest?.status,
-                        locale,
-                      ).backgroundColor,
+                      backgroundColor: rideStatusStyle(rideRequest?.status, locale).backgroundColor,
                     }}
                   >
                     <Text
                       numberOfLines={2}
                       style={{
-                        color: rideStatusStyle(rideRequest?.status, locale)
-                          .color,
+                        color: rideStatusStyle(rideRequest?.status, locale).color,
                         fontFamily: 'Poppins-SemiBold',
                         fontSize: 10,
                       }}
@@ -847,16 +788,11 @@ export function HubScreen({
                     {rideRequest.driverVehiclePlate}
                   </Text>
                 ) : null}
-                {rideRequest?.driverDistanceKm != null ||
-                rideRequest?.driverEtaMinutes != null ? (
+                {rideRequest?.driverDistanceKm != null || rideRequest?.driverEtaMinutes != null ? (
                   <Text numberOfLines={2} style={localStyles.mapOverlayText}>
-                    {rideRequest.driverDistanceKm != null
-                      ? `${rideRequest.driverDistanceKm} km`
-                      : t(locale, 'common.loading')}{' '}
+                    {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : t(locale, 'common.loading')}{' '}
                     ·{' '}
-                    {rideRequest.driverEtaMinutes != null
-                      ? `${rideRequest.driverEtaMinutes} min`
-                      : t(locale, 'common.loading')}
+                    {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : t(locale, 'common.loading')}
                   </Text>
                 ) : null}
               </View>
