@@ -812,7 +812,7 @@ export function JourneyScreen({
           <View style={styles.card}>
             <View style={styles.mapPanel}>
               <MapboxNaviView
-                height={680}
+                height={740}
                 origin={{ latitude: 40.4531, longitude: -3.6883 }}
                 destination={
                   activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
@@ -893,7 +893,7 @@ export function JourneyScreen({
 
                 <View style={[styles.mapPanel, expandedMapStyle]}>
                   <MapboxNaviView
-                    height={620}
+                    height={720}
                     origin={{ latitude: 40.4531, longitude: -3.6883 }}
                     destination={
                       activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
