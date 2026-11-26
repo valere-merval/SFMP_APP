@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { pick, errorCodes, isErrorWithCode, types } from '@react-native-documents/picker';
 import { City, Country } from 'country-state-city';
@@ -544,10 +544,30 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
   return (
     <View style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.kicker}>{copy.eyebrow}</Text>
-          <Text style={styles.title}>{copy.title}</Text>
-          <Text style={styles.subtitle}>{copy.subtitle}</Text>
+        <View style={screenStyles.heroHeader}>
+          <View style={screenStyles.heroTopRow}>
+            <View style={screenStyles.brandChip}>
+              <Image source={require('../../assets/smart-fan-mobility-logo.jpg')} style={screenStyles.brandLogo} resizeMode="cover" />
+              <View style={screenStyles.brandTextBlock}>
+                <Text style={screenStyles.brandKicker}>{copy.eyebrow}</Text>
+                <Text style={screenStyles.brandName}>{t(locale, 'nav.profile')}</Text>
+              </View>
+            </View>
+            <AvatarPhoto uri={userDraft.photoUrl || null} label={account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || account?.email || t(locale, 'profile.profileMissing')} size={54} />
+          </View>
+          <View style={screenStyles.heroBody}>
+            <View style={screenStyles.heroBadge}>
+              <Feather name="shield" size={14} color="#0b1220" />
+              <Text style={screenStyles.heroBadgeText}>{t(locale, 'profile.userProfileRole')}</Text>
+            </View>
+            <Text style={screenStyles.heroTitle}>{copy.title}</Text>
+            <Text style={screenStyles.heroSubtitle}>{copy.subtitle}</Text>
+            <View style={screenStyles.heroChips}>
+              <View style={screenStyles.heroChip}><Text style={screenStyles.heroChipText}>{currentMatch ? (('homeTeam' in currentMatch && 'awayTeam' in currentMatch) ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}` : currentMatch.title) : t(locale, 'profile.currentMatch')}</Text></View>
+              <View style={screenStyles.heroChip}><Text style={screenStyles.heroChipText}>{userDraft.preferredLanguage.toUpperCase()}</Text></View>
+              <View style={screenStyles.heroChip}><Text style={screenStyles.heroChipText}>{userDraft.country || t(locale, 'profile.countryPlaceholder')}</Text></View>
+            </View>
+          </View>
         </View>
 
         <Card title={t(locale, 'profile.userProfileTitle')} subtitle={t(locale, 'profile.userProfileSubtitle')} wide>
@@ -860,7 +880,58 @@ function ActionRow({ label, onPress, accent }: { label: string; onPress: () => v
 
 const screenStyles = StyleSheet.create({
   rowGap: { gap: 12 },
+  heroHeader: {
+    backgroundColor: '#070d18',
+    borderRadius: 28,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(124, 243, 160, 0.14)',
+    shadowColor: '#000',
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  heroTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  brandChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
+  },
+  brandLogo: { width: 40, height: 40, borderRadius: 999 },
+  brandTextBlock: { gap: 2, flex: 1, minWidth: 0 },
+  brandKicker: { color: '#9fb2cb', fontFamily: 'Poppins-SemiBold', fontSize: 11, textTransform: 'uppercase' },
+  brandName: { color: '#f8fafc', fontFamily: 'Poppins-Bold', fontSize: 16 },
+  heroBody: { gap: 10 },
+  heroBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: '#c8f36a',
+  },
+  heroBadgeText: { color: '#07101b', fontFamily: 'Poppins-Bold', fontSize: 12, textTransform: 'uppercase' },
+  heroTitle: { color: '#f8fafc', fontSize: 30, lineHeight: 36, fontFamily: 'Poppins-Bold' },
+  heroSubtitle: { color: '#9fb2cb', fontFamily: 'Poppins-Regular', lineHeight: 20 },
+  heroChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  heroChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: 'rgba(34, 211, 238, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 211, 238, 0.18)',
+  },
+  heroChipText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 12 },
   driverPreview: { backgroundColor: '#0b1220', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', gap: 4 },
+
   profilePreviewRow: { backgroundColor: '#0b1220', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', flexDirection: 'row', alignItems: 'center', gap: 14 },
   profilePreviewMeta: { flex: 1, gap: 4 },
   previewTitle: { color: '#f8fafc', fontSize: 16, fontFamily: 'Poppins-Bold' },
