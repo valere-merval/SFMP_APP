@@ -5,7 +5,7 @@ import { pick, errorCodes, isErrorWithCode, types } from '@react-native-document
 import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { loadTransportProfile, saveTransportProfile, uploadDocument, type CurrentUser, type TransportProfileView, getSessionUser, deleteUserProfile, loadUserProfile, saveUserProfile } from '../api';
+import { loadTransportProfile, saveTransportProfile, uploadDocument, type CurrentUser, type TransportProfileView, getSessionUser, deleteUserProfile, loadUserProfile, saveUserProfile, loadTransportAvailability, saveTransportAvailability } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { TransportScreen } from './TransportScreen';
 import { type LiveData, type MatchCard } from '../types';
@@ -195,6 +195,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [showUserForm, setShowUserForm] = useState(false);
   const [showDriverForm, setShowDriverForm] = useState(false);
   const [showTransportPanel, setShowTransportPanel] = useState(false);
   const [countryCode, setCountryCode] = useState('');
@@ -205,6 +206,10 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [userError, setUserError] = useState<string | null>(null);
   const [userLoading, setUserLoading] = useState(true);
+  const [matchAvailability, setMatchAvailability] = useState<boolean | null>(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilitySaving, setAvailabilitySaving] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const localeRef = useRef(locale);
 
   useEffect(() => {
@@ -298,6 +303,35 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
     return (City.getCitiesOfCountry(userCountryCode) ?? []).map((city) => ({ key: city.name, label: city.name }));
   }, [userCountryCode]);
 
+  useEffect(() => {
+    let mounted = true;
+    if (!currentMatch?.id) {
+      setMatchAvailability(null);
+      return () => {
+        mounted = false;
+      };
+    }
+    setAvailabilityLoading(true);
+    setAvailabilityError(null);
+    (async () => {
+      try {
+        const availability = await loadTransportAvailability(currentMatch.id);
+        if (!mounted) return;
+        setMatchAvailability(Boolean(availability.available));
+      } catch (caught: any) {
+        if (mounted) {
+          setMatchAvailability(null);
+          setAvailabilityError(caught?.message ?? t(locale, 'profile.matchAvailabilityUnavailable'));
+        }
+      } finally {
+        if (mounted) setAvailabilityLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [currentMatch?.id, locale]);
+
   const countryValue = draft.country;
   const cityValue = draft.city;
   const hasDriverProfile = Boolean(draft.displayName || draft.driverName || draft.vehiclePlate || draft.city || draft.country || draft.permitUrl || draft.driverLicenseUrl || draft.registrationUrl || draft.vehicleImageUrl);
@@ -348,6 +382,22 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
       setUserError(caught?.message ?? t(locale, 'profile.userDeleteFailed'));
     } finally {
       setDeletingUser(false);
+    }
+  };
+
+  const toggleMatchAvailability = async () => {
+    if (!currentMatch?.id) return;
+    const next = !(matchAvailability ?? false);
+    setAvailabilitySaving(true);
+    setAvailabilityError(null);
+    try {
+      const updated = await saveTransportAvailability(currentMatch.id, { available: next });
+      setMatchAvailability(Boolean(updated.available));
+      onProfileUpdated?.();
+    } catch (caught: any) {
+      setAvailabilityError(caught?.message ?? t(locale, 'profile.matchAvailabilitySaveFailed'));
+    } finally {
+      setAvailabilitySaving(false);
     }
   };
 
@@ -512,68 +562,82 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
                 <Text style={screenStyles.previewBody}>{t(locale, 'profile.userProfileRole')}</Text>
               </View>
             </View>
-            <Input value={userDraft.firstName} onChangeText={(value) => updateUser('firstName', value)} placeholder={t(locale, 'profile.firstName')} />
-            <Input value={userDraft.lastName} onChangeText={(value) => updateUser('lastName', value)} placeholder={t(locale, 'profile.lastName')} />
-            <SearchableDropdown
-              label={t(locale, 'auth.country')}
-              placeholder={t(locale, 'profile.countryPlaceholder')}
-              value={userDraft.country}
-              options={allCountries}
-              searchPlaceholder={t(locale, 'profile.countrySearch')}
-              emptyLabel={t(locale, 'profile.noSearchResults')}
-              onSelect={(option) => {
-                updateUser('country', option.label);
-                updateUser('city', '');
-              }}
-            />
-            <SearchableDropdown
-              label={t(locale, 'auth.city')}
-              placeholder={userCountryCode ? t(locale, 'profile.cityPlaceholder') : t(locale, 'profile.chooseCountryFirst')}
-              value={userDraft.city}
-              options={userCityOptions}
-              searchPlaceholder={t(locale, 'profile.citySearch')}
-              emptyLabel={t(locale, 'profile.noCitiesAvailable')}
-              disabled={!userCountryCode}
-              onSelect={(option) => updateUser('city', option.label)}
-            />
-            <SearchableDropdown
-              label={t(locale, 'profile.languageLabel')}
-              placeholder={t(locale, 'profile.languagePlaceholder')}
-              value={supportedLanguages.find((option) => option.key === userDraft.preferredLanguage)?.label || ''}
-              options={supportedLanguages}
-              searchPlaceholder={t(locale, 'profile.languageSearch')}
-              emptyLabel={t(locale, 'profile.noSearchResults')}
-              onSelect={(option) => {
-                updateUser('preferredLanguage', option.key);
-                onLocaleChange?.(option.key as Locale);
-              }}
-            />
-            <SearchableDropdown
-              label={t(locale, 'profile.phonePrefixLabel')}
-              placeholder={t(locale, 'profile.phonePrefixPlaceholder')}
-              value={userDraft.phonePrefix}
-              options={phonePrefixOptions}
-              searchPlaceholder={t(locale, 'profile.phonePrefixSearch')}
-              emptyLabel={t(locale, 'profile.noSearchResults')}
-              onSelect={(option) => updateUser('phonePrefix', option.label)}
-            />
-            <Input value={userDraft.phone} onChangeText={(value) => updateUser('phone', value)} placeholder={t(locale, 'profile.phoneNumber')} keyboardType="phone-pad" />
-            <Pressable style={screenStyles.photoPicker} onPress={pickProfilePhoto}>
-              <Text style={screenStyles.photoPickerLabel}>{t(locale, 'profile.profilePhoto')}</Text>
-              <View style={screenStyles.photoPickerPreview}>
-                <AvatarPhoto uri={userDraft.photoUrl || null} label={account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || account?.email || t(locale, 'profile.profileMissing')} size={52} />
-                <View style={screenStyles.photoPickerTextBlock}>
-                  <Text style={screenStyles.photoPickerValue}>{userDraft.photoUrl ? t(locale, 'profile.photoUploaded') : t(locale, 'profile.photoMissing')}</Text>
-                  <Text style={screenStyles.photoPickerAction}>{t(locale, 'profile.changePhoto')}</Text>
-                </View>
-              </View>
+            <Pressable
+              onPress={() => setShowUserForm((value) => !value)}
+              style={showUserForm ? screenStyles.primaryToggleActive : screenStyles.primaryToggle}
+            >
+              <Feather name={showUserForm ? 'chevron-up' : 'edit-3'} size={16} color={showUserForm ? '#172033' : '#2457e6'} />
+              <Text style={showUserForm ? screenStyles.primaryToggleTextActive : screenStyles.primaryToggleText}>
+                {showUserForm ? t(locale, 'profile.closeUserForm') : t(locale, 'profile.editUserProfile')}
+              </Text>
             </Pressable>
-            <View style={styles.chipsRow}>
-              <PrimaryButton label={savingUser ? t(locale, 'profile.savingUser') : t(locale, 'profile.saveUser')} onPress={saveUser} icon={<Feather name="save" size={16} color="#0f172a" />} />
-              <SecondaryButton label={deletingUser ? t(locale, 'profile.deletingUser') : t(locale, 'profile.deleteUser')} onPress={removeUserProfile} icon={<Feather name="trash-2" size={16} color="#172033" />} />
-            </View>
-            {userMessage ? <Text style={screenStyles.success}>{userMessage}</Text> : null}
-            {userError ? <Text style={screenStyles.error}>{userError}</Text> : null}
+            {!showUserForm ? null : (
+              <>
+                <Text style={styles.helperText}>{t(locale, 'profile.userFormHint')}</Text>
+                <Input value={userDraft.firstName} onChangeText={(value) => updateUser('firstName', value)} placeholder={t(locale, 'profile.firstName')} />
+                <Input value={userDraft.lastName} onChangeText={(value) => updateUser('lastName', value)} placeholder={t(locale, 'profile.lastName')} />
+                <SearchableDropdown
+                  label={t(locale, 'auth.country')}
+                  placeholder={t(locale, 'profile.countryPlaceholder')}
+                  value={userDraft.country}
+                  options={allCountries}
+                  searchPlaceholder={t(locale, 'profile.countrySearch')}
+                  emptyLabel={t(locale, 'profile.noSearchResults')}
+                  onSelect={(option) => {
+                    updateUser('country', option.label);
+                    updateUser('city', '');
+                  }}
+                />
+                <SearchableDropdown
+                  label={t(locale, 'auth.city')}
+                  placeholder={userCountryCode ? t(locale, 'profile.cityPlaceholder') : t(locale, 'profile.chooseCountryFirst')}
+                  value={userDraft.city}
+                  options={userCityOptions}
+                  searchPlaceholder={t(locale, 'profile.citySearch')}
+                  emptyLabel={t(locale, 'profile.noCitiesAvailable')}
+                  disabled={!userCountryCode}
+                  onSelect={(option) => updateUser('city', option.label)}
+                />
+                <SearchableDropdown
+                  label={t(locale, 'profile.languageLabel')}
+                  placeholder={t(locale, 'profile.languagePlaceholder')}
+                  value={supportedLanguages.find((option) => option.key === userDraft.preferredLanguage)?.label || ''}
+                  options={supportedLanguages}
+                  searchPlaceholder={t(locale, 'profile.languageSearch')}
+                  emptyLabel={t(locale, 'profile.noSearchResults')}
+                  onSelect={(option) => {
+                    updateUser('preferredLanguage', option.key);
+                    onLocaleChange?.(option.key as Locale);
+                  }}
+                />
+                <SearchableDropdown
+                  label={t(locale, 'profile.phonePrefixLabel')}
+                  placeholder={t(locale, 'profile.phonePrefixPlaceholder')}
+                  value={userDraft.phonePrefix}
+                  options={phonePrefixOptions}
+                  searchPlaceholder={t(locale, 'profile.phonePrefixSearch')}
+                  emptyLabel={t(locale, 'profile.noSearchResults')}
+                  onSelect={(option) => updateUser('phonePrefix', option.label)}
+                />
+                <Input value={userDraft.phone} onChangeText={(value) => updateUser('phone', value)} placeholder={t(locale, 'profile.phoneNumber')} keyboardType="phone-pad" />
+                <Pressable style={screenStyles.photoPicker} onPress={pickProfilePhoto}>
+                  <Text style={screenStyles.photoPickerLabel}>{t(locale, 'profile.profilePhoto')}</Text>
+                  <View style={screenStyles.photoPickerPreview}>
+                    <AvatarPhoto uri={userDraft.photoUrl || null} label={account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || account?.email || t(locale, 'profile.profileMissing')} size={52} />
+                    <View style={screenStyles.photoPickerTextBlock}>
+                      <Text style={screenStyles.photoPickerValue}>{userDraft.photoUrl ? t(locale, 'profile.photoUploaded') : t(locale, 'profile.photoMissing')}</Text>
+                      <Text style={screenStyles.photoPickerAction}>{t(locale, 'profile.changePhoto')}</Text>
+                    </View>
+                  </View>
+                </Pressable>
+                <View style={styles.chipsRow}>
+                  <PrimaryButton label={savingUser ? t(locale, 'profile.savingUser') : t(locale, 'profile.saveUser')} onPress={saveUser} icon={<Feather name="save" size={16} color="#0f172a" />} />
+                  <SecondaryButton label={deletingUser ? t(locale, 'profile.deletingUser') : t(locale, 'profile.deleteUser')} onPress={removeUserProfile} icon={<Feather name="trash-2" size={16} color="#172033" />} />
+                </View>
+                {userMessage ? <Text style={screenStyles.success}>{userMessage}</Text> : null}
+                {userError ? <Text style={screenStyles.error}>{userError}</Text> : null}
+              </>
+            )}
           </View>
         </Card>
 
@@ -606,6 +670,37 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
               {currentMatch ? <Text style={styles.helperText}>{t(locale, 'profile.currentMatch')}: {('homeTeam' in currentMatch && 'awayTeam' in currentMatch) ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}` : currentMatch.title}</Text> : null}
               <Text style={styles.helperText}>{t(locale, 'profile.visibilityBody')}</Text>
             </View>
+            <Pressable
+              disabled={!currentMatch?.id || availabilityLoading || availabilitySaving}
+              onPress={toggleMatchAvailability}
+              style={[
+                screenStyles.availabilityButton,
+                matchAvailability ? screenStyles.availabilityButtonOn : screenStyles.availabilityButtonOff,
+                (!currentMatch?.id || availabilityLoading || availabilitySaving) && screenStyles.availabilityButtonDisabled,
+              ]}
+            >
+              <Feather name={matchAvailability ? 'check-circle' : 'slash'} size={22} color={matchAvailability ? '#0f5d2f' : '#7c2d12'} />
+              <View style={screenStyles.availabilityButtonTextBlock}>
+                <Text style={screenStyles.availabilityButtonLabel}>
+                  {availabilityLoading || availabilitySaving ? t(locale, 'common.loading') : matchAvailability ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}
+                </Text>
+                <Text style={screenStyles.availabilityButtonSub}>{t(locale, 'profile.matchAvailabilityHint')}</Text>
+              </View>
+            </Pressable>
+            {availabilityError ? <Text style={screenStyles.error}>{availabilityError}</Text> : null}
+            <Pressable
+              onPress={() => setShowDriverForm((value) => !value)}
+              style={showDriverForm ? screenStyles.primaryToggleActive : screenStyles.primaryToggle}
+            >
+              <Feather name={hasDriverProfile ? 'edit-3' : 'user-plus'} size={16} color={showDriverForm ? '#172033' : '#2457e6'} />
+              <Text style={showDriverForm ? screenStyles.primaryToggleTextActive : screenStyles.primaryToggleText}>
+                {showDriverForm
+                  ? t(locale, 'profile.closeDriverForm')
+                  : hasDriverProfile
+                    ? t(locale, 'profile.editDriverProfile')
+                    : t(locale, 'profile.registerDriver')}
+              </Text>
+            </Pressable>
             <PrimaryButton
               label={t(locale, 'nav.transport')}
               onPress={() => setShowTransportPanel(true)}
@@ -785,6 +880,22 @@ const screenStyles = StyleSheet.create({
   primaryToggleActive: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 14, backgroundColor: '#e8f7bf', borderWidth: 1, borderColor: '#c8f36a' },
   primaryToggleText: { color: '#2457e6', fontFamily: 'Poppins-SemiBold' },
   primaryToggleTextActive: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
+  availabilityButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  availabilityButtonOn: { backgroundColor: '#d8f3dc', borderColor: '#86efac' },
+  availabilityButtonOff: { backgroundColor: '#fff4e6', borderColor: '#fdba74' },
+  availabilityButtonDisabled: { opacity: 0.7 },
+  availabilityButtonTextBlock: { flex: 1, gap: 2 },
+  availabilityButtonLabel: { color: '#172033', fontSize: 18, fontFamily: 'Poppins-Bold', textTransform: 'uppercase', letterSpacing: 0.4 },
+  availabilityButtonSub: { color: '#60708b', fontFamily: 'Poppins-Regular' },
   dropdownButton: {
     borderRadius: 18,
     paddingHorizontal: 14,
