@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getScreenCopy } from '../screenCopy';
-import { Card, EmptyState, styles } from '../ui';
+import { BrandLogo, Card, EmptyState, styles } from '../ui';
 import { t, type Locale } from '../i18n';
 
 export function PassScreen({ locale }: { locale: Locale }) {
@@ -12,10 +12,26 @@ export function PassScreen({ locale }: { locale: Locale }) {
   return (
     <View style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.kicker}>{copy.eyebrow}</Text>
-          <Text style={styles.title}>{copy.title}</Text>
-          <Text style={styles.subtitle}>{copy.subtitle}</Text>
+        <View style={localStyles.heroHeader}>
+          <View style={localStyles.heroTopRow}>
+            <View style={localStyles.brandBlock}>
+              <BrandLogo compact />
+              <View style={localStyles.brandCopy}>
+                <Text style={localStyles.heroKicker}>{copy.eyebrow}</Text>
+                <Text style={localStyles.heroMiniTitle}>{copy.title}</Text>
+              </View>
+            </View>
+            <View style={localStyles.livePill}>
+              <View style={localStyles.liveDot} />
+              <Text style={localStyles.liveText}>{t(locale, 'common.live')}</Text>
+            </View>
+          </View>
+          <Text style={localStyles.heroSubtitle}>{copy.subtitle}</Text>
+          <View style={localStyles.heroChips}>
+            <View style={localStyles.heroChip}><Text style={localStyles.heroChipText}>NFC</Text></View>
+            <View style={localStyles.heroChip}><Text style={localStyles.heroChipText}>Wallet</Text></View>
+            <View style={localStyles.heroChip}><Text style={localStyles.heroChipText}>Pass</Text></View>
+          </View>
         </View>
 
         <Card title={copy.accessTitle} subtitle={copy.accessSubtitle} wide>
@@ -113,6 +129,90 @@ export function PassScreen({ locale }: { locale: Locale }) {
 }
 
 const localStyles = StyleSheet.create({
+  heroHeader: {
+    gap: 12,
+    paddingHorizontal: 4,
+    paddingTop: 2,
+    paddingBottom: 6,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  brandBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
+  },
+  brandCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  heroKicker: {
+    color: '#9df5ff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  heroMiniTitle: {
+    color: '#f8fbff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  livePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(11, 18, 32, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(201, 243, 106, 0.16)',
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#c8f36a',
+  },
+  liveText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 11,
+    letterSpacing: 0.8,
+  },
+  heroSubtitle: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  heroChips: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  heroChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(157, 245, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(157, 245, 255, 0.14)',
+  },
+  heroChipText: {
+    color: '#9df5ff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+  },
   activeBanner: {
     flexDirection: 'row',
     alignItems: 'center',
