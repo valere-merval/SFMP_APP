@@ -48,29 +48,38 @@ const expandedMapStyle = { minHeight: 620 } as const;
 const liveVehiclePanelStyle = {
   flexDirection: 'row' as const,
   alignItems: 'center' as const,
-  gap: 12,
+  gap: 14,
   marginTop: 14,
-  padding: 14,
-  borderRadius: 24,
-  backgroundColor: 'rgba(7, 13, 24, 0.72)',
+  padding: 16,
+  borderRadius: 28,
+  backgroundColor: 'rgba(7, 13, 24, 0.84)',
   borderWidth: 1,
-  borderColor: 'rgba(148, 163, 184, 0.16)',
+  borderColor: 'rgba(148, 163, 184, 0.18)',
 } as const;
 const liveVehicleImageStyle = {
-  width: 84,
-  height: 84,
-  borderRadius: 22,
+  width: 96,
+  height: 96,
+  borderRadius: 26,
   backgroundColor: 'rgba(15, 23, 42, 0.92)',
 } as const;
-const liveVehicleMetaStyle = { flex: 1, gap: 6 } as const;
+const liveVehicleMetaStyle = { flex: 1, gap: 8 } as const;
 const liveVehiclePlateStyle = {
   alignSelf: 'flex-start' as const,
-  paddingHorizontal: 10,
-  paddingVertical: 5,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
   borderRadius: 999,
   backgroundColor: 'rgba(34, 211, 238, 0.12)',
   borderWidth: 1,
   borderColor: 'rgba(34, 211, 238, 0.32)',
+} as const;
+const liveVehicleChipRowStyle = { flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: 8 } as const;
+const liveVehicleChipStyle = {
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 999,
+  backgroundColor: 'rgba(148, 163, 184, 0.1)',
+  borderWidth: 1,
+  borderColor: 'rgba(148, 163, 184, 0.14)',
 } as const;
 
 const J = {
@@ -1143,14 +1152,23 @@ export function JourneyScreen({
                     <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">
                       {rideRequest.driverDisplayName || journeyText(locale, 'yourDriver')}
                     </Text>
-                    <Text style={styles.muted} numberOfLines={2} ellipsizeMode="tail">
-                      {passengerVehicleLabel}
-                    </Text>
+                    <View style={liveVehicleChipRowStyle}>
+                      <View style={liveVehicleChipStyle}>
+                        <Text style={styles.helperText} numberOfLines={1}>
+                          {passengerVehicleLabel}
+                        </Text>
+                      </View>
+                      <View style={liveVehicleChipStyle}>
+                        <Text style={styles.helperText} numberOfLines={1}>
+                          {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : journeyText(locale, 'distanceUpdating')}
+                        </Text>
+                      </View>
+                    </View>
                     <View style={liveVehiclePlateStyle}>
                       <Text style={styles.helperText}>{rideRequest.driverVehiclePlate || journeyText(locale, 'vehiclePlatePending')}</Text>
                     </View>
                     <Text style={styles.helperText}>
-                      {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : journeyText(locale, 'distanceUpdating')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
+                      {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
                     </Text>
                   </View>
                 </View>
