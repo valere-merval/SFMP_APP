@@ -149,10 +149,17 @@ export function MatchListScreen({
               }}
             >
               <View style={localStyles.cardTopRow}>
-                <Text style={localStyles.stage}>{match.stage}</Text>
-                <Text style={localStyles.ticket}>
-                  {match.ticketAvailable ? match.ticketPrice || t(locale, 'common.ticketsLive') : t(locale, 'common.soldOut')}
-                </Text>
+                <View style={localStyles.cardTagStack}>
+                  <Text style={localStyles.stage}>{match.stage}</Text>
+                  <View style={localStyles.liveTag}>
+                    <View style={localStyles.liveTagDot} />
+                    <Text style={localStyles.liveTagText}>{t(locale, 'common.live')}</Text>
+                  </View>
+                </View>
+                <View style={localStyles.timePill}>
+                  <Feather name="clock" size={12} color="#9df5ff" />
+                  <Text style={localStyles.timePillText}>{formatMatchDateTime(match.date, match.time)}</Text>
+                </View>
               </View>
 
               <View style={localStyles.teamHero}>
@@ -384,6 +391,52 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
+  },
+  cardTagStack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 1,
+  },
+  liveTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(34, 211, 238, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 211, 238, 0.14)',
+  },
+  liveTagDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#c8f36a',
+  },
+  liveTagText: {
+    color: '#9df5ff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  timePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  timePillText: {
+    color: '#dbeafe',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
   },
   stage: {
     backgroundColor: 'rgba(34, 211, 238, 0.12)',
