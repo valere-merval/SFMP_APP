@@ -339,6 +339,21 @@ export function AuthScreen({
                 : t(locale, 'auth.signin.subtitle')}
             </Text>
           </View>
+
+          <View style={authStyles.heroStatsRow}>
+            <View style={authStyles.heroStatCard}>
+              <Text style={authStyles.heroStatLabel}>{t(locale, 'common.live')}</Text>
+              <Text style={authStyles.heroStatValue}>100%</Text>
+            </View>
+            <View style={authStyles.heroStatCard}>
+              <Text style={authStyles.heroStatLabel}>{t(locale, 'auth.language')}</Text>
+              <Text style={authStyles.heroStatValue}>{locale.toUpperCase()}</Text>
+            </View>
+            <View style={authStyles.heroStatCard}>
+              <Text style={authStyles.heroStatLabel}>{t(locale, 'auth.brand')}</Text>
+              <Text style={authStyles.heroStatValue}>SFMP</Text>
+            </View>
+          </View>
         </View>
 
         <Card title={mode === 'register' ? t(locale, 'auth.create.title') : mode === 'reset' ? t(locale, 'auth.reset.title') : t(locale, 'auth.signin.title')} subtitle={t(locale, 'auth.brand')}>
@@ -634,12 +649,12 @@ export function AuthScreen({
 
 const authStyles = StyleSheet.create({
   authHeader: {
-    paddingTop: 2,
-    paddingBottom: 6,
-    gap: 14,
+    paddingTop: 0,
+    paddingBottom: 8,
+    gap: 12,
   },
   authContainer: {
-    paddingTop: 4,
+    paddingTop: 0,
     paddingBottom: 18,
     marginBottom: 0,
   },
@@ -736,10 +751,39 @@ const authStyles = StyleSheet.create({
   heroBody: {
     gap: 8,
   },
+  heroStatsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  heroStatCard: {
+    flexGrow: 1,
+    flexBasis: '30%',
+    minWidth: 92,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(11, 18, 32, 0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(124, 243, 160, 0.14)',
+    gap: 4,
+  },
+  heroStatLabel: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  heroStatValue: {
+    color: '#f8fafc',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 13,
+  },
   heroTitle: {
     color: '#f8fafc',
-    fontSize: 29,
-    lineHeight: 34,
+    fontSize: 27,
+    lineHeight: 32,
     fontFamily: 'Poppins-Bold',
   },
   heroSubtitle: {

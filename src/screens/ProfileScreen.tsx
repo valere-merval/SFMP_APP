@@ -594,6 +594,26 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
               <Text style={screenStyles.heroChipText}>{draft.active ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}</Text>
             </View>
           </View>
+          <View style={screenStyles.heroStats}>
+            <View style={screenStyles.heroStatCard}>
+              <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.currentMatch')}</Text>
+              <Text style={screenStyles.heroStatValue} numberOfLines={2}>
+                {currentMatch
+                  ? ('homeTeam' in currentMatch && 'awayTeam' in currentMatch)
+                    ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}`
+                    : currentMatch.title
+                  : t(locale, 'profile.currentMatch')}
+              </Text>
+            </View>
+            <View style={screenStyles.heroStatCard}>
+              <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.languageLabel')}</Text>
+              <Text style={screenStyles.heroStatValue}>{userDraft.preferredLanguage.toUpperCase()}</Text>
+            </View>
+            <View style={screenStyles.heroStatCard}>
+              <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.userProfileRole')}</Text>
+              <Text style={screenStyles.heroStatValue}>{draft.active ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}</Text>
+            </View>
+          </View>
         </View>
 
         <Card title={t(locale, 'profile.userProfileTitle')} subtitle={t(locale, 'profile.userProfileSubtitle')} wide>
