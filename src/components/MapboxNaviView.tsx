@@ -93,8 +93,8 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
   if (!MAPBOX_ACCESS_TOKEN || MAPBOX_ACCESS_TOKEN === 'PASTE_YOUR_MAPBOX_ACCESS_TOKEN_HERE') {
     return (
       <View style={[styles.mapView, { height, alignItems: 'center', justifyContent: 'center', backgroundColor: '#10192d', borderRadius: 24 }]}>
-        <Text style={{ color: '#fff', fontFamily: 'Poppins-SemiBold' }}>Mapbox token missing</Text>
-        <Text style={{ color: 'rgba(255,255,255,0.7)', marginTop: 6, textAlign: 'center' }}>Set MAPBOX_ACCESS_TOKEN in src/config.ts to enable the native Navi.</Text>
+        <Text style={{ color: '#fff', fontFamily: 'Poppins-SemiBold' }}>Navigation token missing</Text>
+        <Text style={{ color: 'rgba(255,255,255,0.7)', marginTop: 6, textAlign: 'center' }}>Add your navigation token in src/config.ts to enable live routing.</Text>
       </View>
     );
   }
@@ -174,7 +174,7 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
 
       <View pointerEvents="none" style={{ position: 'absolute', left: 16, right: 16, bottom: 16, backgroundColor: 'rgba(255,255,255,0.94)', borderRadius: 18, paddingHorizontal: 12, paddingVertical: 10, shadowColor: '#000', shadowOpacity: 0.24, shadowRadius: 20, elevation: 10 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-          <Text style={{ color: '#172033', fontFamily: 'Poppins-SemiBold', fontSize: 12 }}>Mapbox Native SDK</Text>
+          <Text style={{ color: '#172033', fontFamily: 'Poppins-SemiBold', fontSize: 12 }}>Live navigation</Text>
           <View style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: '#eaf2ff' }}>
             <Text style={{ color: '#1d3fb3', fontFamily: 'Poppins-SemiBold', fontSize: 12 }}>{routeCoords.length > 1 ? 'Route active' : 'Position live'}</Text>
           </View>

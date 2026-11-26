@@ -51,6 +51,36 @@ function formatCountdown(date: string, time: string) {
   return `${days.toString().padStart(2, '0')}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
 }
 
+type Coordinate = { latitude: number; longitude: number };
+
+const fallbackCoordinate: Coordinate = { latitude: 40.4531, longitude: -3.6883 };
+
+function getCurrentCoordinates(): Promise<Coordinate | null> {
+  const geolocation = (globalThis as typeof globalThis & {
+    navigator?: { geolocation?: { getCurrentPosition: Function } };
+  }).navigator?.geolocation;
+
+  if (!geolocation?.getCurrentPosition) {
+    return Promise.resolve(null);
+  }
+
+  return new Promise((resolve) => {
+    geolocation.getCurrentPosition(
+      (position: { coords?: { latitude?: number; longitude?: number } }) => {
+        const latitude = position.coords?.latitude;
+        const longitude = position.coords?.longitude;
+        if (typeof latitude === 'number' && typeof longitude === 'number') {
+          resolve({ latitude, longitude });
+          return;
+        }
+        resolve(null);
+      },
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 },
+    );
+  });
+}
+
 
 export function HubScreen({
   data,
@@ -305,6 +335,9 @@ export function HubScreen({
         setRequestLoading(false);
         return;
       }
+
+      const passengerCoordinates = (await getCurrentCoordinates()) ?? undefined;
+
       const response = await createRideRequest({
         matchId: hero.id,
         matchTitle: `${hero.homeTeam} vs ${hero.awayTeam}`,
@@ -312,6 +345,8 @@ export function HubScreen({
         passengerName: me?.fullName,
         providerType: 'Taxi/VTC',
         pickupLabel: `${hero.city} · ${t(locale, 'common.liveMap')}`,
+        pickupLatitude: passengerCoordinates?.latitude,
+        pickupLongitude: passengerCoordinates?.longitude,
         destinationLabel: requestDestination || hero.venue,
         note: `${requestMode} request started from Hub`,
       });
@@ -323,6 +358,47 @@ export function HubScreen({
       setRequestLoading(false);
     }
   };
+
+  const ridePickupCoordinate =
+    rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null
+      ? {
+          latitude: rideRequest.pickupLatitude,
+          longitude: rideRequest.pickupLongitude,
+        }
+      : null;
+  const rideDriverCoordinate =
+    rideRequest?.driverLatitude != null && rideRequest?.driverLongitude != null
+      ? {
+          latitude: rideRequest.driverLatitude,
+          longitude: rideRequest.driverLongitude,
+        }
+      : null;
+  const rideDestinationCoordinate =
+    rideRequest?.destinationLatitude != null && rideRequest?.destinationLongitude != null
+      ? {
+          latitude: rideRequest.destinationLatitude,
+          longitude: rideRequest.destinationLongitude,
+        }
+      : null;
+  const liveRouteOrigin =
+    rideRequest?.status === 'IN_PROGRESS'
+      ? rideDriverCoordinate ?? ridePickupCoordinate ?? fallbackCoordinate
+      : rideDriverCoordinate ?? ridePickupCoordinate ?? fallbackCoordinate;
+  const liveRouteDestination =
+    rideRequest?.status === 'IN_PROGRESS'
+      ? rideDestinationCoordinate ?? ridePickupCoordinate ?? fallbackCoordinate
+      : rideRequest?.status === 'ACCEPTED' || rideRequest?.status === 'ARRIVED_AT_PICKUP'
+        ? ridePickupCoordinate ?? rideDestinationCoordinate ?? fallbackCoordinate
+        : rideDestinationCoordinate ?? ridePickupCoordinate ?? fallbackCoordinate;
+  const liveRoute = buildRideRouteCoordinates(
+    rideRequest?.status === 'IN_PROGRESS'
+      ? rideDriverCoordinate
+      : rideRequest?.status === 'ACCEPTED' || rideRequest?.status === 'ARRIVED_AT_PICKUP'
+        ? rideDriverCoordinate ?? ridePickupCoordinate
+        : ridePickupCoordinate,
+    liveRouteDestination,
+  );
+
   return (
     <View style={styles.safeArea}>
       <ScrollView
@@ -541,15 +617,26 @@ export function HubScreen({
                           <PrimaryButton
                             label={t(locale, 'common.accept')}
                             onPress={() => {
-                              void acceptRideRequest(request.id).then(
-                                accepted => {
+                              void getCurrentCoordinates()
+                                .then((driverCoordinates) =>
+                                  acceptRideRequest(request.id, {
+                                    driverLatitude: driverCoordinates?.latitude,
+                                    driverLongitude: driverCoordinates?.longitude,
+                                  }),
+                                )
+                                .then(accepted => {
                                   setDriverRequests(current =>
                                     current.map(item =>
                                       item.id === accepted.id ? accepted : item,
                                     ),
                                   );
+                                  setRideRequest(accepted);
                                   setRequestStatus(
                                     `${accepted.passengerName}${
+                                      accepted.driverDisplayName ? ` · ${accepted.driverDisplayName}` : ''
+                                    }${
+                                      accepted.driverVehiclePlate ? ` · ${accepted.driverVehiclePlate}` : ''
+                                    }${
                                       accepted.driverDistanceKm != null
                                         ? ` · ${accepted.driverDistanceKm} km`
                                         : ''
@@ -559,8 +646,7 @@ export function HubScreen({
                                         : ''
                                     }`,
                                   );
-                                },
-                              );
+                                });
                             }}
                             icon={
                               <Ionicons
@@ -713,47 +799,57 @@ export function HubScreen({
             <View style={localStyles.mapPanel}>
               <MapboxNaviView
                 height={320}
-                origin={{ latitude: 40.4531, longitude: -3.6883 }}
-                destination={
-                  rideRequest?.destinationLatitude != null && rideRequest?.destinationLongitude != null
-                    ? {
-                        latitude: rideRequest.destinationLatitude,
-                        longitude: rideRequest.destinationLongitude,
-                      }
-                    : { latitude: 40.4531, longitude: -3.6883 }
+                origin={liveRouteOrigin}
+                destination={liveRouteDestination}
+                route={liveRoute}
+                title={
+                  rideRequest
+                    ? rideRequest.status === 'IN_PROGRESS'
+                      ? rideRequest.passengerName
+                      : rideRequest.status === 'ACCEPTED' || rideRequest.status === 'ARRIVED_AT_PICKUP'
+                        ? rideRequest.passengerName
+                        : rideRequest.destinationLabel
+                    : requestDestination || hero.venue
                 }
-                route={buildRideRouteCoordinates(
-                  rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null
-                    ? {
-                        latitude: rideRequest.pickupLatitude,
-                        longitude: rideRequest.pickupLongitude,
-                      }
-                    : null,
-                  rideRequest?.destinationLatitude != null && rideRequest?.destinationLongitude != null
-                    ? {
-                        latitude: rideRequest.destinationLatitude,
-                        longitude: rideRequest.destinationLongitude,
-                      }
-                    : null,
-                )}
-                title={rideRequest ? rideRequest.destinationLabel : requestDestination || hero.venue}
-                subtitle={rideRequest ? `${rideRequest.pickupLabel} → ${rideRequest.destinationLabel}` : `${hero.city}, ${hero.country}`}
-                liveLabel={rideRequest ? rideStatusStyle(rideRequest?.status, locale).label : t(locale, 'common.pickupTracking')}
+                subtitle={
+                  rideRequest
+                    ? rideRequest.status === 'IN_PROGRESS'
+                      ? `${rideRequest.pickupLabel} → ${rideRequest.destinationLabel}`
+                      : rideRequest.status === 'ACCEPTED' || rideRequest.status === 'ARRIVED_AT_PICKUP'
+                        ? `${rideRequest.driverDisplayName || t(locale, 'common.driver')} · ${rideRequest.driverVehiclePlate || ''}`.trim()
+                        : `${rideRequest.pickupLabel} → ${rideRequest.destinationLabel}`
+                    : `${hero.city}, ${hero.country}`
+                }
+                liveLabel={
+                  rideRequest
+                    ? rideStatusStyle(rideRequest?.status, locale).label
+                    : t(locale, 'common.pickupTracking')
+                }
               />
               <View style={localStyles.mapOverlay}>
                 <View style={styles.rowBetween}>
                   <View>
                     <Text style={localStyles.mapOverlayTitle}>
-                      {rideRequest ? rideRequest.destinationLabel : requestDestination || hero.venue}
+                      {rideRequest
+                        ? rideRequest.status === 'IN_PROGRESS'
+                          ? rideRequest.destinationLabel
+                          : rideRequest.status === 'ACCEPTED' || rideRequest.status === 'ARRIVED_AT_PICKUP'
+                            ? rideRequest.passengerName
+                            : rideRequest.destinationLabel
+                        : requestDestination || hero.venue}
                     </Text>
                     <Text numberOfLines={2} style={localStyles.mapOverlayText}>
                       {rideRequest
                         ? rideRequest.status === 'PENDING'
-                          ? t(locale, 'common.requestPending')
+                          ? `${t(locale, 'common.requestPending')} · ${rideRequest.pickupLabel}`
                           : rideRequest.status === 'ACCEPTED'
-                            ? t(locale, 'common.requestAccepted')
+                            ? `${t(locale, 'common.requestAccepted')} · ${rideRequest.driverDisplayName || ''}${
+                                rideRequest.driverVehiclePlate ? ` · ${rideRequest.driverVehiclePlate}` : ''
+                              }`
                             : rideRequest.status === 'IN_PROGRESS'
-                              ? t(locale, 'common.requestInProgress')
+                              ? `${t(locale, 'common.requestInProgress')} · ${rideRequest.driverDisplayName || ''}${
+                                  rideRequest.driverVehiclePlate ? ` · ${rideRequest.driverVehiclePlate}` : ''
+                                }`
                               : t(locale, 'common.requestRefused')
                         : t(locale, 'common.pickupTracking')}
                     </Text>
