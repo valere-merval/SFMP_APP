@@ -812,34 +812,35 @@ export function JourneyScreen({
           <View style={styles.card}>
             <View style={styles.mapPanel}>
               <MapboxNaviView
-              height={560}
-              origin={{ latitude: 40.4531, longitude: -3.6883 }}
-              destination={
-                activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
-                  ? { latitude: activeDriverRequest.destinationLatitude, longitude: activeDriverRequest.destinationLongitude }
-                  : activeDriverRequest?.pickupLatitude != null && activeDriverRequest?.pickupLongitude != null
-                    ? { latitude: activeDriverRequest.pickupLatitude, longitude: activeDriverRequest.pickupLongitude }
-                    : { latitude: 40.4531, longitude: -3.6883 }
-              }
-              route={activeDriverRoute}
-              title={activeDriverStatus.title}
-              subtitle={activeDriverStatus.subtitle}
-              liveLabel={activeDriverStatus.badge}
-            />
+                height={680}
+                origin={{ latitude: 40.4531, longitude: -3.6883 }}
+                destination={
+                  activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
+                    ? { latitude: activeDriverRequest.destinationLatitude, longitude: activeDriverRequest.destinationLongitude }
+                    : activeDriverRequest?.pickupLatitude != null && activeDriverRequest?.pickupLongitude != null
+                      ? { latitude: activeDriverRequest.pickupLatitude, longitude: activeDriverRequest.pickupLongitude }
+                      : { latitude: 40.4531, longitude: -3.6883 }
+                }
+                route={activeDriverRoute}
+                title={activeDriverStatus.title}
+                subtitle={activeDriverStatus.subtitle}
+                liveLabel={activeDriverStatus.badge}
+              />
               <Pressable onPress={() => setMapExpanded(true)} style={floatingExpandButtonStyle}>
                 <Feather name="maximize-2" size={16} color="#fff" />
               </Pressable>
               <View style={styles.mapOverlay}>
                 <View style={styles.rowBetween}>
                   <View style={styles.rowLeft}>
-                    <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{activeDriverStatus.title}</Text>
-                    <Text style={styles.muted}>{activeDriverStatus.subtitle}</Text>
+                    <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">{activeDriverStatus.badge}</Text>
+                    <Text style={styles.muted} numberOfLines={1} ellipsizeMode="tail">
+                      {activeDriverRequest ? `${activeDriverRequest.passengerName} · ${activeDriverRequest.pickupLabel}` : activeDriverStatus.detail}
+                    </Text>
                   </View>
                   <View style={[statusBadgeStyle, { backgroundColor: activeDriverStatusMeta.backgroundColor }]}>
                     <Text style={[statusTextStyle, { color: activeDriverStatusMeta.color }]}>{activeDriverStatus.badge}</Text>
                   </View>
                 </View>
-                <Text style={styles.helperText}>{activeDriverStatus.detail}</Text>
                 {activeDriverNavigationLabel ? (
                   <View style={styles.ctaRow}>
                     <SecondaryButton
@@ -853,12 +854,12 @@ export function JourneyScreen({
                       }
                       icon={<Feather name="navigation" size={16} color="#22d3ee" />}
                     />
+                    <SecondaryButton
+                      label={journeyText(locale, 'voiceGuidance')}
+                      onPress={() => toggleVoiceGuidance()}
+                      icon={<Ionicons name={voiceGuidanceEnabled ? 'volume-high-outline' : 'volume-mute-outline'} size={16} color="#22d3ee" />}
+                    />
                   </View>
-                ) : null}
-                {activeDriverRequest ? (
-                  <Text style={styles.helperText}>
-                    {activeDriverRequest.passengerName} · {activeDriverRequest.pickupLabel} · {activeDriverRequest.destinationLabel}
-                  </Text>
                 ) : null}
                 {activeDriverRequest?.driverDistanceKm != null || activeDriverRequest?.driverEtaMinutes != null ? (
                   <Text style={styles.helperText}>
