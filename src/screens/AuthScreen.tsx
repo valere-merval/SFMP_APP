@@ -298,25 +298,50 @@ export function AuthScreen({
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.header, authStyles.authHeader]}>
-          <BrandLogo compact />
-          <Text style={styles.kicker}>{t(locale, 'auth.brand')}</Text>
-          <Text style={styles.title}>
-            {mode === 'register'
-              ? t(locale, 'auth.create.title')
-              : mode === 'reset'
-              ? t(locale, 'auth.reset.title')
-              : t(locale, 'auth.signin.title')}
-          </Text>
-          <Text style={styles.subtitle}>
-            {mode === 'register'
-              ? t(locale, 'auth.create.subtitle')
-              : mode === 'reset'
-              ? t(locale, 'auth.reset.subtitle')
-              : t(locale, 'auth.signin.subtitle')}
-          </Text>
+          <View style={authStyles.heroTopRow}>
+            <View style={authStyles.brandChip}>
+              <BrandLogo compact />
+              <View style={authStyles.brandTextBlock}>
+                <Text style={authStyles.heroKicker}>{t(locale, 'auth.brand')}</Text>
+                <Text style={authStyles.heroMiniTitle}>{t(locale, 'auth.signin.title')}</Text>
+              </View>
+            </View>
+            <View style={authStyles.liveBadge}>
+              <View style={authStyles.liveDot} />
+              <Text style={authStyles.liveBadgeText}>STADIUM LIVE</Text>
+            </View>
+          </View>
+
+          <View style={authStyles.noticeBanner}>
+            <View style={authStyles.noticeLeft}>
+              <Feather name="shield" size={16} color="#9df5ff" />
+              <View style={authStyles.noticeTextBlock}>
+                <Text style={authStyles.noticeTitle}>{t(locale, 'auth.brand')}</Text>
+                <Text style={authStyles.noticeSubtitle}>{t(locale, 'auth.signin.subtitle')}</Text>
+              </View>
+            </View>
+            <Text style={authStyles.noticePill}>{t(locale, 'common.live')}</Text>
+          </View>
+
+          <View style={authStyles.heroBody}>
+            <Text style={authStyles.heroTitle}>
+              {mode === 'register'
+                ? t(locale, 'auth.create.title')
+                : mode === 'reset'
+                ? t(locale, 'auth.reset.title')
+                : t(locale, 'auth.signin.title')}
+            </Text>
+            <Text style={authStyles.heroSubtitle}>
+              {mode === 'register'
+                ? t(locale, 'auth.create.subtitle')
+                : mode === 'reset'
+                ? t(locale, 'auth.reset.subtitle')
+                : t(locale, 'auth.signin.subtitle')}
+            </Text>
+          </View>
         </View>
 
-        <Card title={t(locale, 'auth.brand')} subtitle="Secure access">
+        <Card title={mode === 'register' ? t(locale, 'auth.create.title') : mode === 'reset' ? t(locale, 'auth.reset.title') : t(locale, 'auth.signin.title')} subtitle={t(locale, 'auth.brand')}>
           <View style={styles.chipsRow}>
             <Pressable
               style={[
@@ -609,14 +634,118 @@ export function AuthScreen({
 
 const authStyles = StyleSheet.create({
   authHeader: {
-    paddingTop: 0,
-    paddingBottom: 0,
-    gap: 0,
+    paddingTop: 2,
+    paddingBottom: 6,
+    gap: 14,
   },
   authContainer: {
-    paddingTop: 0,
+    paddingTop: 4,
     paddingBottom: 18,
     marginBottom: 0,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  brandChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
+  },
+  brandTextBlock: { flex: 1, minWidth: 0, gap: 1 },
+  heroKicker: {
+    color: '#9df5ff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.9,
+  },
+  heroMiniTitle: {
+    color: '#f8fafc',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 15,
+    lineHeight: 18,
+  },
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: '#0b1220',
+    borderWidth: 1,
+    borderColor: 'rgba(124, 243, 160, 0.18)',
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: '#c8f36a',
+  },
+  liveBadgeText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 11,
+    letterSpacing: 0.8,
+  },
+  noticeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(157, 245, 255, 0.12)',
+    backgroundColor: 'rgba(11, 18, 32, 0.84)',
+  },
+  noticeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
+  },
+  noticeTextBlock: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  noticeTitle: {
+    color: '#f8fafc',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 13,
+  },
+  noticeSubtitle: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+  },
+  noticePill: {
+    color: '#9df5ff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+  },
+  heroBody: {
+    gap: 8,
+  },
+  heroTitle: {
+    color: '#f8fafc',
+    fontSize: 29,
+    lineHeight: 34,
+    fontFamily: 'Poppins-Bold',
+  },
+  heroSubtitle: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    lineHeight: 20,
   },
   dropdown: {
     borderRadius: 18,
