@@ -55,7 +55,7 @@ export function EventCatalogScreen({
             <SecondaryButton
               label={ascending ? copy.sortAsc : copy.sortDesc}
               onPress={() => setAscending(value => !value)}
-              icon={<Feather name="arrow-down" size={16} color="#0B1F5B" />}
+              icon={<Feather name="arrow-down" size={16} color="#09111f" />}
             />
           </View>
         </Card>
@@ -99,7 +99,7 @@ export function EventCatalogScreen({
             <SecondaryButton
               label={copy.signOut}
               onPress={onSignOut}
-              icon={<Feather name="log-out" size={16} color="#1d3fb3" />}
+              icon={<Feather name="log-out" size={16} color="#22d3ee" />}
             />
           </View>
         </Card>
@@ -118,9 +118,9 @@ const localStyles = {
     width: '48%' as const,
     borderRadius: 20,
     overflow: 'hidden' as const,
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderWidth: 1,
-    borderColor: '#e6eaf0',
+    borderColor: 'rgba(124, 243, 160, 0.14)',
   },
   image: {
     width: '100%',
@@ -146,7 +146,7 @@ const localStyles = {
   },
   liveTag: {
     backgroundColor: '#06B6D4',
-    color: '#172033',
+    color: '#f8fafc',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
@@ -154,12 +154,12 @@ const localStyles = {
     fontFamily: 'Poppins-Bold',
   },
   title: {
-    color: '#172033',
+    color: '#f8fafc',
     fontSize: 17,
     fontFamily: 'Poppins-ExtraBold',
   },
   meta: {
-    color: '#60708b',
+    color: '#9fb2cb',
     fontFamily: 'Poppins-Medium',
     fontSize: 12,
   },

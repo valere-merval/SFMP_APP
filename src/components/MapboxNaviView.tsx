@@ -146,7 +146,7 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
             <Mapbox.LineLayer
               id="sfmp-route-line"
               style={{
-                lineColor: '#1d3fb3',
+                lineColor: '#22d3ee',
                 lineWidth: 6,
                 lineCap: 'round',
                 lineJoin: 'round',
@@ -156,7 +156,7 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
         ) : null}
 
         <Mapbox.PointAnnotation id="sfmp-origin" coordinate={toPoint(safeOrigin)} title="Origin">
-          <View style={{ width: 18, height: 18, borderRadius: 999, backgroundColor: '#1d3fb3', borderWidth: 3, borderColor: '#fff', shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 10, elevation: 6 }} />
+          <View style={{ width: 18, height: 18, borderRadius: 999, backgroundColor: '#22d3ee', borderWidth: 3, borderColor: '#fff', shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 10, elevation: 6 }} />
         </Mapbox.PointAnnotation>
 
         <Mapbox.PointAnnotation id="sfmp-destination" coordinate={toPoint(safeDestination)} title="Destination">

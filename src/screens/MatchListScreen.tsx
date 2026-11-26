@@ -72,7 +72,7 @@ export function MatchListScreen({
             <SecondaryButton
               label={ascending ? copy.sortAsc : copy.sortDesc}
               onPress={() => setAscending(value => !value)}
-              icon={<Feather name="arrow-down" size={16} color="#0B1F5B" />}
+              icon={<Feather name="arrow-down" size={16} color="#09111f" />}
             />
           </View>
         </Card>
@@ -157,12 +157,12 @@ export function MatchListScreen({
             <SecondaryButton
               label={copy.backToEvents}
               onPress={onBackToCatalog}
-              icon={<Feather name="grid" size={16} color="#1d3fb3" />}
+              icon={<Feather name="grid" size={16} color="#22d3ee" />}
             />
             <SecondaryButton
               label={copy.back}
               onPress={onBack}
-              icon={<Feather name="chevron-left" size={16} color="#1d3fb3" />}
+              icon={<Feather name="chevron-left" size={16} color="#22d3ee" />}
             />
           </View>
         </Card>
@@ -178,9 +178,9 @@ const localStyles = {
   card: {
     borderRadius: 20,
     overflow: 'hidden' as const,
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderWidth: 1,
-    borderColor: '#e6eaf0',
+    borderColor: 'rgba(124, 243, 160, 0.14)',
   },
   image: {
     width: '100%',
@@ -192,7 +192,7 @@ const localStyles = {
   },
   stage: {
     backgroundColor: '#edf2ff',
-    color: '#1d3fb3',
+    color: '#22d3ee',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
@@ -200,7 +200,7 @@ const localStyles = {
     fontFamily: 'Poppins-Bold',
   },
   ticket: {
-    color: '#D946EF',
+    color: '#c8f36a',
     fontSize: 16,
     fontFamily: 'Poppins-ExtraBold',
   },
@@ -219,7 +219,7 @@ const localStyles = {
   flagText: {
     width: 24,
     textAlign: 'center' as const,
-    color: '#172033',
+    color: '#f8fafc',
     fontSize: 16,
     fontFamily: 'Poppins-Bold',
   },

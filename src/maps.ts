@@ -39,17 +39,17 @@ export function rideStatusStyle(status?: string | null, locale: Locale = 'en') {
   const labels = STATUS_LABELS[locale] ?? STATUS_LABELS.en;
   switch (status) {
     case 'ACCEPTED':
-      return { label: labels.ACCEPTED, backgroundColor: '#dff6ff', color: '#1d3fb3', icon: 'car-sport-outline' as const };
+      return { label: labels.ACCEPTED, backgroundColor: '#dff6ff', color: '#22d3ee', icon: 'car-sport-outline' as const };
     case 'ARRIVED_AT_PICKUP':
       return { label: labels.ARRIVED_AT_PICKUP, backgroundColor: '#e8f8d4', color: '#3f5b00', icon: 'location-outline' as const };
     case 'IN_PROGRESS':
-      return { label: labels.IN_PROGRESS, backgroundColor: '#c8f36a', color: '#172033', icon: 'navigate-circle-outline' as const };
+      return { label: labels.IN_PROGRESS, backgroundColor: '#c8f36a', color: '#f8fafc', icon: 'navigate-circle-outline' as const };
     case 'COMPLETED':
-      return { label: labels.COMPLETED, backgroundColor: '#f4f6f8', color: '#172033', icon: 'checkmark-done-outline' as const };
+      return { label: labels.COMPLETED, backgroundColor: '#f4f6f8', color: '#f8fafc', icon: 'checkmark-done-outline' as const };
     case 'REFUSED':
       return { label: labels.REFUSED, backgroundColor: '#fde7ea', color: '#a11f3d', icon: 'close-circle-outline' as const };
     default:
-      return { label: labels.PENDING, backgroundColor: '#f4f6f8', color: '#172033', icon: 'time-outline' as const };
+      return { label: labels.PENDING, backgroundColor: '#f4f6f8', color: '#f8fafc', icon: 'time-outline' as const };
   }
 }
 

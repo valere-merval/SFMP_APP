@@ -69,12 +69,12 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
             <PrimaryButton
               label={t(locale, 'common.navigate')}
               onPress={() => undefined}
-              icon={<Ionicons name="walk-outline" size={16} color="#172033" />}
+              icon={<Ionicons name="walk-outline" size={16} color="#f8fafc" />}
             />
             <SecondaryButton
               label={t(locale, 'common.openInGoogleMaps')}
               onPress={() => undefined}
-              icon={<Ionicons name="map-outline" size={16} color="#1d3fb3" />}
+              icon={<Ionicons name="map-outline" size={16} color="#22d3ee" />}
             />
           </View>
         </Card>
@@ -89,13 +89,13 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
                   <Pressable
                     key={item.id}
                     onPress={() => setSelectedId(item.id)}
-                    style={[styles.miniCard, isSelected && { borderColor: '#D946EF', borderWidth: 1.5 }]}
+                    style={[styles.miniCard, isSelected && { borderColor: '#c8f36a', borderWidth: 1.5 }]}
                   >
                     <View style={styles.rowBetween}>
                       <View style={styles.rowLeft}>
                         <View style={styles.buttonContent}>
                           <View style={styles.buttonIcon}>
-                            <Ionicons name={label.icon} size={18} color="#172033" />
+                            <Ionicons name={label.icon} size={18} color="#f8fafc" />
                           </View>
                           <Text style={styles.cardTitle}>{label.label}</Text>
                         </View>

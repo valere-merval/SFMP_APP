@@ -496,7 +496,7 @@ export function HubScreen({
               <SecondaryButton
                 label={copy.changeMatch}
                 onPress={onChangeMatch}
-                icon={<Ionicons name="map-outline" size={16} color="#1d3fb3" />}
+                icon={<Ionicons name="map-outline" size={16} color="#22d3ee" />}
               />
             </View>
           </Card>
@@ -629,7 +629,7 @@ export function HubScreen({
                 <Text style={localStyles.primaryActionText}>
                   {copy.planJourney}
                 </Text>
-                <Ionicons name="arrow-forward" size={16} color="#172033" />
+                <Ionicons name="arrow-forward" size={16} color="#f8fafc" />
               </Pressable>
               <Pressable
                 onPress={buyTicket}
@@ -722,7 +722,7 @@ export function HubScreen({
                               <Ionicons
                                 name="checkmark"
                                 size={16}
-                                color="#172033"
+                                color="#f8fafc"
                               />
                             }
                           />
@@ -744,7 +744,7 @@ export function HubScreen({
                               <Ionicons
                                 name="navigate-circle-outline"
                                 size={16}
-                                color="#172033"
+                                color="#f8fafc"
                               />
                             }
                           />
@@ -766,7 +766,7 @@ export function HubScreen({
                               <Ionicons
                                 name="navigate-circle-outline"
                                 size={16}
-                                color="#172033"
+                                color="#f8fafc"
                               />
                             }
                           />
@@ -830,7 +830,7 @@ export function HubScreen({
                     label={t(locale, 'journey.taxiLabel')}
                     onPress={() => setRequestMode('Taxi')}
                     icon={
-                      <Ionicons name="car-outline" size={16} color="#1d3fb3" />
+                      <Ionicons name="car-outline" size={16} color="#22d3ee" />
                     }
                   />
                   <SecondaryButton
@@ -840,7 +840,7 @@ export function HubScreen({
                       <Ionicons
                         name="car-sport-outline"
                         size={16}
-                        color="#1d3fb3"
+                        color="#22d3ee"
                       />
                     }
                   />
@@ -853,7 +853,7 @@ export function HubScreen({
                   }
                   onPress={requestRide}
                   icon={
-                    <Ionicons name="send-outline" size={16} color="#172033" />
+                    <Ionicons name="send-outline" size={16} color="#f8fafc" />
                   }
                 />
                 {requestStatus ? (
@@ -1178,14 +1178,14 @@ export function HubScreen({
                 <Ionicons
                   name="swap-horizontal-outline"
                   size={16}
-                  color="#1d3fb3"
+                  color="#22d3ee"
                 />
               }
             />
             <SecondaryButton
               label={t(locale, 'common.changeEvent')}
               onPress={onChangeEvent}
-              icon={<Ionicons name="grid-outline" size={16} color="#1d3fb3" />}
+              icon={<Ionicons name="grid-outline" size={16} color="#22d3ee" />}
             />
           </View>
         </Card>
@@ -1223,7 +1223,7 @@ const localStyles = {
   flagText: {
     width: 28,
     textAlign: 'center' as const,
-    color: '#172033',
+    color: '#f8fafc',
     fontSize: 18,
     fontFamily: 'Poppins-Bold',
   },
@@ -1234,7 +1234,7 @@ const localStyles = {
   teamLine: {
     flexShrink: 1,
     minWidth: 0,
-    color: '#172033',
+    color: '#f8fafc',
     fontSize: 22,
     lineHeight: 28,
     fontFamily: 'Poppins-ExtraBold',
@@ -1327,7 +1327,7 @@ const localStyles = {
     backgroundColor: '#06B6D4',
   },
   vsText: {
-    color: '#172033',
+    color: '#f8fafc',
     fontSize: 18,
     fontFamily: 'Teko',
   },
@@ -1337,7 +1337,7 @@ const localStyles = {
     fontFamily: 'Poppins-Regular',
   },
   countdownLine: {
-    color: '#D946EF',
+    color: '#c8f36a',
     fontSize: 12,
     letterSpacing: 1.2,
     textTransform: 'uppercase' as const,
@@ -1391,7 +1391,7 @@ const localStyles = {
     flex: 1,
     minHeight: 52,
     borderRadius: 16,
-    backgroundColor: '#D946EF',
+    backgroundColor: '#c8f36a',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     flexDirection: 'row' as const,
@@ -1399,7 +1399,7 @@ const localStyles = {
     paddingHorizontal: 14,
   },
   primaryActionText: {
-    color: '#172033',
+    color: '#f8fafc',
     fontFamily: 'Oswald-SemiBold',
     fontSize: 12,
     paddingHorizontal: 12,
@@ -1461,7 +1461,7 @@ const localStyles = {
     fontSize: 12,
   },
   destinationChipTextActive: {
-    color: '#172033',
+    color: '#f8fafc',
   },
   requestSuccess: {
     color: '#c8f36a',

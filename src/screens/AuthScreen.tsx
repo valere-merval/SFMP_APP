@@ -71,7 +71,7 @@ function SearchableDropdown({
             {value || placeholder}
           </Text>
         </View>
-        <Feather name="chevron-down" size={18} color={disabled ? '#94a3b8' : '#2457e6'} />
+        <Feather name="chevron-down" size={18} color={disabled ? '#94a3b8' : '#22d3ee'} />
       </Pressable>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
@@ -99,7 +99,7 @@ function SearchableDropdown({
                   }}
                 >
                   <Text style={authStyles.modalOptionText}>{option.label}</Text>
-                  {(selectedKey ? selectedKey === option.key : value === option.label) ? <Feather name="check" size={16} color="#2457e6" /> : null}
+                  {(selectedKey ? selectedKey === option.key : value === option.label) ? <Feather name="check" size={16} color="#22d3ee" /> : null}
                 </Pressable>
               )) : (
                 <Text style={authStyles.modalEmpty}>{emptyLabel}</Text>
@@ -139,7 +139,7 @@ function PasswordField({
           autoCorrect={false}
         />
         <Pressable onPress={() => setVisible((current) => !current)} style={authStyles.eyeButton}>
-          <Feather name={visible ? 'eye-off' : 'eye'} size={18} color="#2457e6" />
+          <Feather name={visible ? 'eye-off' : 'eye'} size={18} color="#22d3ee" />
         </Pressable>
       </View>
     </View>
@@ -480,7 +480,7 @@ export function AuthScreen({
                 keyboardType="phone-pad"
               />
               <Pressable style={authStyles.photoButton} onPress={pickPhoto}>
-                <Feather name="camera" size={18} color="#0B1F5B" />
+                <Feather name="camera" size={18} color="#09111f" />
                 <Text style={authStyles.photoButtonText}>
                   {photoUrl
                     ? t(locale, 'auth.photoChange')
@@ -609,22 +609,22 @@ export function AuthScreen({
 
 const authStyles = StyleSheet.create({
   authHeader: {
-    paddingTop: 14,
-    paddingBottom: 14,
+    paddingTop: 6,
+    paddingBottom: 10,
     gap: 6,
   },
   authContainer: {
     paddingTop: 0,
-    paddingBottom: 36,
+    paddingBottom: 22,
     marginBottom: 0,
   },
   dropdown: {
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderWidth: 1,
-    borderColor: '#dce5f5',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -633,38 +633,38 @@ const authStyles = StyleSheet.create({
   dropdownDisabled: { opacity: 0.7 },
   dropdownTextBlock: { flex: 1, gap: 2 },
   dropdownLabel: {
-    color: '#60708b',
+    color: '#9fb2cb',
     fontFamily: 'Poppins-SemiBold',
     fontSize: 12,
     textTransform: 'uppercase',
   },
-  dropdownValue: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
-  dropdownPlaceholder: { color: '#94a3b8' },
+  dropdownValue: { color: '#f8fafc', fontFamily: 'Poppins-SemiBold' },
+  dropdownPlaceholder: { color: '#7c8ba3' },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(16,27,45,0.45)',
+    backgroundColor: 'rgba(7, 13, 24, 0.82)',
     justifyContent: 'flex-end',
   },
   modalBackdropPress: { ...StyleSheet.absoluteFill },
   modalSheet: {
-    backgroundColor: '#f6f8fc',
+    backgroundColor: '#0f1728',
     padding: 18,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '78%',
   },
   modalTitle: {
-    color: '#172033',
+    color: '#f8fafc',
     fontSize: 18,
     fontFamily: 'Teko',
     marginBottom: 10,
   },
   modalSearch: {
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#dce5f5',
-    color: '#172033',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
+    color: '#f8fafc',
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontFamily: 'Poppins-Regular',
@@ -672,10 +672,10 @@ const authStyles = StyleSheet.create({
   },
   modalList: { maxHeight: 360 },
   modalOption: {
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e6eaf0',
+    borderColor: 'rgba(124, 243, 160, 0.14)',
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 10,
@@ -685,18 +685,18 @@ const authStyles = StyleSheet.create({
     gap: 12,
   },
   modalOptionText: {
-    color: '#172033',
+    color: '#f8fafc',
     fontFamily: 'Poppins-SemiBold',
     flex: 1,
   },
   modalEmpty: {
-    color: '#60708b',
+    color: '#9fb2cb',
     fontFamily: 'Poppins-Medium',
     paddingVertical: 12,
   },
   passwordField: { gap: 6 },
   passwordLabel: {
-    color: '#60708b',
+    color: '#9fb2cb',
     fontFamily: 'Poppins-SemiBold',
     fontSize: 12,
     textTransform: 'uppercase',
@@ -706,14 +706,14 @@ const authStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderColor: '#dbe4ff',
-    backgroundColor: '#fff',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
+    backgroundColor: '#0b1220',
     borderRadius: 14,
     paddingHorizontal: 14,
   },
   passwordInput: {
     flex: 1,
-    color: '#172033',
+    color: '#f8fafc',
     paddingVertical: 12,
     fontFamily: 'Poppins-Medium',
   },
@@ -721,16 +721,16 @@ const authStyles = StyleSheet.create({
   photoButton: {
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#dbe4ff',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
     paddingVertical: 14,
     paddingHorizontal: 14,
-    backgroundColor: '#94A3B8',
+    backgroundColor: '#c8f36a',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     justifyContent: 'center',
   },
-  photoButtonText: { color: '#0B1F5B', fontFamily: 'Poppins-SemiBold' },
+  photoButtonText: { color: '#09111f', fontFamily: 'Poppins-SemiBold' },
   photoPreview: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -738,8 +738,8 @@ const authStyles = StyleSheet.create({
     padding: 14,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#dbe4ff',
-    backgroundColor: '#fff',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
+    backgroundColor: '#0b1220',
   },
   photoPreviewText: { flex: 1, gap: 4 },
 });

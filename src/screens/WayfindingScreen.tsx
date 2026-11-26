@@ -97,7 +97,7 @@ export function WayfindingScreen({
               onPress={() =>
                 openGoogleMapsDirections(title, 'Madrid city center')
               }
-              icon={<Feather name="external-link" size={16} color="#1d3fb3" />}
+              icon={<Feather name="external-link" size={16} color="#22d3ee" />}
             />
           </View>
         </Card>
@@ -111,11 +111,11 @@ export function WayfindingScreen({
         </Card>
         <Card title={copy.handoffTitle} subtitle={copy.handoffSubtitle} wide>
           <View style={styles.bulletRow}>
-            <Feather name="map" size={16} color="#2457e6" />
+            <Feather name="map" size={16} color="#22d3ee" />
             <Text style={styles.muted}>{copy.nativeMapBody}</Text>
           </View>
           <View style={styles.bulletRow}>
-            <Ionicons name="open-outline" size={16} color="#2457e6" />
+            <Ionicons name="open-outline" size={16} color="#22d3ee" />
             <Text style={styles.muted}>{copy.fallbackBody}</Text>
           </View>
           <View style={styles.ctaRow}>
@@ -127,7 +127,7 @@ export function WayfindingScreen({
                     encodeURIComponent(title),
                 )
               }
-              icon={<Feather name="search" size={16} color="#1d3fb3" />}
+              icon={<Feather name="search" size={16} color="#22d3ee" />}
             />
           </View>
         </Card>

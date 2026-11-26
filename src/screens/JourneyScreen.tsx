@@ -15,13 +15,13 @@ import { speakVoiceGuidance } from '../voice';
 type ModeKey = 'bus' | 'train' | 'metro' | 'scooter' | 'bike' | 'taxi' | 'vtc';
 
 const modeCards: Array<{ key: ModeKey; label: string; subtitle: string; icon: React.ReactNode; regex: RegExp }> = [
-  { key: 'bus', label: 'Bus', subtitle: 'Walk to the station', icon: <Ionicons name="bus-outline" size={20} color="#172033" />, regex: /bus/i },
-  { key: 'train', label: 'Train', subtitle: 'Walk to the station', icon: <Ionicons name="train-outline" size={20} color="#172033" />, regex: /train/i },
-  { key: 'metro', label: 'Metro', subtitle: 'Walk to the station', icon: <Ionicons name="subway-outline" size={20} color="#172033" />, regex: /metro|subway/i },
-  { key: 'scooter', label: 'Scooter', subtitle: 'Walk to the scooter', icon: <Feather name="navigation" size={20} color="#172033" />, regex: /scooter/i },
-  { key: 'bike', label: 'Bike', subtitle: 'Walk to the bike', icon: <Feather name="map-pin" size={20} color="#172033" />, regex: /bike|bicycle/i },
-  { key: 'taxi', label: 'Taxi', subtitle: 'Send a live request', icon: <Ionicons name="car-outline" size={20} color="#172033" />, regex: /taxi/i },
-  { key: 'vtc', label: 'VTC', subtitle: 'Send a live request', icon: <Ionicons name="car-sport-outline" size={20} color="#172033" />, regex: /vtc|chauffeur|driver/i },
+  { key: 'bus', label: 'Bus', subtitle: 'Walk to the station', icon: <Ionicons name="bus-outline" size={20} color="#f8fafc" />, regex: /bus/i },
+  { key: 'train', label: 'Train', subtitle: 'Walk to the station', icon: <Ionicons name="train-outline" size={20} color="#f8fafc" />, regex: /train/i },
+  { key: 'metro', label: 'Metro', subtitle: 'Walk to the station', icon: <Ionicons name="subway-outline" size={20} color="#f8fafc" />, regex: /metro|subway/i },
+  { key: 'scooter', label: 'Scooter', subtitle: 'Walk to the scooter', icon: <Feather name="navigation" size={20} color="#f8fafc" />, regex: /scooter/i },
+  { key: 'bike', label: 'Bike', subtitle: 'Walk to the bike', icon: <Feather name="map-pin" size={20} color="#f8fafc" />, regex: /bike|bicycle/i },
+  { key: 'taxi', label: 'Taxi', subtitle: 'Send a live request', icon: <Ionicons name="car-outline" size={20} color="#f8fafc" />, regex: /taxi/i },
+  { key: 'vtc', label: 'VTC', subtitle: 'Send a live request', icon: <Ionicons name="car-sport-outline" size={20} color="#f8fafc" />, regex: /vtc|chauffeur|driver/i },
 ];
 
 const J = {
@@ -701,15 +701,15 @@ export function JourneyScreen({
                                 : destinationLabelToQuery(match, activeDriverRequest.destinationLabel),
                             )
                           }
-                          icon={<Feather name="navigation" size={16} color="#1d3fb3" />}
+                          icon={<Feather name="navigation" size={16} color="#22d3ee" />}
                         />
                       </View>
                     ) : null}
                     <View style={styles.ctaRow}>
-                      <SecondaryButton label={journeyText(locale, 'arrivedAtPickup')} onPress={() => void markRideRequestArrived(activeDriverRequest.id)} icon={<Ionicons name="location-outline" size={16} color="#1d3fb3" />} />
-                      <PrimaryButton label={journeyText(locale, 'startTrip')} onPress={() => void startRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="navigate-outline" size={16} color="#172033" />} />
-                      <SecondaryButton label={journeyText(locale, 'completeTrip')} onPress={() => void completeRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="checkmark-done-outline" size={16} color="#1d3fb3" />} />
-                      <SecondaryButton label={journeyText(locale, 'voiceGuidance')} onPress={announceNavigationSummary} icon={<Ionicons name="volume-high-outline" size={16} color="#1d3fb3" />} />
+                      <SecondaryButton label={journeyText(locale, 'arrivedAtPickup')} onPress={() => void markRideRequestArrived(activeDriverRequest.id)} icon={<Ionicons name="location-outline" size={16} color="#22d3ee" />} />
+                      <PrimaryButton label={journeyText(locale, 'startTrip')} onPress={() => void startRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="navigate-outline" size={16} color="#f8fafc" />} />
+                      <SecondaryButton label={journeyText(locale, 'completeTrip')} onPress={() => void completeRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="checkmark-done-outline" size={16} color="#22d3ee" />} />
+                      <SecondaryButton label={journeyText(locale, 'voiceGuidance')} onPress={announceNavigationSummary} icon={<Ionicons name="volume-high-outline" size={16} color="#22d3ee" />} />
                     </View>
                   </View>
                 ) : null}
@@ -743,14 +743,14 @@ export function JourneyScreen({
                                   );
                                 });
                               }}
-                              icon={<Ionicons name="checkmark" size={16} color="#172033" />}
+                              icon={<Ionicons name="checkmark" size={16} color="#f8fafc" />}
                             />
                           </>
                         ) : isOwnAccepted ? (
                           <SecondaryButton
                             label={t(locale, 'common.openInGoogleMaps')}
                             onPress={() => void openGoogleMapsDirections(destinationLabelToQuery(match, request.pickupLabel))}
-                            icon={<Feather name="map" size={16} color="#1d3fb3" />}
+                            icon={<Feather name="map" size={16} color="#22d3ee" />}
                           />
                         ) : null}
                       </View>
@@ -805,7 +805,7 @@ export function JourneyScreen({
                             : destinationLabelToQuery(match, activeDriverRequest?.destinationLabel || selectedDestination || match.venue),
                         )
                       }
-                      icon={<Feather name="navigation" size={16} color="#1d3fb3" />}
+                      icon={<Feather name="navigation" size={16} color="#22d3ee" />}
                     />
                   </View>
                 ) : null}
@@ -834,10 +834,10 @@ export function JourneyScreen({
                       <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">{activeDriverStatus.title}</Text>
                       <Text style={styles.subtitle}>{activeDriverStatus.subtitle}</Text>
                     </View>
-                    <SecondaryButton label={t(locale, 'common.refuse')} onPress={() => setMapExpanded(false)} icon={<Feather name="x" size={16} color="#1d3fb3" />} />
+                    <SecondaryButton label={t(locale, 'common.refuse')} onPress={() => setMapExpanded(false)} icon={<Feather name="x" size={16} color="#22d3ee" />} />
                   </View>
                 </View>
-                <View style={[styles.mapPanel, { minHeight: 540 }]}> 
+                <View style={[styles.mapPanel, { minHeight: 620 }]}> 
                   <MapboxNaviView
                     height={540}
                     origin={{ latitude: 40.4531, longitude: -3.6883 }}
@@ -875,9 +875,9 @@ export function JourneyScreen({
                                 : destinationLabelToQuery(match, activeDriverRequest?.destinationLabel || selectedDestination || match.venue),
                             )
                           }
-                          icon={<Feather name="navigation" size={16} color="#1d3fb3" />}
+                          icon={<Feather name="navigation" size={16} color="#22d3ee" />}
                         />
-                        <SecondaryButton label={journeyText(locale, 'voiceGuidance')} onPress={announceNavigationSummary} icon={<Ionicons name="volume-high-outline" size={16} color="#1d3fb3" />} />
+                        <SecondaryButton label={journeyText(locale, 'voiceGuidance')} onPress={announceNavigationSummary} icon={<Ionicons name="volume-high-outline" size={16} color="#22d3ee" />} />
                       </View>
                     ) : null}
                   </View>
@@ -938,7 +938,7 @@ export function JourneyScreen({
               ) : null}
               {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
               <View style={styles.ctaRow}>
-                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#1d3fb3" />} />
+                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#22d3ee" />} />
               </View>
             </View>
           </View>
@@ -1000,7 +1000,7 @@ export function JourneyScreen({
                           ? t(locale, 'common.sendRequest')
                           : t(locale, 'common.navigate')}
                         onPress={() => void reserveRide(provider)}
-                        icon={<Ionicons name="car-outline" size={16} color="#172033" />}
+                        icon={<Ionicons name="car-outline" size={16} color="#f8fafc" />}
                       />
                     </View>
                   </View>
@@ -1040,7 +1040,7 @@ export function JourneyScreen({
               ) : null}
               {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
               <View style={styles.ctaRow}>
-                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#1d3fb3" />} />
+                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#22d3ee" />} />
               </View>
             </View>
           ) : (

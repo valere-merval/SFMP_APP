@@ -55,11 +55,11 @@ const bootstrapStyles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f6f8fc',
+    backgroundColor: '#070d18',
     padding: 24,
   },
   loadingCopy: {
-    color: '#60708b',
+    color: '#9fb2cb',
     fontFamily: 'Poppins-Regular',
     marginTop: 8,
   },
@@ -68,7 +68,7 @@ const bootstrapStyles = StyleSheet.create({
 const shellStyles = StyleSheet.create({
   connectedShell: {
     flex: 1,
-    backgroundColor: '#f6f8fc',
+    backgroundColor: '#070d18',
   },
   topBar: {
     paddingHorizontal: 16,
@@ -77,11 +77,11 @@ const shellStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomColor: '#D946EF',
-    backgroundColor: '#D946EF',
+    borderBottomColor: 'rgba(124, 243, 160, 0.18)',
+    backgroundColor: '#070d18',
   },
-  topBarSafeArea: { backgroundColor: '#D946EF' },
-  statusBar: { backgroundColor: '#D946EF' },
+  topBarSafeArea: { backgroundColor: '#070d18' },
+  statusBar: { backgroundColor: '#070d18' },
   brandBlock: {
     flex: 1,
   },
@@ -91,9 +91,9 @@ const shellStyles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f6f8fc',
+    backgroundColor: '#070d18',
     borderWidth: 1,
-    borderColor: '#dbe4ff',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
     overflow: 'hidden',
   },
   avatarButton: { width: 44, height: 44, borderRadius: 22, overflow: 'hidden' },
@@ -339,7 +339,7 @@ function App(): React.JSX.Element {
     <SafeAreaProvider>
       <SafeAreaView
         edges={['top', 'bottom']}
-        style={{ backgroundColor: '#D946EF' }}
+        style={{ backgroundColor: '#070d18' }}
       >
         {/* Header content */}
       </SafeAreaView>
@@ -413,7 +413,7 @@ function App(): React.JSX.Element {
                 initialRouteName={activeTab}
                 screenOptions={({ route }) => ({
                     headerShown: false,
-                    tabBarActiveTintColor: '#D946EF',
+                    tabBarActiveTintColor: '#c8f36a',
                     tabBarInactiveTintColor: '#7183a1',
                     tabBarLabelStyle: {
                       fontFamily: fonts.tab,
@@ -422,11 +422,11 @@ function App(): React.JSX.Element {
                     },
                     tabBarStyle: {
                       borderTopWidth: 1,
-                      borderTopColor: '#dbe4ff',
-                      backgroundColor: '#ffffff',
-                      height: 64,
-                      paddingTop: 8,
-                      paddingBottom: 8,
+                      borderTopColor: 'rgba(255,255,255,0.08)',
+                      backgroundColor: '#0b1220',
+                      height: 72,
+                      paddingTop: 10,
+                      paddingBottom: 12,
                     },
                     tabBarLabel: getTabLabel(
                       locale,

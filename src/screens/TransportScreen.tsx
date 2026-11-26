@@ -199,7 +199,7 @@ export function TransportScreen({
                 onPress={() => setAvailable((value) => !value)}
                 style={[screenStyles.availabilityButton, available ? screenStyles.availabilityButtonOn : screenStyles.availabilityButtonOff]}
               >
-                <Feather name={available ? 'check-circle' : 'slash'} size={28} color={available ? '#172033' : '#f8fafc'} />
+                <Feather name={available ? 'check-circle' : 'slash'} size={28} color={available ? '#f8fafc' : '#f8fafc'} />
                 <View style={screenStyles.availabilityButtonTextBlock}>
                   <Text style={[screenStyles.availabilityButtonTitle, !available && screenStyles.availabilityButtonTitleOff]}>
                     {available ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}
@@ -214,7 +214,7 @@ export function TransportScreen({
                 onPress={submit}
                 icon={saving ? <ActivityIndicator size="small" color="#fff" /> : <Feather name="check" size={16} color="#fff" />}
               />
-              <SecondaryButton label="Rafraîchir" onPress={onReload} icon={<Feather name="refresh-cw" size={16} color="#172033" />} />
+              <SecondaryButton label="Rafraîchir" onPress={onReload} icon={<Feather name="refresh-cw" size={16} color="#f8fafc" />} />
               {message ? <Text style={screenStyles.success}>{message}</Text> : null}
               {error ? <Text style={screenStyles.error}>{error}</Text> : null}
               {loadedAvailability ? <Text style={uiStyles.helperText}>Dernier état: {loadedAvailability.available ? 'Disponible' : 'Pas disponible'}</Text> : null}
@@ -244,7 +244,7 @@ export function TransportScreen({
                   <View key={provider.id} style={screenStyles.providerCard}>
                     <View style={screenStyles.providerTop}>
                       <View style={screenStyles.providerBadge}>
-                        <Feather name="truck" size={14} color="#172033" />
+                        <Feather name="truck" size={14} color="#f8fafc" />
                         <Text style={screenStyles.providerBadgeText}>{modeLabel(locale, provider.providerType)}</Text>
                       </View>
                       <Text style={screenStyles.providerStatus}>{provider.active || provider.ready ? 'Disponible' : 'Pas disponible'}</Text>
@@ -278,11 +278,11 @@ function SummaryPill({ label, value, active }: { label: string; value: number; a
 }
 
 const screenStyles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#f6f8fc' },
-  container: { gap: 14, backgroundColor: '#f6f8fc', paddingBottom: 28 },
-  hero: { backgroundColor: '#D946EF', padding: 20, gap: 10 },
+  screen: { flex: 1, backgroundColor: '#070d18' },
+  container: { gap: 14, backgroundColor: '#070d18', paddingBottom: 28 },
+  hero: { backgroundColor: '#c8f36a', padding: 20, gap: 10 },
   kicker: {
-    color: '#0B1F5B',
+    color: '#09111f',
     letterSpacing: 1.2,
     fontSize: 12,
     fontFamily: 'Poppins-Bold',
@@ -302,19 +302,19 @@ const screenStyles = StyleSheet.create({
   rowGap: { gap: 12 },
   listGap: { gap: 12 },
   driverSummary: {
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderRadius: 18,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#dce5f5',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
     gap: 4,
   },
   driverSummaryTitle: {
-    color: '#172033',
+    color: '#f8fafc',
     fontSize: 16,
     fontFamily: 'Poppins-Bold',
   },
-  driverSummaryBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
+  driverSummaryBody: { color: '#9fb2cb', fontFamily: 'Poppins-Regular' },
   availabilityButton: {
     borderRadius: 28,
     paddingVertical: 24,
@@ -336,7 +336,7 @@ const screenStyles = StyleSheet.create({
     elevation: 4,
   },
   availabilityButtonOff: {
-    backgroundColor: '#172033',
+    backgroundColor: '#f8fafc',
     borderColor: '#101827',
     shadowColor: '#000',
     shadowOpacity: 0.18,
@@ -346,13 +346,13 @@ const screenStyles = StyleSheet.create({
   },
   availabilityButtonTextBlock: { flex: 1, gap: 4 },
   availabilityButtonTitle: {
-    color: '#172033',
+    color: '#f8fafc',
     fontFamily: 'Poppins-Bold',
     fontSize: 22,
   },
   availabilityButtonTitleOff: { color: '#f8fafc' },
   availabilityButtonSubtitle: {
-    color: '#172033',
+    color: '#f8fafc',
     fontFamily: 'Poppins-Medium',
     fontSize: 13,
   },
@@ -364,7 +364,7 @@ const screenStyles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     borderColor: '#06B6D4',
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     gap: 8,
   },
   providerTop: {
@@ -382,29 +382,29 @@ const screenStyles = StyleSheet.create({
     paddingVertical: 6,
   },
   providerBadgeText: {
-    color: '#172033',
+    color: '#f8fafc',
     fontFamily: 'Poppins-Bold',
     fontSize: 12,
   },
-  providerStatus: { color: '#D946EF', fontFamily: 'Oswald-SemiBold' },
-  providerTitle: { color: '#172033', fontFamily: 'Poppins-Bold', fontSize: 16 },
-  providerBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
-  providerNotes: { color: '#172033', fontFamily: 'Poppins-Medium' },
+  providerStatus: { color: '#c8f36a', fontFamily: 'Oswald-SemiBold' },
+  providerTitle: { color: '#f8fafc', fontFamily: 'Poppins-Bold', fontSize: 16 },
+  providerBody: { color: '#9fb2cb', fontFamily: 'Poppins-Regular' },
+  providerNotes: { color: '#f8fafc', fontFamily: 'Poppins-Medium' },
   summaryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   summaryPill: {
     minWidth: 78,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderWidth: 1,
-    borderColor: '#dce5f5',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
   },
   summaryPillActive: { backgroundColor: '#06B6D4', borderColor: '#94A3B8' },
   summaryLabel: {
-    color: '#60708b',
+    color: '#9fb2cb',
     fontSize: 12,
     fontFamily: 'Poppins-SemiBold',
   },
-  summaryValue: { color: '#172033', fontSize: 18, fontFamily: 'Poppins-Bold' },
+  summaryValue: { color: '#f8fafc', fontSize: 18, fontFamily: 'Poppins-Bold' },
 });

@@ -142,7 +142,7 @@ function SearchableDropdown({
             {value || placeholder}
           </Text>
         </View>
-        <Feather name="chevron-down" size={18} color={disabled ? '#94a3b8' : '#2457e6'} />
+        <Feather name="chevron-down" size={18} color={disabled ? '#94a3b8' : '#22d3ee'} />
       </Pressable>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
@@ -170,7 +170,7 @@ function SearchableDropdown({
                   }}
                 >
                   <Text style={screenStyles.modalOptionText}>{option.label}</Text>
-                  {value === option.label ? <Feather name="check" size={16} color="#2457e6" /> : null}
+                  {value === option.label ? <Feather name="check" size={16} color="#22d3ee" /> : null}
                 </Pressable>
               )) : (
                 <Text style={screenStyles.modalEmpty}>{emptyLabel}</Text>
@@ -566,7 +566,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
               onPress={() => setShowUserForm((value) => !value)}
               style={showUserForm ? screenStyles.primaryToggleActive : screenStyles.primaryToggle}
             >
-              <Feather name={showUserForm ? 'chevron-up' : 'edit-3'} size={16} color={showUserForm ? '#172033' : '#2457e6'} />
+              <Feather name={showUserForm ? 'chevron-up' : 'edit-3'} size={16} color={showUserForm ? '#f8fafc' : '#22d3ee'} />
               <Text style={showUserForm ? screenStyles.primaryToggleTextActive : screenStyles.primaryToggleText}>
                 {showUserForm ? t(locale, 'profile.closeUserForm') : t(locale, 'profile.editUserProfile')}
               </Text>
@@ -632,7 +632,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
                 </Pressable>
                 <View style={styles.chipsRow}>
                   <PrimaryButton label={savingUser ? t(locale, 'profile.savingUser') : t(locale, 'profile.saveUser')} onPress={saveUser} icon={<Feather name="save" size={16} color="#0f172a" />} />
-                  <SecondaryButton label={deletingUser ? t(locale, 'profile.deletingUser') : t(locale, 'profile.deleteUser')} onPress={removeUserProfile} icon={<Feather name="trash-2" size={16} color="#172033" />} />
+                  <SecondaryButton label={deletingUser ? t(locale, 'profile.deletingUser') : t(locale, 'profile.deleteUser')} onPress={removeUserProfile} icon={<Feather name="trash-2" size={16} color="#f8fafc" />} />
                 </View>
                 {userMessage ? <Text style={screenStyles.success}>{userMessage}</Text> : null}
                 {userError ? <Text style={screenStyles.error}>{userError}</Text> : null}
@@ -656,7 +656,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
               onPress={() => setShowDriverForm((value) => !value)}
               style={showDriverForm ? screenStyles.primaryToggleActive : screenStyles.primaryToggle}
             >
-              <Feather name={hasDriverProfile ? 'edit-3' : 'user-plus'} size={16} color={showDriverForm ? '#172033' : '#2457e6'} />
+              <Feather name={hasDriverProfile ? 'edit-3' : 'user-plus'} size={16} color={showDriverForm ? '#f8fafc' : '#22d3ee'} />
               <Text style={showDriverForm ? screenStyles.primaryToggleTextActive : screenStyles.primaryToggleText}>
                 {showDriverForm
                   ? t(locale, 'profile.closeDriverForm')
@@ -692,7 +692,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
               onPress={() => setShowDriverForm((value) => !value)}
               style={showDriverForm ? screenStyles.primaryToggleActive : screenStyles.primaryToggle}
             >
-              <Feather name={hasDriverProfile ? 'edit-3' : 'user-plus'} size={16} color={showDriverForm ? '#172033' : '#2457e6'} />
+              <Feather name={hasDriverProfile ? 'edit-3' : 'user-plus'} size={16} color={showDriverForm ? '#f8fafc' : '#22d3ee'} />
               <Text style={showDriverForm ? screenStyles.primaryToggleTextActive : screenStyles.primaryToggleText}>
                 {showDriverForm
                   ? t(locale, 'profile.closeDriverForm')
@@ -769,7 +769,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
                   numberOfLines={5}
                   style={screenStyles.textArea}
                 />
-                <SecondaryButton label={t(locale, 'profile.autofillScan')} onPress={parseScanText} icon={<Feather name="cpu" size={16} color="#172033" />} />
+                <SecondaryButton label={t(locale, 'profile.autofillScan')} onPress={parseScanText} icon={<Feather name="cpu" size={16} color="#f8fafc" />} />
               </View>
             </Card>
 
@@ -781,11 +781,11 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
                   <Text style={styles.helperText}>{t(locale, 'profile.uploadChoiceSubtitle')}</Text>
                   <View style={screenStyles.choiceRow}>
                     <Pressable style={screenStyles.choiceButton} onPress={() => { chooseUploadSource('image'); }}>
-                      <Feather name="image" size={18} color="#2457e6" />
+                      <Feather name="image" size={18} color="#22d3ee" />
                       <Text style={screenStyles.choiceButtonText}>{t(locale, 'profile.uploadChoiceImage')}</Text>
                     </Pressable>
                     <Pressable style={screenStyles.choiceButton} onPress={() => { chooseUploadSource('file'); }}>
-                      <Feather name="file-text" size={18} color="#2457e6" />
+                      <Feather name="file-text" size={18} color="#22d3ee" />
                       <Text style={screenStyles.choiceButtonText}>{t(locale, 'profile.uploadChoiceFile')}</Text>
                     </Pressable>
                   </View>
@@ -853,18 +853,18 @@ function ActionRow({ label, onPress, accent }: { label: string; onPress: () => v
   return (
     <Pressable onPress={onPress} style={[screenStyles.actionRow, accent && screenStyles.actionRowActive]}>
       <Text style={[screenStyles.actionRowText, accent && screenStyles.actionRowTextActive]}>{label}</Text>
-      <Feather name="upload" size={16} color={accent ? '#172033' : '#2457e6'} />
+      <Feather name="upload" size={16} color={accent ? '#f8fafc' : '#22d3ee'} />
     </Pressable>
   );
 }
 
 const screenStyles = StyleSheet.create({
   rowGap: { gap: 12 },
-  driverPreview: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#dce5f5', gap: 4 },
-  profilePreviewRow: { backgroundColor: '#fff', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: '#dce5f5', flexDirection: 'row', alignItems: 'center', gap: 14 },
+  driverPreview: { backgroundColor: '#0b1220', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', gap: 4 },
+  profilePreviewRow: { backgroundColor: '#0b1220', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', flexDirection: 'row', alignItems: 'center', gap: 14 },
   profilePreviewMeta: { flex: 1, gap: 4 },
-  previewTitle: { color: '#172033', fontSize: 16, fontFamily: 'Poppins-Bold' },
-  previewBody: { color: '#60708b', fontFamily: 'Poppins-Regular' },
+  previewTitle: { color: '#f8fafc', fontSize: 16, fontFamily: 'Poppins-Bold' },
+  previewBody: { color: '#9fb2cb', fontFamily: 'Poppins-Regular' },
   primaryToggle: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -873,13 +873,13 @@ const screenStyles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderWidth: 1,
-    borderColor: '#dce5f5',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
   },
   primaryToggleActive: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 14, backgroundColor: '#e8f7bf', borderWidth: 1, borderColor: '#c8f36a' },
-  primaryToggleText: { color: '#2457e6', fontFamily: 'Poppins-SemiBold' },
-  primaryToggleTextActive: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
+  primaryToggleText: { color: '#22d3ee', fontFamily: 'Poppins-SemiBold' },
+  primaryToggleTextActive: { color: '#f8fafc', fontFamily: 'Poppins-SemiBold' },
   availabilityButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -894,15 +894,15 @@ const screenStyles = StyleSheet.create({
   availabilityButtonOff: { backgroundColor: '#fff4e6', borderColor: '#fdba74' },
   availabilityButtonDisabled: { opacity: 0.7 },
   availabilityButtonTextBlock: { flex: 1, gap: 2 },
-  availabilityButtonLabel: { color: '#172033', fontSize: 18, fontFamily: 'Poppins-Bold', textTransform: 'uppercase', letterSpacing: 0.4 },
-  availabilityButtonSub: { color: '#60708b', fontFamily: 'Poppins-Regular' },
+  availabilityButtonLabel: { color: '#f8fafc', fontSize: 18, fontFamily: 'Poppins-Bold', textTransform: 'uppercase', letterSpacing: 0.4 },
+  availabilityButtonSub: { color: '#9fb2cb', fontFamily: 'Poppins-Regular' },
   dropdownButton: {
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderWidth: 1,
-    borderColor: '#dce5f5',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -910,39 +910,39 @@ const screenStyles = StyleSheet.create({
   },
   dropdownButtonDisabled: { opacity: 0.7 },
   dropdownTextBlock: { flex: 1, gap: 2 },
-  dropdownLabel: { color: '#60708b', fontFamily: 'Poppins-SemiBold', fontSize: 12, textTransform: 'uppercase' },
-  dropdownValue: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
+  dropdownLabel: { color: '#9fb2cb', fontFamily: 'Poppins-SemiBold', fontSize: 12, textTransform: 'uppercase' },
+  dropdownValue: { color: '#f8fafc', fontFamily: 'Poppins-SemiBold' },
   dropdownPlaceholder: { color: '#94a3b8' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(16,27,45,0.45)', justifyContent: 'flex-end' },
   modalBackdropPress: { ...StyleSheet.absoluteFill },
-  modalSheet: { backgroundColor: '#f6f8fc', padding: 18, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '78%' },
-  choiceSheet: { backgroundColor: '#f6f8fc', padding: 18, borderTopLeftRadius: 24, borderTopRightRadius: 24, gap: 14 },
+  modalSheet: { backgroundColor: '#070d18', padding: 18, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '78%' },
+  choiceSheet: { backgroundColor: '#070d18', padding: 18, borderTopLeftRadius: 24, borderTopRightRadius: 24, gap: 14 },
   choiceRow: { flexDirection: 'row', gap: 12 },
-  choiceButton: { flex: 1, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#dce5f5', paddingVertical: 16, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  choiceButtonText: { color: '#172033', fontFamily: 'Poppins-SemiBold', textAlign: 'center' },
-  modalTitle: { color: '#172033', fontSize: 18, fontFamily: 'Poppins-Bold', marginBottom: 10 },
-  modalSearch: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#dce5f5', color: '#172033', paddingHorizontal: 14, paddingVertical: 12, fontFamily: 'Poppins-Regular', marginBottom: 12 },
+  choiceButton: { flex: 1, backgroundColor: '#0b1220', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', paddingVertical: 16, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center', gap: 8 },
+  choiceButtonText: { color: '#f8fafc', fontFamily: 'Poppins-SemiBold', textAlign: 'center' },
+  modalTitle: { color: '#f8fafc', fontSize: 18, fontFamily: 'Poppins-Bold', marginBottom: 10 },
+  modalSearch: { backgroundColor: '#0b1220', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', color: '#f8fafc', paddingHorizontal: 14, paddingVertical: 12, fontFamily: 'Poppins-Regular', marginBottom: 12 },
   modalList: { maxHeight: 360 },
-  modalOption: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#e6eaf0', paddingHorizontal: 14, paddingVertical: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  modalOptionText: { color: '#172033', fontFamily: 'Poppins-SemiBold', flex: 1 },
-  modalEmpty: { color: '#60708b', fontFamily: 'Poppins-Medium', paddingVertical: 12 },
+  modalOption: { backgroundColor: '#0b1220', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.14)', paddingHorizontal: 14, paddingVertical: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  modalOptionText: { color: '#f8fafc', fontFamily: 'Poppins-SemiBold', flex: 1 },
+  modalEmpty: { color: '#9fb2cb', fontFamily: 'Poppins-Medium', paddingVertical: 12 },
   textArea: {
     minHeight: 108,
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#dce5f5',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: '#172033',
+    color: '#f8fafc',
     fontFamily: 'Poppins-Regular',
     textAlignVertical: 'top',
   },
   actionRow: {
-    backgroundColor: '#fff',
+    backgroundColor: '#0b1220',
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#dce5f5',
+    borderColor: 'rgba(124, 243, 160, 0.16)',
     paddingHorizontal: 14,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -950,23 +950,23 @@ const screenStyles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   actionRowActive: { backgroundColor: '#e8f7bf', borderColor: '#c8f36a' },
-  actionRowText: { color: '#172033', fontFamily: 'Poppins-SemiBold', flex: 1, paddingRight: 12 },
-  actionRowTextActive: { color: '#172033' },
+  actionRowText: { color: '#f8fafc', fontFamily: 'Poppins-SemiBold', flex: 1, paddingRight: 12 },
+  actionRowTextActive: { color: '#f8fafc' },
   chipsRow: { flexDirection: 'row', gap: 12, flexWrap: 'wrap' },
-  muted: { color: '#60708b', fontFamily: 'Poppins-Regular' },
-  helperText: { color: '#60708b', fontFamily: 'Poppins-Regular', lineHeight: 20 },
-  photoPicker: { backgroundColor: '#fff', borderRadius: 18, borderWidth: 1, borderColor: '#dce5f5', paddingHorizontal: 14, paddingVertical: 14, gap: 10 },
-  photoPickerLabel: { color: '#60708b', fontFamily: 'Poppins-SemiBold', textTransform: 'uppercase', fontSize: 12 },
+  muted: { color: '#9fb2cb', fontFamily: 'Poppins-Regular' },
+  helperText: { color: '#9fb2cb', fontFamily: 'Poppins-Regular', lineHeight: 20 },
+  photoPicker: { backgroundColor: '#0b1220', borderRadius: 18, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', paddingHorizontal: 14, paddingVertical: 14, gap: 10 },
+  photoPickerLabel: { color: '#9fb2cb', fontFamily: 'Poppins-SemiBold', textTransform: 'uppercase', fontSize: 12 },
   photoPickerPreview: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   photoPickerTextBlock: { flex: 1, gap: 2 },
-  photoPickerValue: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
-  photoPickerAction: { color: '#2457e6', fontFamily: 'Poppins-Medium' },
+  photoPickerValue: { color: '#f8fafc', fontFamily: 'Poppins-SemiBold' },
+  photoPickerAction: { color: '#22d3ee', fontFamily: 'Poppins-Medium' },
   success: { color: '#14532d', fontFamily: 'Poppins-Medium' },
   error: { color: '#b42318', fontFamily: 'Poppins-Medium' },
-  toggle: { borderRadius: 18, paddingHorizontal: 14, paddingVertical: 14, backgroundColor: '#fff', borderWidth: 1, borderColor: '#dce5f5', alignItems: 'center' },
+  toggle: { borderRadius: 18, paddingHorizontal: 14, paddingVertical: 14, backgroundColor: '#0b1220', borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', alignItems: 'center' },
   toggleActive: { backgroundColor: '#e8f7bf', borderColor: '#c8f36a' },
-  toggleText: { color: '#172033', fontFamily: 'Poppins-SemiBold' },
-  toggleTextActive: { color: '#172033' },
+  toggleText: { color: '#f8fafc', fontFamily: 'Poppins-SemiBold' },
+  toggleTextActive: { color: '#f8fafc' },
   ctaRow: { flexDirection: 'row', gap: 12 },
   modalFooter: { paddingHorizontal: 20, paddingBottom: 16, backgroundColor: '#f7f7fb' },
 });
