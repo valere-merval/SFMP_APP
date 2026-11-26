@@ -26,24 +26,23 @@ export function PassScreen({ locale }: { locale: Locale }) {
               <Text style={localStyles.liveText}>{t(locale, 'common.live')}</Text>
             </View>
           </View>
-          <Text style={localStyles.heroSubtitle}>{copy.subtitle}</Text>
-          <View style={localStyles.heroChips}>
-            <View style={localStyles.heroChip}><Text style={localStyles.heroChipText}>NFC</Text></View>
-            <View style={localStyles.heroChip}><Text style={localStyles.heroChipText}>Wallet</Text></View>
-            <View style={localStyles.heroChip}><Text style={localStyles.heroChipText}>Pass</Text></View>
+
+          <View style={localStyles.statusBanner}>
+            <View style={localStyles.statusLeft}>
+              <View style={localStyles.statusDot} />
+              <View style={localStyles.statusCopy}>
+                <Text style={localStyles.statusTitle}>{copy.accessTitle}</Text>
+                <Text style={localStyles.statusSubtitle}>{copy.accessSubtitle}</Text>
+              </View>
+            </View>
+            <View style={localStyles.nfcBadge}>
+              <Ionicons name="radio-outline" size={14} color="#9df5ff" />
+              <Text style={localStyles.nfcText}>NFC Broadcast 13.56 MHz</Text>
+            </View>
           </View>
         </View>
 
-        <Card title={copy.accessTitle} subtitle={copy.accessSubtitle} wide>
-          <View style={localStyles.activeBanner}>
-            <View style={localStyles.activeDot} />
-            <Text style={localStyles.activeText}>{copy.accessTitle}</Text>
-            <View style={localStyles.nfcBadge}>
-              <Ionicons name="radio-outline" size={14} color="#9df5ff" />
-              <Text style={localStyles.nfcText}>NFC LIVE</Text>
-            </View>
-          </View>
-
+        <Card title={copy.accessTitle} subtitle={t(locale, 'common.runtimeState')} wide>
           <View style={localStyles.passCard}>
             <View style={styles.rowBetween}>
               <View style={localStyles.badgePill}>
@@ -84,6 +83,22 @@ export function PassScreen({ locale }: { locale: Locale }) {
                 <Text style={localStyles.infoLabel}>PORTE</Text>
                 <Text style={localStyles.infoValue}>12</Text>
               </View>
+              <View style={localStyles.infoItem}>
+                <Text style={localStyles.infoLabel}>BLOC</Text>
+                <Text style={localStyles.infoValue}>204</Text>
+              </View>
+              <View style={localStyles.infoItem}>
+                <Text style={localStyles.infoLabel}>RANG</Text>
+                <Text style={localStyles.infoValue}>14</Text>
+              </View>
+              <View style={localStyles.infoItem}>
+                <Text style={localStyles.infoLabel}>SIÈGE</Text>
+                <Text style={localStyles.infoValue}>28</Text>
+              </View>
+              <View style={localStyles.infoItem}>
+                <Text style={localStyles.infoLabel}>CAT.</Text>
+                <Text style={localStyles.infoValue}>1 GOLD</Text>
+              </View>
             </View>
 
             <View style={localStyles.ticketLine}>
@@ -99,9 +114,25 @@ export function PassScreen({ locale }: { locale: Locale }) {
               <View style={localStyles.qrCornerBottomRight} />
               <View style={localStyles.qrGlow} />
               <View style={localStyles.qrMark} />
+              <View style={localStyles.scanLine} />
+            </View>
+
+            <View style={localStyles.codeMetaRow}>
+              <Text style={localStyles.codeSecurity}>Sécurisé SFMP-Crypt v4</Text>
+              <View style={localStyles.timerPill}>
+                <Feather name="refresh-cw" size={12} color="#c8f36a" />
+                <Text style={localStyles.timerText}>16s</Text>
+              </View>
             </View>
 
             <Text style={localStyles.ticketCode}>TK-9024-8841-MAD</Text>
+
+            <View style={localStyles.barcodeRow}>
+              {Array.from({ length: 18 }).map((_, index) => (
+                <View key={index} style={[localStyles.barcodeBar, index % 4 === 0 && localStyles.barcodeBarWide]} />
+              ))}
+            </View>
+
             <View style={localStyles.ticketFooter}>
               <Text style={localStyles.ticketFooterText}>Titulaire : Alexandre Laurent</Text>
               <Text style={localStyles.ticketFooterText}>N° 084920</Text>
@@ -116,6 +147,78 @@ export function PassScreen({ locale }: { locale: Locale }) {
             <View style={localStyles.secondaryAction}>
               <Feather name="share-2" size={16} color="#cbd5e1" />
               <Text style={localStyles.secondaryActionText}>Partager Pass</Text>
+            </View>
+          </View>
+        </Card>
+
+        <View style={localStyles.sectionHeader}>
+          <View style={localStyles.sectionTitleRow}>
+            <Feather name="navigation" size={14} color="#9df5ff" />
+            <Text style={localStyles.sectionTitle}>Accès & Orientation Stade</Text>
+          </View>
+          <Text style={localStyles.sectionSubtitle}>PORTE 12 · SECTEUR NORD</Text>
+        </View>
+
+        <Card title="Flux d'accès" subtitle="Navette Metro L7 · 4 min" wide>
+          <View style={localStyles.accessHero}>
+            <View style={localStyles.accessHeroLeft}>
+              <Text style={localStyles.accessHeroLabel}>Flux Fluide</Text>
+              <Text style={localStyles.accessHeroValue}>Porte 12 prête</Text>
+            </View>
+            <View style={localStyles.accessHeroBadge}>
+              <Text style={localStyles.accessHeroBadgeText}>Flux Fluide</Text>
+            </View>
+          </View>
+
+          <View style={localStyles.timeline}>
+            <View style={localStyles.timelineStep}>
+              <View style={localStyles.timelineDotActive} />
+              <Text style={localStyles.timelineLabel}>Métro</Text>
+            </View>
+            <View style={localStyles.timelineLine} />
+            <View style={localStyles.timelineStep}>
+              <View style={localStyles.timelineDot} />
+              <Text style={localStyles.timelineLabel}>Fouille Rapide</Text>
+            </View>
+            <View style={localStyles.timelineLine} />
+            <View style={localStyles.timelineStep}>
+              <View style={localStyles.timelineDot} />
+              <Text style={localStyles.timelineLabel}>Porte 12</Text>
+            </View>
+          </View>
+
+          <View style={localStyles.accessGrid}>
+            <View style={localStyles.accessItem}>
+              <Text style={localStyles.accessLabel}>FOUILLE 2</Text>
+              <Text style={localStyles.accessValue}>Coupe-File</Text>
+              <Text style={localStyles.accessMeta}>Cat. 1 Exclusif</Text>
+            </View>
+            <View style={localStyles.accessItem}>
+              <Text style={localStyles.accessLabel}>CONSIGNE</Text>
+              <Text style={localStyles.accessValue}>Casier P3</Text>
+              <Text style={localStyles.accessMeta}>Code #4821</Text>
+            </View>
+            <View style={localStyles.accessItem}>
+              <Text style={localStyles.accessLabel}>NIVEAU</Text>
+              <Text style={localStyles.accessValue}>Étage 2</Text>
+              <Text style={localStyles.accessMeta}>Accès Escalier G</Text>
+            </View>
+          </View>
+
+          <Text style={localStyles.reserveNote}>Locker P3 réservé à 60m</Text>
+        </Card>
+
+        <Card title="Assistance Tour de Match" subtitle="Volontaires SFMP · Réponse immédiate" wide>
+          <View style={localStyles.supportRow}>
+            <View style={localStyles.supportLeft}>
+              <Feather name="headphones" size={18} color="#9df5ff" />
+              <View style={localStyles.supportTextBlock}>
+                <Text style={localStyles.supportTitle}>Volontaires SFMP</Text>
+                <Text style={localStyles.supportSubtitle}>Réponse immédiate sur l’accès</Text>
+              </View>
+            </View>
+            <View style={localStyles.sosButton}>
+              <Text style={localStyles.sosText}>SOS ACCÈS</Text>
             </View>
           </View>
         </Card>
@@ -189,57 +292,46 @@ const localStyles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 0.8,
   },
-  heroSubtitle: {
-    color: '#9fb2cb',
-    fontFamily: 'Poppins-Regular',
-    fontSize: 13,
-    lineHeight: 19,
-  },
-  heroChips: {
+  statusBanner: {
     flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  heroChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: 'rgba(157, 245, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 20,
+    backgroundColor: 'rgba(11, 18, 32, 0.92)',
     borderWidth: 1,
-    borderColor: 'rgba(157, 245, 255, 0.14)',
+    borderColor: 'rgba(124, 243, 160, 0.14)',
   },
-  heroChipText: {
-    color: '#9df5ff',
-    fontFamily: 'Poppins-SemiBold',
-    fontSize: 11,
-  },
-  activeBanner: {
+  statusLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 18,
-    backgroundColor: 'rgba(201, 243, 106, 0.10)',
-    borderWidth: 1,
-    borderColor: 'rgba(201, 243, 106, 0.18)',
+    flex: 1,
+    minWidth: 0,
   },
-  activeDot: {
+  statusDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
     backgroundColor: '#c8f36a',
     shadowColor: '#c8f36a',
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.85,
     shadowRadius: 8,
   },
-  activeText: {
-    flex: 1,
-    color: '#d9ff6f',
+  statusCopy: { flex: 1, minWidth: 0, gap: 2 },
+  statusTitle: {
+    color: '#f8fbff',
     fontFamily: 'Poppins-SemiBold',
     fontSize: 12,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 0.5,
+  },
+  statusSubtitle: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
   },
   nfcBadge: {
     flexDirection: 'row',
@@ -407,6 +499,18 @@ const localStyles = StyleSheet.create({
     borderColor: 'rgba(34, 211, 238, 0.88)',
     backgroundColor: 'rgba(8, 14, 26, 0.1)',
   },
+  scanLine: {
+    position: 'absolute',
+    top: '50%',
+    left: 20,
+    right: 20,
+    height: 3,
+    borderRadius: 999,
+    backgroundColor: 'rgba(34, 211, 238, 0.8)',
+    shadowColor: '#22d3ee',
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+  },
   qrCornerTopLeft: {
     position: 'absolute',
     top: 16,
@@ -451,12 +555,55 @@ const localStyles = StyleSheet.create({
     borderColor: '#c8f36a',
     borderBottomRightRadius: 16,
   },
+  codeMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  codeSecurity: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+  },
+  timerPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(201, 243, 106, 0.08)',
+  },
+  timerText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+  },
   ticketCode: {
     color: '#cbd5e1',
     fontFamily: 'SpaceMono-Regular',
     fontSize: 13,
     textAlign: 'center',
     letterSpacing: 1.4,
+  },
+  barcodeRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    gap: 2,
+    paddingVertical: 2,
+  },
+  barcodeBar: {
+    width: 4,
+    height: 34,
+    borderRadius: 2,
+    backgroundColor: '#f8fbff',
+    opacity: 0.8,
+  },
+  barcodeBarWide: {
+    width: 7,
+    height: 40,
   },
   ticketFooter: {
     flexDirection: 'row',
@@ -487,4 +634,179 @@ const localStyles = StyleSheet.create({
     fontFamily: 'Poppins-SemiBold',
     fontSize: 13,
   },
+  sectionHeader: {
+    gap: 4,
+    paddingHorizontal: 2,
+    paddingTop: 2,
+    marginTop: 2,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sectionTitle: {
+    color: '#f8fbff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 18,
+  },
+  sectionSubtitle: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  accessHero: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  accessHeroLeft: { flex: 1, gap: 2 },
+  accessHeroLabel: {
+    color: '#9df5ff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  accessHeroValue: {
+    color: '#f8fbff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 16,
+  },
+  accessHeroBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(201, 243, 106, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(201, 243, 106, 0.16)',
+  },
+  accessHeroBadgeText: {
+    color: '#d9ff6f',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+  },
+  timeline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    paddingVertical: 12,
+  },
+  timelineStep: {
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  timelineDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#24304c',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  timelineDotActive: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#c8f36a',
+    shadowColor: '#c8f36a',
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+  },
+  timelineLabel: {
+    color: '#f8fbff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  timelineLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: 'rgba(157, 245, 255, 0.14)',
+    borderRadius: 999,
+  },
+  accessGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  accessItem: {
+    flexGrow: 1,
+    minWidth: '31%',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  accessLabel: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 3,
+  },
+  accessValue: {
+    color: '#f8fbff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 14,
+  },
+  accessMeta: {
+    color: '#9df5ff',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  reserveNote: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+    textAlign: 'right',
+    marginTop: 4,
+  },
+  supportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  supportLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    minWidth: 0,
+  },
+  supportTextBlock: { flex: 1, minWidth: 0, gap: 2 },
+  supportTitle: {
+    color: '#f8fbff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 14,
+  },
+  supportSubtitle: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+  },
+  sosButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+    backgroundColor: '#d9ff6f',
+  },
+  sosText: {
+    color: '#08111f',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 12,
+    letterSpacing: 0.6,
+  },
 });
+
+export default PassScreen;
