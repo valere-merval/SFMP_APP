@@ -100,7 +100,7 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
   }
 
   return (
-    <View style={[styles.mapView, { height, backgroundColor: '#10192d', overflow: 'hidden' }]}>
+    <View style={[styles.mapView, { height, backgroundColor: '#10192d', overflow: 'hidden' }]}> 
       <Mapbox.MapView
         style={{ flex: 1 }}
         styleURL={MAPBOX_STYLE_URL}
@@ -118,8 +118,8 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
             bounds: {
               ne: bounds.ne,
               sw: bounds.sw,
-              paddingTop: 100,
-              paddingBottom: 180,
+              paddingTop: 120,
+              paddingBottom: 120,
               paddingLeft: 60,
               paddingRight: 60,
             },
@@ -137,8 +137,8 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
             <Mapbox.LineLayer
               id="sfmp-route-shadow"
               style={{
-                lineColor: 'rgba(9, 17, 31, 0.42)',
-                lineWidth: 10,
+                lineColor: 'rgba(9, 17, 31, 0.36)',
+                lineWidth: 9,
                 lineCap: 'round',
                 lineJoin: 'round',
               }}
@@ -164,24 +164,12 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
         </Mapbox.PointAnnotation>
       </Mapbox.MapView>
 
-      <View pointerEvents="none" style={{ position: 'absolute', left: 16, right: 16, top: 16, backgroundColor: 'rgba(15, 23, 42, 0.92)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }}>
-        <Text style={{ color: '#fff', fontFamily: 'Poppins-SemiBold', fontSize: 15 }}>{escapeHtml(title || 'SFMP Navi')}</Text>
-        <Text style={{ color: 'rgba(255,255,255,0.82)', fontFamily: 'Poppins-Regular', fontSize: 12, marginTop: 3, lineHeight: 18 }}>{escapeHtml(subtitle || 'Live navigation inside the app')}</Text>
+      <View pointerEvents="none" style={{ position: 'absolute', left: 16, right: 16, top: 16, backgroundColor: 'rgba(15, 23, 42, 0.56)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
+        <Text style={{ color: '#fff', fontFamily: 'Poppins-SemiBold', fontSize: 15 }} numberOfLines={1} ellipsizeMode="tail">{escapeHtml(title || 'SFMP Navi')}</Text>
+        <Text style={{ color: 'rgba(255,255,255,0.76)', fontFamily: 'Poppins-Regular', fontSize: 12, marginTop: 3, lineHeight: 18 }} numberOfLines={2} ellipsizeMode="tail">{escapeHtml(subtitle || 'Live navigation inside the app')}</Text>
         <View style={{ marginTop: 7, alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(200,243,106,0.12)' }}>
           <Text style={{ color: '#c8f36a', fontFamily: 'Poppins-SemiBold', fontSize: 12 }}>{escapeHtml(liveLabel || 'Live navigation')}</Text>
         </View>
-      </View>
-
-      <View pointerEvents="none" style={{ position: 'absolute', left: 16, right: 16, bottom: 16, backgroundColor: 'rgba(255,255,255,0.94)', borderRadius: 18, paddingHorizontal: 12, paddingVertical: 10, shadowColor: '#000', shadowOpacity: 0.24, shadowRadius: 20, elevation: 10 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-          <Text style={{ color: '#172033', fontFamily: 'Poppins-SemiBold', fontSize: 12 }}>Live navigation</Text>
-          <View style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: '#eaf2ff' }}>
-            <Text style={{ color: '#1d3fb3', fontFamily: 'Poppins-SemiBold', fontSize: 12 }}>{routeCoords.length > 1 ? 'Route active' : 'Position live'}</Text>
-          </View>
-        </View>
-        <Text style={{ color: '#5a6578', fontFamily: 'Poppins-Regular', fontSize: 12, marginTop: 4, lineHeight: 17 }}>
-          {routeCoords.length > 1 ? 'Turn-by-turn styling with a live route, pickup point and destination inside the app.' : 'The map is ready for live pickup and destination navigation.'}
-        </Text>
       </View>
     </View>
   );

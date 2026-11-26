@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import MapboxNaviView from '../components/MapboxNaviView';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -9,6 +9,7 @@ import { Card, EmptyState, PrimaryButton, Row, SecondaryButton, styles } from '.
 import { trackTelemetry } from '../telemetry';
 import { buildRideRouteCoordinates, rideStatusStyle } from '../maps';
 import { t, type Locale } from '../i18n';
+import { loadVoiceGuidanceEnabled, saveVoiceGuidanceEnabled, speakVoiceGuidance, stopVoiceGuidance } from '../voice';
 
 type TicketPurchaseResponse = {
   reference: string;
@@ -118,6 +119,8 @@ export function HubScreen({
   const [driverRequests, setDriverRequests] = useState<import('../types').RideRequestView[]>([]);
   const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
   const [driverAvailability, setDriverAvailability] = useState<import('../types').TransportAvailabilityView | null>(null);
+  const [voiceGuidanceEnabled, setVoiceGuidanceEnabled] = useState(true);
+  const lastVoiceSummaryRef = useRef('');
   const isDriver = driverAvailability?.available === true;
   const destinationOptions = useMemo(
     () => (hero ? [hero.venue, hero.gate, hero.sector].filter(Boolean) : []),
@@ -152,6 +155,58 @@ export function HubScreen({
 
   useEffect(() => {
     let mounted = true;
+    void loadVoiceGuidanceEnabled().then((enabled) => {
+      if (mounted) {
+        setVoiceGuidanceEnabled(enabled);
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const rideVoiceSummary = useMemo(() => {
+    if (!rideRequest) {
+      return '';
+    }
+
+    const parts = [
+      rideRequest.status ? rideStatusStyle(rideRequest.status, locale).label : null,
+      rideRequest.passengerName,
+      rideRequest.pickupLabel,
+      rideRequest.destinationLabel,
+      rideRequest.driverDisplayName,
+      rideRequest.driverVehiclePlate,
+      rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : null,
+      rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : null,
+    ].filter((part): part is string => Boolean(part));
+
+    return parts.join(' · ');
+  }, [locale, rideRequest]);
+
+  useEffect(() => {
+    const summary = rideVoiceSummary;
+    if (!summary) {
+      stopVoiceGuidance();
+      lastVoiceSummaryRef.current = '';
+      return;
+    }
+
+    if (!voiceGuidanceEnabled) {
+      stopVoiceGuidance();
+      return;
+    }
+
+    if (lastVoiceSummaryRef.current === summary) {
+      return;
+    }
+
+    lastVoiceSummaryRef.current = summary;
+    speakVoiceGuidance(summary, locale);
+  }, [locale, rideVoiceSummary, voiceGuidanceEnabled]);
+
+  useEffect(() => {
+    let mounted = true;
     const refresh = async () => {
       try {
         const live = await listPublicTransportProfiles(hero?.id);
@@ -171,6 +226,21 @@ export function HubScreen({
       clearInterval(timer);
     };
   }, [hero?.id, baseTransportProviders]);
+
+  const toggleVoiceGuidance = () => {
+    const nextEnabled = !voiceGuidanceEnabled;
+    setVoiceGuidanceEnabled(nextEnabled);
+    void saveVoiceGuidanceEnabled(nextEnabled);
+    if (!nextEnabled) {
+      stopVoiceGuidance();
+      return;
+    }
+
+    const summary = rideVoiceSummary;
+    if (summary) {
+      speakVoiceGuidance(summary, locale);
+    }
+  };
 
   const rideRequestId = rideRequest?.id;
   const rideRequestStatus = rideRequest?.status;
@@ -798,7 +868,7 @@ export function HubScreen({
             )}
             <View style={localStyles.mapPanel}>
               <MapboxNaviView
-                height={320}
+                height={420}
                 origin={liveRouteOrigin}
                 destination={liveRouteDestination}
                 route={liveRoute}
@@ -828,7 +898,7 @@ export function HubScreen({
               />
               <View style={localStyles.mapOverlay}>
                 <View style={styles.rowBetween}>
-                  <View>
+                  <View style={{ flex: 1 }}>
                     <Text style={localStyles.mapOverlayTitle}>
                       {rideRequest
                         ? rideRequest.status === 'IN_PROGRESS'
@@ -854,43 +924,48 @@ export function HubScreen({
                         : t(locale, 'common.pickupTracking')}
                     </Text>
                   </View>
-                  <View
-                    style={{
-                      paddingHorizontal: 5,
-                      paddingVertical: 8,
-                      borderRadius: 999,
-                      backgroundColor: rideStatusStyle(rideRequest?.status, locale).backgroundColor,
-                    }}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={voiceGuidanceEnabled ? 'Mute voice guidance' : 'Enable voice guidance'}
+                    onPress={toggleVoiceGuidance}
+                    style={({ pressed }) => [{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: voiceGuidanceEnabled ? 'rgba(29,63,179,0.18)' : 'rgba(7,12,24,0.42)',
+                      borderWidth: 1,
+                      borderColor: voiceGuidanceEnabled ? 'rgba(29,63,179,0.22)' : 'rgba(255,255,255,0.10)',
+                      opacity: pressed ? 0.7 : 1,
+                    }]}
                   >
-                    <Text
-                      numberOfLines={2}
-                      style={{
-                        color: rideStatusStyle(rideRequest?.status, locale).color,
-                        fontFamily: 'Poppins-SemiBold',
-                        fontSize: 10,
-                      }}
-                    >
-                      {rideStatusStyle(rideRequest?.status, locale).label}
-                    </Text>
-                  </View>
+                    <Ionicons
+                      name={voiceGuidanceEnabled ? 'volume-high-outline' : 'volume-mute-outline'}
+                      size={18}
+                      color={voiceGuidanceEnabled ? '#c8f36a' : '#fff'}
+                    />
+                  </Pressable>
                 </View>
-                {rideRequest?.driverDisplayName ? (
-                  <Text numberOfLines={2} style={localStyles.mapOverlayText}>
-                    {rideRequest.driverDisplayName}
-                  </Text>
-                ) : null}
-                {rideRequest?.driverVehiclePlate ? (
-                  <Text numberOfLines={2} style={localStyles.mapOverlayText}>
-                    {rideRequest.driverVehiclePlate}
-                  </Text>
-                ) : null}
-                {rideRequest?.driverDistanceKm != null || rideRequest?.driverEtaMinutes != null ? (
-                  <Text numberOfLines={2} style={localStyles.mapOverlayText}>
-                    {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : t(locale, 'common.loading')}{' '}
-                    ·{' '}
-                    {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : t(locale, 'common.loading')}
-                  </Text>
-                ) : null}
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                  {rideRequest?.driverDisplayName ? (
+                    <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                      <Text style={localStyles.mapOverlayText}>{rideRequest.driverDisplayName}</Text>
+                    </View>
+                  ) : null}
+                  {rideRequest?.driverVehiclePlate ? (
+                    <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                      <Text style={localStyles.mapOverlayText}>{rideRequest.driverVehiclePlate}</Text>
+                    </View>
+                  ) : null}
+                  {rideRequest?.driverDistanceKm != null || rideRequest?.driverEtaMinutes != null ? (
+                    <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                      <Text style={localStyles.mapOverlayText}>
+                        {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : t(locale, 'common.loading')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : t(locale, 'common.loading')}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
               </View>
             </View>
           </View>

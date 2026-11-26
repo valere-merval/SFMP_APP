@@ -10,6 +10,7 @@ import { googleMapsDirectionsUrl, openGoogleMapsDirections, buildRideRouteCoordi
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import type { LiveData, MatchCard, RideRequestView, TransportAvailabilityView, TransportProviderView } from '../types';
 import { t, type Locale } from '../i18n';
+import { speakVoiceGuidance } from '../voice';
 
 type ModeKey = 'bus' | 'train' | 'metro' | 'scooter' | 'bike' | 'taxi' | 'vtc';
 
@@ -611,7 +612,9 @@ export function JourneyScreen({
       activeDriverRequest?.driverEtaMinutes != null ? `${activeDriverRequest.driverEtaMinutes} min` : null,
     ].filter((part): part is string => Boolean(part));
     if (parts.length) {
-      AccessibilityInfo.announceForAccessibility(parts.join(' · '));
+      const summary = parts.join(' · ');
+      AccessibilityInfo.announceForAccessibility(summary);
+      speakVoiceGuidance(summary, locale);
     }
   };
   const activeDriverRoute = buildRideRouteCoordinates(
