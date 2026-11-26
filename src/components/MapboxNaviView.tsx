@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Mapbox from '@rnmapbox/maps';
 import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE_URL } from '../config';
+
+const Mapbox = require('@rnmapbox/maps');
 import { styles } from '../ui';
 
 type Coordinate = {

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Linking, Modal, Pressable, ScrollView, Text, View, AccessibilityInfo } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, Text, View, AccessibilityInfo, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapboxNaviView from '../components/MapboxNaviView';
 import Feather from 'react-native-vector-icons/Feather';
@@ -45,6 +45,33 @@ const statusTextStyle = { fontFamily: 'Poppins-SemiBold' } as const;
 const compactPageStyle = { paddingTop: 12 } as const;
 const compactHeaderStyle = { marginBottom: 0 } as const;
 const expandedMapStyle = { minHeight: 620 } as const;
+const liveVehiclePanelStyle = {
+  flexDirection: 'row' as const,
+  alignItems: 'center' as const,
+  gap: 12,
+  marginTop: 14,
+  padding: 14,
+  borderRadius: 24,
+  backgroundColor: 'rgba(7, 13, 24, 0.72)',
+  borderWidth: 1,
+  borderColor: 'rgba(148, 163, 184, 0.16)',
+} as const;
+const liveVehicleImageStyle = {
+  width: 84,
+  height: 84,
+  borderRadius: 22,
+  backgroundColor: 'rgba(15, 23, 42, 0.92)',
+} as const;
+const liveVehicleMetaStyle = { flex: 1, gap: 6 } as const;
+const liveVehiclePlateStyle = {
+  alignSelf: 'flex-start' as const,
+  paddingHorizontal: 10,
+  paddingVertical: 5,
+  borderRadius: 999,
+  backgroundColor: 'rgba(34, 211, 238, 0.12)',
+  borderWidth: 1,
+  borderColor: 'rgba(34, 211, 238, 0.32)',
+} as const;
 
 const J = {
   en: {
@@ -684,6 +711,9 @@ export function JourneyScreen({
       : null,
   );
 
+  const passengerVehicleLabel = rideRequest?.driverVehicleLabel || rideRequest?.driverVehiclePlate || rideRequest?.driverDisplayName || journeyText(locale, 'vehiclePlatePending');
+  const passengerVehicleImageUrl = rideRequest?.driverVehicleImageUrl ?? null;
+
   if (!match) {
     return (
       <View style={styles.safeArea}>
@@ -1101,9 +1131,29 @@ export function JourneyScreen({
                         : journeyText(locale, 'driverRefusedAnother')}
               </Text>
               {rideRequest.status === 'ACCEPTED' || rideRequest.status === 'ARRIVED_AT_PICKUP' || rideRequest.status === 'IN_PROGRESS' ? (
-                <Text style={styles.helperText}>
-                  {rideRequest.driverDisplayName || journeyText(locale, 'yourDriver')} · {rideRequest.driverVehiclePlate || journeyText(locale, 'vehiclePlatePending')} · {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : journeyText(locale, 'distanceUpdating')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
-                </Text>
+                <View style={liveVehiclePanelStyle}>
+                  {passengerVehicleImageUrl ? (
+                    <Image source={{ uri: passengerVehicleImageUrl }} style={liveVehicleImageStyle} resizeMode="cover" />
+                  ) : (
+                    <View style={[liveVehicleImageStyle, { alignItems: 'center', justifyContent: 'center' }]}>
+                      <Ionicons name="car-sport-outline" size={32} color="#cbd5e1" />
+                    </View>
+                  )}
+                  <View style={liveVehicleMetaStyle}>
+                    <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">
+                      {rideRequest.driverDisplayName || journeyText(locale, 'yourDriver')}
+                    </Text>
+                    <Text style={styles.muted} numberOfLines={2} ellipsizeMode="tail">
+                      {passengerVehicleLabel}
+                    </Text>
+                    <View style={liveVehiclePlateStyle}>
+                      <Text style={styles.helperText}>{rideRequest.driverVehiclePlate || journeyText(locale, 'vehiclePlatePending')}</Text>
+                    </View>
+                    <Text style={styles.helperText}>
+                      {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : journeyText(locale, 'distanceUpdating')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
+                    </Text>
+                  </View>
+                </View>
               ) : null}
               {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
               <View style={styles.ctaRow}>

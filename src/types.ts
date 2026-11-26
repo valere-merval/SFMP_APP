@@ -245,6 +245,8 @@ export type RideRequestView = {
   driverDisplayName?: string | null;
   driverPhone?: string | null;
   driverVehiclePlate?: string | null;
+  driverVehicleLabel?: string | null;
+  driverVehicleImageUrl?: string | null;
   driverLatitude?: number | null;
   driverLongitude?: number | null;
   driverDistanceKm?: number | null;
