@@ -485,6 +485,44 @@ export function HubScreen({
           </Text>
         </View>
 
+        {isDriver ? (
+          <View style={localStyles.dispatchPanel}>
+            <View style={localStyles.dispatchTopRow}>
+              <View style={localStyles.dispatchKicker}>
+                <View style={localStyles.dispatchDot} />
+                <Text style={localStyles.dispatchKickerText}>{t(locale, 'common.live')}</Text>
+              </View>
+              <View style={localStyles.dispatchLivePill}>
+                <Text style={localStyles.dispatchLiveText}>{driverRequests.length ? `${driverRequests.length} ${t(locale, 'common.live')}` : t(locale, 'common.available')}</Text>
+              </View>
+            </View>
+            <Text style={localStyles.dispatchTitle}>
+              {t(locale, 'common.driver')} · {t(locale, 'common.live')}
+            </Text>
+            <Text style={localStyles.dispatchSubtitle} numberOfLines={2}>
+              {hero ? `${hero.homeTeam} vs ${hero.awayTeam} · ${hero.venue}` : copy.eyebrow}
+            </Text>
+            <View style={localStyles.dispatchStatsRow}>
+              <View style={localStyles.dispatchStatCard}>
+                <Text style={localStyles.dispatchStatValue}>{driverRequests.length}</Text>
+                <Text style={localStyles.dispatchStatLabel}>{t(locale, 'common.passengerRequests')}</Text>
+              </View>
+              <View style={localStyles.dispatchStatCard}>
+                <Text style={localStyles.dispatchStatValue}>{rideRequest?.status ? rideStatusStyle(rideRequest.status, locale).label : t(locale, 'common.available')}</Text>
+                <Text style={localStyles.dispatchStatLabel}>{t(locale, 'common.live')}</Text>
+              </View>
+              <View style={localStyles.dispatchStatCard}>
+                <Text style={localStyles.dispatchStatValue}>{voiceGuidanceEnabled ? 'ON' : 'OFF'}</Text>
+                <Text style={localStyles.dispatchStatLabel}>Voice</Text>
+              </View>
+              <View style={localStyles.dispatchStatCard}>
+                <Text style={localStyles.dispatchStatValue}>{hero ? countdown.toUpperCase() : 'LIVE'}</Text>
+                <Text style={localStyles.dispatchStatLabel}>{t(locale, 'common.scheduled')}</Text>
+              </View>
+            </View>
+          </View>
+        ) : null}
+
         {topAlert ? (
           <Card title={copy.alertTitle} subtitle={copy.alertSubtitle} wide>
             <EmptyState
@@ -1247,6 +1285,102 @@ const localStyles = {
     shadowOffset: { width: 0, height: 8 },
     elevation: 4,
   },
+  dispatchPanel: {
+    marginTop: 12,
+    padding: 16,
+    borderRadius: 28,
+    backgroundColor: 'rgba(7, 12, 24, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(157, 245, 255, 0.12)',
+    gap: 14,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  dispatchTopRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    gap: 12,
+  },
+  dispatchKicker: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+  },
+  dispatchDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#c8f36a',
+    shadowColor: '#c8f36a',
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+  },
+  dispatchKickerText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 12,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase' as const,
+  },
+  dispatchLivePill: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: 'rgba(6, 182, 212, 0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.28)',
+  },
+  dispatchLiveText: {
+    color: '#d9ff6f',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase' as const,
+  },
+  dispatchTitle: {
+    color: '#fff',
+    fontFamily: 'Poppins-ExtraBold',
+    fontSize: 24,
+    lineHeight: 28,
+  },
+  dispatchSubtitle: {
+    color: '#cbd5e1',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  dispatchStatsRow: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 10,
+  },
+  dispatchStatCard: {
+    flexGrow: 1,
+    minWidth: '46%',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+    gap: 4,
+  },
+  dispatchStatValue: {
+    color: '#f8fafc',
+    fontFamily: 'Poppins-ExtraBold',
+    fontSize: 17,
+  },
+  dispatchStatLabel: {
+    color: '#94a3b8',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 11,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.8,
+  },
   chipsRow: {
     flexDirection: 'row' as const,
     flexWrap: 'wrap' as const,
@@ -1470,13 +1604,16 @@ const localStyles = {
   mapPanel: {
     marginTop: 20,
     overflow: 'hidden' as const,
-    minHeight: 560,
-    backgroundColor: '#09111f',
+    minHeight: 640,
+    borderRadius: 30,
+    backgroundColor: '#070d18',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
     shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
+    shadowOpacity: 0.24,
+    shadowRadius: 18,
     shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    elevation: 6,
   },
   mapView: {
     width: '100%',
@@ -1489,10 +1626,10 @@ const localStyles = {
     bottom: 10,
     padding: 10,
     borderRadius: 22,
-    backgroundColor: 'rgba(7, 12, 24, 0.22)',
+    backgroundColor: 'rgba(7, 12, 24, 0.16)',
     gap: 4,
     borderWidth: 1,
-    borderColor: 'rgba(157, 245, 255, 0.09)',
+    borderColor: 'rgba(157, 245, 255, 0.07)',
   },
   mapOverlayTitle: {
     color: '#fff',

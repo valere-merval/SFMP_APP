@@ -1,9 +1,27 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE_URL } from '../config';
-
-const Mapbox = require('@rnmapbox/maps');
 import { styles } from '../ui';
+
+type MapboxModule = typeof import('@rnmapbox/maps');
+let cachedMapbox: MapboxModule | null | undefined;
+
+function getMapbox(): MapboxModule | null {
+  if (cachedMapbox !== undefined) {
+    return cachedMapbox;
+  }
+
+  try {
+    const loaded = require('@rnmapbox/maps') as MapboxModule;
+    loaded.setAccessToken(MAPBOX_ACCESS_TOKEN);
+    cachedMapbox = loaded;
+    return loaded;
+  } catch (error) {
+    console.warn('Mapbox navigation unavailable, falling back to static preview.', error);
+    cachedMapbox = null;
+    return null;
+  }
+}
 
 type Coordinate = {
   latitude: number;
@@ -31,8 +49,6 @@ type RouteFeature = {
     coordinates: Point[];
   };
 };
-
-Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
 const defaultCoordinate: Coordinate = { latitude: 40.4531, longitude: -3.6883 };
 
@@ -76,8 +92,9 @@ export function MapboxNaviView({ origin, destination, route, height = 520, title
     return buildBounds(points);
   }, [routeCoords, safeDestination, safeOrigin]);
   const routeFeature = useMemo(() => (routeCoords.length > 1 ? buildRouteFeature(routeCoords) : null), [routeCoords]);
+  const Mapbox = getMapbox();
 
-  if (!MAPBOX_ACCESS_TOKEN || MAPBOX_ACCESS_TOKEN === 'PASTE_YOUR_MAPBOX_ACCESS_TOKEN_HERE') {
+  if (!MAPBOX_ACCESS_TOKEN || MAPBOX_ACCESS_TOKEN === 'PASTE_YOUR_MAPBOX_ACCESS_TOKEN_HERE' || !Mapbox) {
     return (
       <View style={[naviStyles.fallback, { height }]}>
         <Text style={naviStyles.fallbackTitle}>Navigation token missing</Text>
