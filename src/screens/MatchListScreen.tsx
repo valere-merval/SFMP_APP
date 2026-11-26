@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { getScreenCopy } from '../screenCopy';
 import type { EventCatalogCard, MatchCard } from '../types';

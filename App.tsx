@@ -139,9 +139,9 @@ function WayfindingRoute({ locale }: { locale: Locale }) {
   return <WayfindingScreen locale={locale} venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} data={catalog} />;
 }
 
-function ProfileRoute({ locale, onProfileUpdated, onLocaleChange }: { locale: Locale; onProfileUpdated?: () => void; onLocaleChange?: (locale: Locale) => void }) {
+function ProfileRoute({ locale, selectedMatch, onProfileUpdated, onLocaleChange }: { locale: Locale; selectedMatch?: MatchCard | null; onProfileUpdated?: () => void; onLocaleChange?: (locale: Locale) => void }) {
   const { catalog, catalogLoading } = useCatalogShell();
-  return <ProfileScreen locale={locale} data={catalog} loading={catalogLoading} onProfileUpdated={onProfileUpdated} onLocaleChange={onLocaleChange} />;
+  return <ProfileScreen locale={locale} data={catalog} loading={catalogLoading} selectedMatch={selectedMatch} onProfileUpdated={onProfileUpdated} onLocaleChange={onLocaleChange} />;
 }
 
 function renderTabIcon(name: keyof TabParamList, color: string, size: number) {
@@ -180,6 +180,11 @@ function App(): React.JSX.Element {
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<AppUserProfile>(null);
   const navigationRef = useRef<any>(null);
+
+  useEffect(() => {
+    Feather.loadFont();
+    Ionicons.loadFont();
+  }, []);
 
   const refreshUserProfile = useCallback(async () => {
     try {
@@ -451,6 +456,7 @@ function App(): React.JSX.Element {
                     {() => (
                       <ProfileRoute
                         locale={locale}
+                        selectedMatch={selectedMatch}
                         onProfileUpdated={refreshUserProfile}
                         onLocaleChange={(nextLocale) => {
                           setLocale(nextLocale);

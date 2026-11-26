@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { loadTransportAvailability, loadTransportProfile, saveTransportAvailability, listPublicTransportProfiles, type TransportAvailabilityView, type TransportProfileView } from '../api';
 import { type LiveData, type TransportProviderView } from '../types';
 import { Card, EmptyState, PrimaryButton, SecondaryButton, styles as uiStyles } from '../ui';
@@ -22,17 +21,19 @@ export function TransportScreen({
   data,
   loading,
   onReload,
+  initialMatchId,
 }: {
   locale: Locale;
   data: LiveData | null;
   loading: boolean;
   onReload: () => Promise<void> | void;
+  initialMatchId?: string | null;
 }) {
   const matches = useMemo(() => data?.matches ?? [], [data?.matches]);
   const baseProviders = useMemo(() => data?.transportProviders ?? [], [data?.transportProviders]);
   const [publicProviders, setPublicProviders] = useState<TransportProviderView[]>([]);
   const [providersLoading, setProvidersLoading] = useState(false);
-  const [matchId, setMatchId] = useState('');
+  const [matchId, setMatchId] = useState(() => initialMatchId ?? '');
   const [available, setAvailable] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -85,6 +86,12 @@ export function TransportScreen({
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!initialMatchId) return;
+    if (matchId && matches.some((item) => item.id === matchId)) return;
+    setMatchId(initialMatchId);
+  }, [initialMatchId, matchId, matches]);
 
   useEffect(() => {
     let mounted = true;

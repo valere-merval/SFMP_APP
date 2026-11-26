@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, Text, View, AccessibilityInfo } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import Feather from 'react-native-vector-icons/Feather';
@@ -34,6 +34,7 @@ const J = {
     arrivedAtPickup: 'Arrived at pickup',
     startTrip: 'Start trip',
     completeTrip: 'Complete trip',
+    voiceGuidance: 'Voice guidance',
     availableTransportModes: 'Available transport modes',
     pickYourLiveRideType: 'Pick your live ride type',
     yourDriver: 'Your driver',
@@ -70,6 +71,7 @@ const J = {
     arrivedAtPickup: 'Arrivé au point de prise en charge',
     startTrip: 'Démarrer le trajet',
     completeTrip: 'Terminer le trajet',
+    voiceGuidance: 'Guidage vocal',
     availableTransportModes: 'Modes de transport disponibles',
     pickYourLiveRideType: 'Choisissez votre type de trajet en direct',
     yourDriver: 'Votre chauffeur',
@@ -98,6 +100,7 @@ const J = {
     arrivedAtPickup: 'Am Abholpunkt angekommen',
     startTrip: 'Fahrt starten',
     completeTrip: 'Fahrt abschließen',
+    voiceGuidance: 'Sprachführung',
     availableTransportModes: 'Verfügbare Transportarten',
     pickYourLiveRideType: 'Wähle deinen Live-Fahrttyp',
     yourDriver: 'Dein Fahrer',
@@ -126,6 +129,7 @@ const J = {
     arrivedAtPickup: 'Llegó al punto de recogida',
     startTrip: 'Iniciar viaje',
     completeTrip: 'Completar viaje',
+    voiceGuidance: 'Guía por voz',
     availableTransportModes: 'Modos de transporte disponibles',
     pickYourLiveRideType: 'Elige tu tipo de viaje en vivo',
     yourDriver: 'Tu conductor',
@@ -154,6 +158,7 @@ const J = {
     arrivedAtPickup: 'Chegou ao ponto de embarque',
     startTrip: 'Iniciar viagem',
     completeTrip: 'Concluir viagem',
+    voiceGuidance: 'Orientação por voz',
     availableTransportModes: 'Modos de transporte disponíveis',
     pickYourLiveRideType: 'Escolha seu tipo de viagem ao vivo',
     yourDriver: 'Seu motorista',
@@ -182,6 +187,7 @@ const J = {
     arrivedAtPickup: 'وصل إلى نقطة الالتقاط',
     startTrip: 'بدء الرحلة',
     completeTrip: 'إنهاء الرحلة',
+    voiceGuidance: 'توجيه صوتي',
     availableTransportModes: 'وسائل النقل المتاحة',
     pickYourLiveRideType: 'اختر نوع الرحلة المباشرة',
     yourDriver: 'سائقك',
@@ -210,6 +216,7 @@ const J = {
     arrivedAtPickup: '已到达接人点',
     startTrip: '开始行程',
     completeTrip: '完成行程',
+    voiceGuidance: '语音导航',
     availableTransportModes: '可用交通方式',
     pickYourLiveRideType: '选择你的实时行程类型',
     yourDriver: '你的司机',
@@ -238,6 +245,7 @@ const J = {
     arrivedAtPickup: 'Прибыл к месту подачи',
     startTrip: 'Начать поездку',
     completeTrip: 'Завершить поездку',
+    voiceGuidance: 'Голосовое сопровождение',
     availableTransportModes: 'Доступные виды транспорта',
     pickYourLiveRideType: 'Выберите тип поездки в реальном времени',
     yourDriver: 'Ваш водитель',
@@ -602,6 +610,19 @@ export function JourneyScreen({
           ? journeyText(locale, 'followDestinationRoute')
           : null
     : null;
+  const announceNavigationSummary = () => {
+    const parts = [
+      activeDriverRequest ? activeDriverStatus.detail : null,
+      activeDriverRequest?.passengerName,
+      activeDriverRequest?.pickupLabel,
+      activeDriverRequest?.destinationLabel,
+      activeDriverRequest?.driverDistanceKm != null ? `${activeDriverRequest.driverDistanceKm} km` : null,
+      activeDriverRequest?.driverEtaMinutes != null ? `${activeDriverRequest.driverEtaMinutes} min` : null,
+    ].filter((part): part is string => Boolean(part));
+    if (parts.length) {
+      AccessibilityInfo.announceForAccessibility(parts.join(' · '));
+    }
+  };
   const activeDriverRoute = buildRideRouteCoordinates(
     activeDriverRequest?.driverLatitude != null && activeDriverRequest?.driverLongitude != null
       ? { latitude: activeDriverRequest.driverLatitude, longitude: activeDriverRequest.driverLongitude }
@@ -694,6 +715,7 @@ export function JourneyScreen({
                       <SecondaryButton label={journeyText(locale, 'arrivedAtPickup')} onPress={() => void markRideRequestArrived(activeDriverRequest.id)} icon={<Ionicons name="location-outline" size={16} color="#1d3fb3" />} />
                       <PrimaryButton label={journeyText(locale, 'startTrip')} onPress={() => void startRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="navigate-outline" size={16} color="#172033" />} />
                       <SecondaryButton label={journeyText(locale, 'completeTrip')} onPress={() => void completeRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="checkmark-done-outline" size={16} color="#1d3fb3" />} />
+                      <SecondaryButton label={journeyText(locale, 'voiceGuidance')} onPress={announceNavigationSummary} icon={<Ionicons name="volume-high-outline" size={16} color="#1d3fb3" />} />
                     </View>
                   </View>
                 ) : null}
@@ -873,6 +895,7 @@ export function JourneyScreen({
                           }
                           icon={<Feather name="navigation" size={16} color="#1d3fb3" />}
                         />
+                        <SecondaryButton label={journeyText(locale, 'voiceGuidance')} onPress={announceNavigationSummary} icon={<Ionicons name="volume-high-outline" size={16} color="#1d3fb3" />} />
                       </View>
                     ) : null}
                   </View>

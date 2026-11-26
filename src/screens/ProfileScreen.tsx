@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { pick, errorCodes, isErrorWithCode, types } from '@react-native-documents/picker';
@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { loadTransportProfile, saveTransportProfile, uploadDocument, type CurrentUser, type TransportProfileView, getSessionUser, deleteUserProfile, loadUserProfile, saveUserProfile } from '../api';
 import { getScreenCopy } from '../screenCopy';
 import { TransportScreen } from './TransportScreen';
-import { type LiveData } from '../types';
+import { type LiveData, type MatchCard } from '../types';
 import { AvatarPhoto, Card, EmptyState, Input, PrimaryButton, SecondaryButton, styles } from '../ui';
 import { t, type Locale } from '../i18n';
 
@@ -183,7 +183,7 @@ function SearchableDropdown({
   );
 }
 
-export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocaleChange }: { data: LiveData | null; loading: boolean; locale: Locale; onProfileUpdated?: () => void; onLocaleChange?: (locale: Locale) => void }) {
+export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileUpdated, onLocaleChange }: { data: LiveData | null; loading: boolean; locale: Locale; selectedMatch?: MatchCard | null; onProfileUpdated?: () => void; onLocaleChange?: (locale: Locale) => void }) {
   const copy = getScreenCopy(locale).profile;
   const [draft, setDraft] = useState<Draft>(() => emptyDraft());
   const [assets, setAssets] = useState<Assets>(emptyAssets);
@@ -205,6 +205,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocal
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [userError, setUserError] = useState<string | null>(null);
   const [userLoading, setUserLoading] = useState(true);
+  const localeRef = useRef(locale);
 
   useEffect(() => {
     let mounted = true;
@@ -227,7 +228,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocal
           photoUrl: profile.photoUrl || '',
         });
         const nextLocale = (profile.preferredLanguage || 'en') as Locale;
-        if (nextLocale !== locale) {
+        if (nextLocale !== localeRef.current) {
           onLocaleChange?.(nextLocale);
         }
       } catch {
@@ -241,7 +242,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocal
     return () => {
       mounted = false;
     };
-  }, [locale, onLocaleChange]);
+  }, [onLocaleChange]);
 
   useEffect(() => {
     let mounted = true;
@@ -285,7 +286,8 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocal
     };
   }, []);
 
-  const currentMatch = useMemo(() => data?.events?.[0] ?? null, [data]);
+  const fallbackCurrentMatch = useMemo(() => data?.events?.[0] ?? null, [data]);
+  const currentMatch = selectedMatch ?? fallbackCurrentMatch;
   const cityOptions = useMemo(() => {
     if (!countryCode) return [];
     return (City.getCitiesOfCountry(countryCode) ?? []).map((city) => ({ key: city.name, label: city.name }));
@@ -537,7 +539,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocal
             <SearchableDropdown
               label={t(locale, 'profile.languageLabel')}
               placeholder={t(locale, 'profile.languagePlaceholder')}
-              value={userDraft.preferredLanguage}
+              value={supportedLanguages.find((option) => option.key === userDraft.preferredLanguage)?.label || ''}
               options={supportedLanguages}
               searchPlaceholder={t(locale, 'profile.languageSearch')}
               emptyLabel={t(locale, 'profile.noSearchResults')}
@@ -695,7 +697,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocal
 
             <Modal visible={showTransportPanel} animationType="slide" onRequestClose={() => setShowTransportPanel(false)}>
               <SafeAreaView style={styles.safeArea}>
-                <TransportScreen locale={locale} data={data} loading={loading} onReload={() => onProfileUpdated?.()} />
+                <TransportScreen locale={locale} data={data} loading={loading} initialMatchId={currentMatch?.id ?? null} onReload={() => onProfileUpdated?.()} />
                 <View style={screenStyles.modalFooter}>
                   <SecondaryButton label={t(locale, 'common.close')} onPress={() => setShowTransportPanel(false)} />
                 </View>
@@ -708,7 +710,7 @@ export function ProfileScreen({ data, loading, locale, onProfileUpdated, onLocal
                 <Pressable onPress={() => update('active', !draft.active)} style={[screenStyles.toggle, draft.active && screenStyles.toggleActive]}>
                   <Text style={[screenStyles.toggleText, draft.active && screenStyles.toggleTextActive]}>{draft.active ? t(locale, 'common.visible') : t(locale, 'common.hidden')}</Text>
                 </Pressable>
-                {currentMatch ? <Text style={styles.helperText}>{t(locale, 'profile.currentMatch')}: {currentMatch.title}</Text> : null}
+                {currentMatch ? <Text style={styles.helperText}>{t(locale, 'profile.currentMatch')}: {('homeTeam' in currentMatch && 'awayTeam' in currentMatch) ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}` : currentMatch.title}</Text> : null}
                 <TextInput
                   value={draft.notes}
                   onChangeText={(value) => update('notes', value)}
