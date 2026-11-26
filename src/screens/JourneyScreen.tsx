@@ -979,27 +979,30 @@ export function JourneyScreen({
             <View style={styles.mapOverlay}>
               <View style={styles.rowBetween}>
                 <View style={styles.rowLeft}>
-                  <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{passengerStatus.title}</Text>
-                  <Text style={styles.muted}>{passengerStatus.subtitle}</Text>
+                  <Text style={styles.kicker}>{t(locale, 'common.liveMap')}</Text>
+                  <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">{passengerStatus.title}</Text>
                 </View>
                 <View style={[statusBadgeStyle, { backgroundColor: passengerStatusMeta.backgroundColor }]}>
                   <Text style={[statusTextStyle, { color: passengerStatusMeta.color }]}>{passengerStatus.badge}</Text>
                 </View>
               </View>
-              <Text style={styles.helperText}>{passengerStatus.detail}</Text>
-              <Text style={styles.helperText}>
+              <Text style={styles.helperText} numberOfLines={2}>
                 {rideRequest?.driverDisplayName || journeyText(locale, 'yourDriver')}
                 {rideRequest?.driverVehiclePlate ? ` · ${rideRequest.driverVehiclePlate}` : ''}
-                {rideRequest?.driverDistanceKm != null ? ` · ${rideRequest.driverDistanceKm} km` : ` · ${journeyText(locale, 'distanceUpdating')}`}
-                {rideRequest?.driverEtaMinutes != null ? ` · ${rideRequest.driverEtaMinutes} min` : ` · ${journeyText(locale, 'etaUpdating')}`}
               </Text>
-              {rideRequest?.status === 'IN_PROGRESS' ? (
-                <Text style={styles.helperText}>{journeyText(locale, 'tripRouteLive')}</Text>
-              ) : null}
-              {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
               <View style={styles.ctaRow}>
                 <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#22d3ee" />} />
+                <SecondaryButton label={journeyText(locale, 'voiceGuidance')} onPress={() => toggleVoiceGuidance()} icon={<Ionicons name={voiceGuidanceEnabled ? 'volume-high-outline' : 'volume-mute-outline'} size={16} color="#22d3ee" />} />
               </View>
+              <View style={styles.ctaRow}>
+                <View style={statusBadgeStyle}>
+                  <Text style={statusTextStyle}>{rideRequest?.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : journeyText(locale, 'distanceUpdating')}</Text>
+                </View>
+                <View style={statusBadgeStyle}>
+                  <Text style={statusTextStyle}>{rideRequest?.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}</Text>
+                </View>
+              </View>
+              {rideRequest?.status === 'IN_PROGRESS' ? <Text style={styles.helperText}>{journeyText(locale, 'tripRouteLive')}</Text> : null}
             </View>
           </View>
         </Card>
