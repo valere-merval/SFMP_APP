@@ -812,7 +812,7 @@ export function JourneyScreen({
           <View style={styles.card}>
             <View style={styles.mapPanel}>
               <MapboxNaviView
-              height={420}
+              height={560}
               origin={{ latitude: 40.4531, longitude: -3.6883 }}
               destination={
                 activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
@@ -952,7 +952,7 @@ export function JourneyScreen({
         <Card title={t(locale, 'common.liveMap')} subtitle={t(locale, 'common.pickupTracking')} wide>
           <View style={styles.mapPanel}>
             <MapboxNaviView
-              height={420}
+              height={560}
               origin={{ latitude: 40.4531, longitude: -3.6883 }}
               destination={
                 rideRequest?.status === 'IN_PROGRESS' && rideRequest.destinationLatitude != null && rideRequest.destinationLongitude != null

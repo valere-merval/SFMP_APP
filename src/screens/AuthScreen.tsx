@@ -609,9 +609,9 @@ export function AuthScreen({
 
 const authStyles = StyleSheet.create({
   authHeader: {
-    paddingTop: 0,
-    paddingBottom: 6,
-    gap: 4,
+    paddingTop: 4,
+    paddingBottom: 2,
+    gap: 2,
   },
   authContainer: {
     paddingTop: 0,

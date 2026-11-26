@@ -63,7 +63,7 @@ function buildRouteFeature(route: Coordinate[]): RouteFeature {
   };
 }
 
-export function MapboxNaviView({ origin, destination, route, height = 380, title, subtitle, liveLabel }: MapboxNaviViewProps) {
+export function MapboxNaviView({ origin, destination, route, height = 520, title, subtitle, liveLabel }: MapboxNaviViewProps) {
   const safeOrigin = useMemo(() => origin ?? destination ?? route?.[0] ?? defaultCoordinate, [destination, origin, route]);
   const safeDestination = useMemo(() => destination ?? route?.[route.length - 1] ?? safeOrigin, [destination, route, safeOrigin]);
   const routeCoords = useMemo(
@@ -90,9 +90,9 @@ export function MapboxNaviView({ origin, destination, route, height = 380, title
       <Mapbox.MapView
         style={naviStyles.mapView}
         styleURL={MAPBOX_STYLE_URL}
-        logoEnabled
-        attributionEnabled
-        compassEnabled
+        logoEnabled={false}
+        attributionEnabled={false}
+        compassEnabled={false}
         scaleBarEnabled={false}
         pitchEnabled
         rotateEnabled
@@ -104,10 +104,10 @@ export function MapboxNaviView({ origin, destination, route, height = 380, title
             bounds: {
               ne: bounds.ne,
               sw: bounds.sw,
-              paddingTop: 150,
-              paddingBottom: 150,
-              paddingLeft: 70,
-              paddingRight: 70,
+              paddingTop: 180,
+              paddingBottom: 180,
+              paddingLeft: 90,
+              paddingRight: 90,
             },
             centerCoordinate: toPoint(safeOrigin),
             zoomLevel: 14.3,
@@ -135,17 +135,19 @@ export function MapboxNaviView({ origin, destination, route, height = 380, title
       </Mapbox.MapView>
 
       <View pointerEvents="none" style={naviStyles.overlay}>
-        <Text style={naviStyles.overlayTitle} numberOfLines={1} ellipsizeMode="tail">
-          {escapeHtml(title || 'SFMP Navi')}
-        </Text>
+        <View style={naviStyles.overlayRow}>
+          <Text style={naviStyles.overlayTitle} numberOfLines={1} ellipsizeMode="tail">
+            {escapeHtml(title || 'SFMP Navi')}
+          </Text>
+          <View style={naviStyles.liveBadge}>
+            <Text style={naviStyles.liveBadgeText}>{escapeHtml(liveLabel || 'Live navigation')}</Text>
+          </View>
+        </View>
         {subtitle ? (
           <Text style={naviStyles.overlaySubtitle} numberOfLines={2} ellipsizeMode="tail">
             {escapeHtml(subtitle)}
           </Text>
         ) : null}
-        <View style={naviStyles.liveBadge}>
-          <Text style={naviStyles.liveBadgeText}>{escapeHtml(liveLabel || 'Live navigation')}</Text>
-        </View>
       </View>
     </View>
   );
@@ -203,29 +205,31 @@ const naviStyles = StyleSheet.create({
   },
   overlay: {
     position: 'absolute',
-    left: 14,
-    right: 14,
-    top: 14,
-    backgroundColor: 'rgba(9, 15, 29, 0.22)',
-    borderRadius: 22,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  overlayTitle: { color: '#f8fbff', fontFamily: 'Poppins-SemiBold', fontSize: 14 },
-  overlaySubtitle: { color: 'rgba(255,255,255,0.74)', fontFamily: 'Poppins-Regular', fontSize: 12, marginTop: 2, lineHeight: 17 },
-  liveBadge: {
-    marginTop: 7,
-    alignSelf: 'flex-start',
+    left: 12,
+    right: 12,
+    top: 12,
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: 'rgba(0,229,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,229,255,0.16)',
+    paddingVertical: 8,
+    borderRadius: 18,
+    backgroundColor: 'rgba(9, 15, 29, 0.08)',
+    borderWidth: 0,
   },
-  liveBadgeText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 12 },
+  overlayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  overlayTitle: { color: '#f8fbff', fontFamily: 'Poppins-SemiBold', fontSize: 13, flexShrink: 1 },
+  overlaySubtitle: { color: 'rgba(255,255,255,0.7)', fontFamily: 'Poppins-Regular', fontSize: 11, marginTop: 3, lineHeight: 16 },
+  liveBadge: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0,229,255,0.06)',
+    borderWidth: 0,
+  },
+  liveBadgeText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 11 },
 });
 
 export default MapboxNaviView;
