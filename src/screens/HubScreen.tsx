@@ -868,7 +868,7 @@ export function HubScreen({
             )}
             <View style={localStyles.mapPanel}>
               <MapboxNaviView
-                height={560}
+                height={620}
                 origin={liveRouteOrigin}
                 destination={liveRouteDestination}
                 route={liveRoute}

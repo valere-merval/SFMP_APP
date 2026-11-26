@@ -872,20 +872,27 @@ export function JourneyScreen({
 
           <Modal visible={mapExpanded} animationType="slide" presentationStyle="fullScreen" onRequestClose={() => setMapExpanded(false)}>
             <SafeAreaView style={styles.safeArea}>
-              <View style={[styles.container, compactPageStyle]}> 
-                <View style={[styles.header, compactHeaderStyle]}> 
+              <View style={[styles.container, compactPageStyle]}>
+                <View style={[styles.header, compactHeaderStyle]}>
                   <View style={styles.rowBetween}>
                     <View style={styles.rowLeft}>
                       <Text style={styles.kicker}>{t(locale, 'common.liveMap')}</Text>
-                      <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">{activeDriverStatus.title}</Text>
+                      <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
+                        {activeDriverStatus.title}
+                      </Text>
                       <Text style={styles.subtitle}>{activeDriverStatus.subtitle}</Text>
                     </View>
-                    <SecondaryButton label={t(locale, 'common.refuse')} onPress={() => setMapExpanded(false)} icon={<Feather name="x" size={16} color="#22d3ee" />} />
+                    <SecondaryButton
+                      label={t(locale, 'common.refuse')}
+                      onPress={() => setMapExpanded(false)}
+                      icon={<Feather name="x" size={16} color="#22d3ee" />}
+                    />
                   </View>
                 </View>
-                <View style={[styles.mapPanel, expandedMapStyle]}> 
+
+                <View style={[styles.mapPanel, expandedMapStyle]}>
                   <MapboxNaviView
-                    height={700}
+                    height={620}
                     origin={{ latitude: 40.4531, longitude: -3.6883 }}
                     destination={
                       activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
@@ -902,7 +909,9 @@ export function JourneyScreen({
                   <View style={styles.mapOverlay}>
                     <View style={styles.rowBetween}>
                       <View style={styles.rowLeft}>
-                        <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{activeDriverStatus.title}</Text>
+                        <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">
+                          {activeDriverStatus.title}
+                        </Text>
                         <Text style={styles.muted}>{activeDriverStatus.subtitle}</Text>
                       </View>
                       <View style={[statusBadgeStyle, { backgroundColor: activeDriverStatusMeta.backgroundColor }]}>
@@ -910,8 +919,8 @@ export function JourneyScreen({
                       </View>
                     </View>
                     <Text style={styles.helperText}>{activeDriverStatus.detail}</Text>
-                    {activeDriverNavigationLabel ? (
-                      <View style={styles.ctaRow}>
+                    <View style={styles.ctaRow}>
+                      {activeDriverNavigationLabel ? (
                         <SecondaryButton
                           label={activeDriverNavigationLabel}
                           onPress={() =>
@@ -923,13 +932,13 @@ export function JourneyScreen({
                           }
                           icon={<Feather name="navigation" size={16} color="#22d3ee" />}
                         />
-                                              <SecondaryButton
+                      ) : null}
+                      <SecondaryButton
                         label={journeyText(locale, 'voiceGuidance')}
                         onPress={() => toggleVoiceGuidance()}
                         icon={<Ionicons name={voiceGuidanceEnabled ? 'volume-high-outline' : 'volume-mute-outline'} size={16} color="#22d3ee" />}
                       />
-                      </View>
-                    ) : null}
+                    </View>
                   </View>
                 </View>
               </View>
