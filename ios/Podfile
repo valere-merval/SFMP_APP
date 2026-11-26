@@ -8,6 +8,10 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, '15.1'
 prepare_react_native_project!
 
+pre_install do |installer|
+  $RNMapboxMaps.pre_install(installer)
+end
+
 target 'SFMPAppBare' do
     rn_maps_path = '../node_modules/react-native-maps'
     pod 'react-native-maps/Google', :path => rn_maps_path
