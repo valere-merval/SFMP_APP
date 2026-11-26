@@ -547,25 +547,65 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
         <View style={screenStyles.heroHeader}>
           <View style={screenStyles.heroTopRow}>
             <View style={screenStyles.brandChip}>
-              <Image source={require('../../assets/smart-fan-mobility-logo.jpg')} style={screenStyles.brandLogo} resizeMode="cover" />
+              <Image
+                source={require('../../assets/smart-fan-mobility-logo.jpg')}
+                style={screenStyles.brandLogo}
+                resizeMode="cover"
+              />
               <View style={screenStyles.brandTextBlock}>
                 <Text style={screenStyles.brandKicker}>{copy.eyebrow}</Text>
                 <Text style={screenStyles.brandName}>{t(locale, 'nav.profile')}</Text>
               </View>
             </View>
-            <AvatarPhoto uri={userDraft.photoUrl || null} label={account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || account?.email || t(locale, 'profile.profileMissing')} size={54} />
-          </View>
-          <View style={screenStyles.heroBody}>
-            <View style={screenStyles.heroBadge}>
-              <Feather name="shield" size={14} color="#0b1220" />
-              <Text style={screenStyles.heroBadgeText}>{t(locale, 'profile.userProfileRole')}</Text>
+            <View style={screenStyles.liveBadge}>
+              <View style={screenStyles.liveDot} />
+              <Text style={screenStyles.liveBadgeText}>{t(locale, 'common.live')}</Text>
             </View>
-            <Text style={screenStyles.heroTitle}>{copy.title}</Text>
-            <Text style={screenStyles.heroSubtitle}>{copy.subtitle}</Text>
-            <View style={screenStyles.heroChips}>
-              <View style={screenStyles.heroChip}><Text style={screenStyles.heroChipText}>{currentMatch ? (('homeTeam' in currentMatch && 'awayTeam' in currentMatch) ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}` : currentMatch.title) : t(locale, 'profile.currentMatch')}</Text></View>
-              <View style={screenStyles.heroChip}><Text style={screenStyles.heroChipText}>{userDraft.preferredLanguage.toUpperCase()}</Text></View>
-              <View style={screenStyles.heroChip}><Text style={screenStyles.heroChipText}>{userDraft.country || t(locale, 'profile.countryPlaceholder')}</Text></View>
+          </View>
+          <View style={screenStyles.heroIdentityRow}>
+            <AvatarPhoto
+              uri={userDraft.photoUrl || null}
+              label={account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || account?.email || t(locale, 'profile.profileMissing')}
+              size={84}
+            />
+            <View style={screenStyles.heroIdentityTextBlock}>
+              <View style={screenStyles.heroBadge}>
+                <Feather name="shield" size={14} color="#0b1220" />
+                <Text style={screenStyles.heroBadgeText}>{t(locale, 'profile.userProfileRole')}</Text>
+              </View>
+              <Text style={screenStyles.heroTitle}>{copy.title}</Text>
+              <Text style={screenStyles.heroSubtitle}>{copy.subtitle}</Text>
+            </View>
+          </View>
+          <View style={screenStyles.heroChips}>
+            <View style={screenStyles.heroChip}>
+              <Text style={screenStyles.heroChipText}>
+                {currentMatch
+                  ? ('homeTeam' in currentMatch && 'awayTeam' in currentMatch)
+                    ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}`
+                    : currentMatch.title
+                  : t(locale, 'profile.currentMatch')}
+              </Text>
+            </View>
+            <View style={screenStyles.heroChip}>
+              <Text style={screenStyles.heroChipText}>{userDraft.preferredLanguage.toUpperCase()}</Text>
+            </View>
+            <View style={screenStyles.heroChip}>
+              <Text style={screenStyles.heroChipText}>{draft.active ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}</Text>
+            </View>
+          </View>
+          <View style={screenStyles.heroStats}>
+            <View style={screenStyles.heroStatCard}>
+              <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.userProfileTitle')}</Text>
+              <Text style={screenStyles.heroStatValue}>{account?.email || t(locale, 'profile.emailUnknown')}</Text>
+            </View>
+            <View style={screenStyles.heroStatCard}>
+              <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.languageLabel')}</Text>
+              <Text style={screenStyles.heroStatValue}>{supportedLanguages.find((option) => option.key === userDraft.preferredLanguage)?.label || userDraft.preferredLanguage.toUpperCase()}</Text>
+            </View>
+            <View style={screenStyles.heroStatCard}>
+              <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.visibilityTitle')}</Text>
+              <Text style={screenStyles.heroStatValue}>{draft.active ? t(locale, 'common.visible') : t(locale, 'common.hidden')}</Text>
             </View>
           </View>
         </View>
@@ -902,10 +942,44 @@ const screenStyles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
-  brandLogo: { width: 40, height: 40, borderRadius: 999 },
+  brandLogo: { width: 44, height: 44, borderRadius: 999 },
   brandTextBlock: { gap: 2, flex: 1, minWidth: 0 },
   brandKicker: { color: '#9fb2cb', fontFamily: 'Poppins-SemiBold', fontSize: 11, textTransform: 'uppercase' },
   brandName: { color: '#f8fafc', fontFamily: 'Poppins-Bold', fontSize: 16 },
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: '#111827',
+    borderWidth: 1,
+    borderColor: 'rgba(200, 243, 106, 0.28)',
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#c8f36a',
+  },
+  liveBadgeText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  heroIdentityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  heroIdentityTextBlock: {
+    flex: 1,
+    minWidth: 0,
+    gap: 10,
+  },
   heroBody: { gap: 10 },
   heroBadge: {
     alignSelf: 'flex-start',
@@ -930,6 +1004,36 @@ const screenStyles = StyleSheet.create({
     borderColor: 'rgba(34, 211, 238, 0.18)',
   },
   heroChipText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 12 },
+  heroStats: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  heroStatCard: {
+    flexGrow: 1,
+    flexBasis: '30%',
+    minWidth: 96,
+    backgroundColor: '#0b1220',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(124, 243, 160, 0.16)',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 4,
+  },
+  heroStatLabel: {
+    color: '#9fb2cb',
+    fontSize: 11,
+    fontFamily: 'Poppins-SemiBold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  heroStatValue: {
+    color: '#f8fafc',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 13,
+    lineHeight: 18,
+  },
   driverPreview: { backgroundColor: '#0b1220', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', gap: 4 },
 
   profilePreviewRow: { backgroundColor: '#0b1220', borderRadius: 18, padding: 14, borderWidth: 1, borderColor: 'rgba(124, 243, 160, 0.16)', flexDirection: 'row', alignItems: 'center', gap: 14 },
