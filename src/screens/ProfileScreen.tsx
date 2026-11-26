@@ -594,6 +594,30 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
               <Text style={screenStyles.heroChipText}>{draft.active ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}</Text>
             </View>
           </View>
+          <View style={screenStyles.languageControlCard}>
+            <View style={screenStyles.languageControlTopRow}>
+              <View>
+                <Text style={screenStyles.languageControlLabel}>{t(locale, 'profile.languageLabel')}</Text>
+                <Text style={screenStyles.languageControlHint}>{t(locale, 'profile.languageSearch')}</Text>
+              </View>
+              <View style={screenStyles.languageControlPill}>
+                <Feather name="globe" size={14} color="#9df5ff" />
+                <Text style={screenStyles.languageControlPillText}>{userDraft.preferredLanguage.toUpperCase()}</Text>
+              </View>
+            </View>
+            <SearchableDropdown
+              label={t(locale, 'profile.languageLabel')}
+              placeholder={t(locale, 'profile.languagePlaceholder')}
+              value={supportedLanguages.find((option) => option.key === userDraft.preferredLanguage)?.label || ''}
+              options={supportedLanguages}
+              searchPlaceholder={t(locale, 'profile.languageSearch')}
+              emptyLabel={t(locale, 'profile.noSearchResults')}
+              onSelect={(option) => {
+                updateUser('preferredLanguage', option.key);
+                onLocaleChange?.(option.key as Locale);
+              }}
+            />
+          </View>
           <View style={screenStyles.heroStats}>
             <View style={screenStyles.heroStatCard}>
               <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.currentMatch')}</Text>
@@ -1010,6 +1034,48 @@ const screenStyles = StyleSheet.create({
     borderColor: 'rgba(34, 211, 238, 0.18)',
   },
   heroChipText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 12 },
+  languageControlCard: {
+    gap: 10,
+    padding: 14,
+    borderRadius: 22,
+    backgroundColor: 'rgba(11, 18, 32, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(157, 245, 255, 0.12)',
+  },
+  languageControlTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  languageControlLabel: {
+    color: '#f8fafc',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 13,
+  },
+  languageControlHint: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  languageControlPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(34, 211, 238, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 211, 238, 0.16)',
+  },
+  languageControlPillText: {
+    color: '#9df5ff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 11,
+    letterSpacing: 0.6,
+  },
   heroStats: {
     flexDirection: 'row',
     gap: 10,
