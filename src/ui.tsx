@@ -476,9 +476,9 @@ export const styles = StyleSheet.create({
     fontFamily: fonts.regular,
   },
   mapPanel: {
-    minHeight: 320,
+    minHeight: 360,
     borderRadius: 24,
-    backgroundColor: 'rgba(9, 17, 31, 0.03)',
+    backgroundColor: 'rgba(9, 17, 31, 0.02)',
     overflow: 'hidden',
     justifyContent: 'flex-end',
     borderWidth: 0,
@@ -488,11 +488,11 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
   },
-  mapView: { height: 340 },
+  mapView: { height: 380 },
   mapOverlay: {
-    padding: 10,
-    backgroundColor: 'rgba(9, 15, 29, 0.04)',
-    gap: 4,
+    padding: 8,
+    backgroundColor: 'rgba(9, 15, 29, 0.02)',
+    gap: 2,
     borderTopWidth: 0,
   },
   emptyState: {

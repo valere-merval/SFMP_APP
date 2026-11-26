@@ -566,7 +566,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
             <AvatarPhoto
               uri={userDraft.photoUrl || null}
               label={account?.fullName || `${userDraft.firstName} ${userDraft.lastName}`.trim() || account?.email || t(locale, 'profile.profileMissing')}
-              size={84}
+              size={90}
             />
             <View style={screenStyles.heroIdentityTextBlock}>
               <View style={screenStyles.heroBadge}>
@@ -592,20 +592,6 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
             </View>
             <View style={screenStyles.heroChip}>
               <Text style={screenStyles.heroChipText}>{draft.active ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}</Text>
-            </View>
-          </View>
-          <View style={screenStyles.heroStats}>
-            <View style={screenStyles.heroStatCard}>
-              <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.userProfileTitle')}</Text>
-              <Text style={screenStyles.heroStatValue}>{account?.email || t(locale, 'profile.emailUnknown')}</Text>
-            </View>
-            <View style={screenStyles.heroStatCard}>
-              <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.languageLabel')}</Text>
-              <Text style={screenStyles.heroStatValue}>{supportedLanguages.find((option) => option.key === userDraft.preferredLanguage)?.label || userDraft.preferredLanguage.toUpperCase()}</Text>
-            </View>
-            <View style={screenStyles.heroStatCard}>
-              <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.visibilityTitle')}</Text>
-              <Text style={screenStyles.heroStatValue}>{draft.active ? t(locale, 'common.visible') : t(locale, 'common.hidden')}</Text>
             </View>
           </View>
         </View>
