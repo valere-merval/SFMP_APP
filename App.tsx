@@ -55,11 +55,11 @@ const bootstrapStyles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#070d18',
+    backgroundColor: '#0e1321',
     padding: 24,
   },
   loadingCopy: {
-    color: '#9fb2cb',
+    color: '#b2bfd4',
     fontFamily: 'Poppins-Regular',
     marginTop: 8,
   },
@@ -68,35 +68,43 @@ const bootstrapStyles = StyleSheet.create({
 const shellStyles = StyleSheet.create({
   connectedShell: {
     flex: 1,
-    backgroundColor: '#070d18',
+    backgroundColor: '#0e1321',
   },
   topBar: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 10,
     paddingBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomColor: 'rgba(124, 243, 160, 0.18)',
-    backgroundColor: '#070d18',
+    backgroundColor: 'rgba(14, 19, 33, 0.94)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 229, 255, 0.08)',
   },
-  topBarSafeArea: { backgroundColor: '#070d18' },
-  statusBar: { backgroundColor: '#070d18' },
+  topBarSafeArea: { backgroundColor: '#0e1321' },
+  statusBar: { backgroundColor: '#0e1321' },
   brandBlock: {
     flex: 1,
   },
   logoButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#070d18',
+    backgroundColor: 'rgba(17, 26, 46, 0.9)',
     borderWidth: 1,
-    borderColor: 'rgba(124, 243, 160, 0.16)',
+    borderColor: 'rgba(0, 229, 255, 0.16)',
     overflow: 'hidden',
   },
-  avatarButton: { width: 44, height: 44, borderRadius: 22, overflow: 'hidden' },
+  avatarButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 229, 255, 0.16)',
+  },
 });
 
 function useCatalogShell() {
@@ -345,7 +353,7 @@ function App(): React.JSX.Element {
       </SafeAreaView>
       <StatusBar
         showHideTransition={'slide'}
-        barStyle={'dark-content'}
+        barStyle={'light-content'}
         animated={true}
       />
       {session === 'auth' ? (
@@ -412,33 +420,50 @@ function App(): React.JSX.Element {
               <AppStack.Navigator
                 initialRouteName={activeTab}
                 screenOptions={({ route }) => ({
-                    headerShown: false,
-                    tabBarActiveTintColor: '#c8f36a',
-                    tabBarInactiveTintColor: '#7183a1',
-                    tabBarLabelStyle: {
-                      fontFamily: fonts.tab,
-                      fontSize: 11,
-                      marginBottom: 2,
-                    },
-                    tabBarStyle: {
-                      borderTopWidth: 1,
-                      borderTopColor: 'rgba(255,255,255,0.08)',
-                      backgroundColor: '#0b1220',
-                      height: 72,
-                      paddingTop: 10,
-                      paddingBottom: 12,
-                    },
-                    tabBarLabel: getTabLabel(
-                      locale,
+                  headerShown: false,
+                  tabBarActiveTintColor: '#ccff00',
+                  tabBarInactiveTintColor: '#7f8ca6',
+                  tabBarLabelStyle: {
+                    fontFamily: fonts.tab,
+                    fontSize: 10,
+                    marginBottom: 2,
+                    letterSpacing: 0.4,
+                  },
+                  tabBarStyle: {
+                    position: 'absolute',
+                    left: 14,
+                    right: 14,
+                    bottom: 14,
+                    borderTopWidth: 0,
+                    borderRadius: 24,
+                    backgroundColor: 'rgba(9, 15, 29, 0.94)',
+                    height: 76,
+                    paddingTop: 10,
+                    paddingBottom: 12,
+                    paddingHorizontal: 8,
+                    borderWidth: 1,
+                    borderColor: 'rgba(0, 229, 255, 0.12)',
+                    shadowColor: '#000',
+                    shadowOpacity: 0.24,
+                    shadowRadius: 18,
+                    shadowOffset: { width: 0, height: 8 },
+                    elevation: 10,
+                  },
+                  tabBarItemStyle: {
+                    paddingTop: 4,
+                    borderRadius: 18,
+                  },
+                  tabBarLabel: getTabLabel(
+                    locale,
+                    route.name as keyof TabParamList,
+                  ),
+                  tabBarIcon: ({ color, size }) =>
+                    renderTabIcon(
                       route.name as keyof TabParamList,
+                      color,
+                      size,
                     ),
-                    tabBarIcon: ({ color, size }) =>
-                      renderTabIcon(
-                        route.name as keyof TabParamList,
-                        color,
-                        size,
-                      ),
-                  })}
+                })}
                 >
                   <AppStack.Screen name="Hub">
                     {() => <HubRoute locale={locale} />}

@@ -10,7 +10,7 @@ import { googleMapsDirectionsUrl, openGoogleMapsDirections, buildRideRouteCoordi
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import type { LiveData, MatchCard, RideRequestView, TransportAvailabilityView, TransportProviderView } from '../types';
 import { t, type Locale } from '../i18n';
-import { speakVoiceGuidance } from '../voice';
+import { loadVoiceGuidanceEnabled, saveVoiceGuidanceEnabled, speakVoiceGuidance, stopVoiceGuidance } from '../voice';
 
 type ModeKey = 'bus' | 'train' | 'metro' | 'scooter' | 'bike' | 'taxi' | 'vtc';
 
@@ -23,6 +23,28 @@ const modeCards: Array<{ key: ModeKey; label: string; subtitle: string; icon: Re
   { key: 'taxi', label: 'Taxi', subtitle: 'Send a live request', icon: <Ionicons name="car-outline" size={20} color="#f8fafc" />, regex: /taxi/i },
   { key: 'vtc', label: 'VTC', subtitle: 'Send a live request', icon: <Ionicons name="car-sport-outline" size={20} color="#f8fafc" />, regex: /vtc|chauffeur|driver/i },
 ];
+
+const floatingExpandButtonStyle = {
+  position: 'absolute',
+  top: 12,
+  right: 12,
+  width: 38,
+  height: 38,
+  borderRadius: 19,
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(16,27,45,0.9)',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.14)',
+} as const;
+
+const statusBadgeStyle = { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999 } as const;
+
+const statusTextStyle = { fontFamily: 'Poppins-SemiBold' } as const;
+
+const compactPageStyle = { paddingTop: 12 } as const;
+const compactHeaderStyle = { marginBottom: 0 } as const;
+const expandedMapStyle = { minHeight: 620 } as const;
 
 const J = {
   en: {
@@ -356,6 +378,7 @@ export function JourneyScreen({
   const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
   const [driverAvailability, setDriverAvailability] = useState<TransportAvailabilityView | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [voiceGuidanceEnabled, setVoiceGuidanceEnabled] = useState(true);
   const currentSessionUser = getSessionUser();
   const currentSessionEmail = currentSessionUser?.email ?? '';
   const currentDriverEmail = currentSessionEmail;
@@ -391,7 +414,7 @@ export function JourneyScreen({
   }, [match]);
 
   useEffect(() => {
-    void reloadProviders();
+    reloadProviders();
   }, [reloadProviders]);
 
   useEffect(() => {
@@ -412,9 +435,9 @@ export function JourneyScreen({
       }
     };
 
-    void refresh();
+    refresh();
     const timer = setInterval(() => {
-      void refresh();
+      refresh();
     }, 9000);
 
     return () => {
@@ -426,7 +449,7 @@ export function JourneyScreen({
   useEffect(() => {
     if (!match) return;
     const timer = setInterval(() => {
-      void reloadProviders();
+      reloadProviders();
     }, 12000);
     return () => clearInterval(timer);
   }, [match, reloadProviders]);
@@ -488,9 +511,9 @@ export function JourneyScreen({
         }
       }
     };
-    void refresh();
+    refresh();
     const timer = setInterval(() => {
-      void refresh();
+      refresh();
     }, 6000);
     return () => {
       cancelled = true;
@@ -520,9 +543,9 @@ export function JourneyScreen({
         if (cancelled) return;
       }
     };
-    void refresh();
+    refresh();
     const timer = setInterval(() => {
-      void refresh();
+      refresh();
     }, 7000);
     return () => {
       cancelled = true;
@@ -586,6 +609,10 @@ export function JourneyScreen({
     }
   };
 
+  useEffect(() => {
+    loadVoiceGuidanceEnabled().then((enabled) => setVoiceGuidanceEnabled(enabled));
+  }, []);
+
   const requestSummary = rideRequest
     ? `${rideRequest.providerType} · ${rideRequest.status} · ${rideRequest.pickupLabel} → ${rideRequest.destinationLabel}`
     : null;
@@ -603,6 +630,10 @@ export function JourneyScreen({
           : null
     : null;
   const announceNavigationSummary = () => {
+    if (!voiceGuidanceEnabled) {
+      stopVoiceGuidance();
+      return;
+    }
     const parts = [
       activeDriverRequest ? activeDriverStatus.detail : null,
       activeDriverRequest?.passengerName,
@@ -616,6 +647,17 @@ export function JourneyScreen({
       AccessibilityInfo.announceForAccessibility(summary);
       speakVoiceGuidance(summary, locale);
     }
+  };
+
+  const toggleVoiceGuidance = async () => {
+    const next = !voiceGuidanceEnabled;
+    setVoiceGuidanceEnabled(next);
+    await saveVoiceGuidanceEnabled(next);
+    if (!next) {
+      stopVoiceGuidance();
+      return;
+    }
+    announceNavigationSummary();
   };
   const activeDriverRoute = buildRideRouteCoordinates(
     activeDriverRequest?.driverLatitude != null && activeDriverRequest?.driverLongitude != null
@@ -695,7 +737,7 @@ export function JourneyScreen({
                         <SecondaryButton
                           label={activeDriverNavigationLabel}
                           onPress={() =>
-                            void openGoogleMapsDirections(
+                            openGoogleMapsDirections(
                               activeDriverRequest.status === 'ACCEPTED' || activeDriverRequest.status === 'ARRIVED_AT_PICKUP'
                                 ? destinationLabelToQuery(match, activeDriverRequest.pickupLabel)
                                 : destinationLabelToQuery(match, activeDriverRequest.destinationLabel),
@@ -706,10 +748,14 @@ export function JourneyScreen({
                       </View>
                     ) : null}
                     <View style={styles.ctaRow}>
-                      <SecondaryButton label={journeyText(locale, 'arrivedAtPickup')} onPress={() => void markRideRequestArrived(activeDriverRequest.id)} icon={<Ionicons name="location-outline" size={16} color="#22d3ee" />} />
-                      <PrimaryButton label={journeyText(locale, 'startTrip')} onPress={() => void startRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="navigate-outline" size={16} color="#f8fafc" />} />
-                      <SecondaryButton label={journeyText(locale, 'completeTrip')} onPress={() => void completeRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="checkmark-done-outline" size={16} color="#22d3ee" />} />
-                      <SecondaryButton label={journeyText(locale, 'voiceGuidance')} onPress={announceNavigationSummary} icon={<Ionicons name="volume-high-outline" size={16} color="#22d3ee" />} />
+                      <SecondaryButton label={journeyText(locale, 'arrivedAtPickup')} onPress={() => markRideRequestArrived(activeDriverRequest.id)} icon={<Ionicons name="location-outline" size={16} color="#22d3ee" />} />
+                      <PrimaryButton label={journeyText(locale, 'startTrip')} onPress={() => startRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="navigate-outline" size={16} color="#f8fafc" />} />
+                      <SecondaryButton label={journeyText(locale, 'completeTrip')} onPress={() => completeRideRequestTrip(activeDriverRequest.id)} icon={<Ionicons name="checkmark-done-outline" size={16} color="#22d3ee" />} />
+                                            <SecondaryButton
+                        label={journeyText(locale, 'voiceGuidance')}
+                        onPress={() => toggleVoiceGuidance()}
+                        icon={<Ionicons name={voiceGuidanceEnabled ? 'volume-high-outline' : 'volume-mute-outline'} size={16} color="#22d3ee" />}
+                      />
                     </View>
                   </View>
                 ) : null}
@@ -730,13 +776,13 @@ export function JourneyScreen({
                             <SecondaryButton
                               label={t(locale, 'common.refuse')}
                               onPress={() => {
-                                void refuseRideRequest(request.id);
+                                refuseRideRequest(request.id);
                               }}
                             />
                             <PrimaryButton
                               label={t(locale, 'common.accept')}
                               onPress={() => {
-                                void acceptRideRequest(request.id).then((accepted) => {
+                                acceptRideRequest(request.id).then((accepted) => {
                                   setDriverRequests((current) => current.map((item) => (item.id === accepted.id ? accepted : item)));
                                   setStatusMessage(
                                     `${accepted.passengerName}${accepted.driverDistanceKm != null ? ` · ${accepted.driverDistanceKm} km` : ''}${accepted.driverEtaMinutes != null ? ` · ${accepted.driverEtaMinutes} min` : ''}`,
@@ -749,7 +795,7 @@ export function JourneyScreen({
                         ) : isOwnAccepted ? (
                           <SecondaryButton
                             label={t(locale, 'common.openInGoogleMaps')}
-                            onPress={() => void openGoogleMapsDirections(destinationLabelToQuery(match, request.pickupLabel))}
+                            onPress={() => openGoogleMapsDirections(destinationLabelToQuery(match, request.pickupLabel))}
                             icon={<Feather name="map" size={16} color="#22d3ee" />}
                           />
                         ) : null}
@@ -766,7 +812,7 @@ export function JourneyScreen({
           <View style={styles.card}>
             <View style={styles.mapPanel}>
               <MapboxNaviView
-              height={320}
+              height={420}
               origin={{ latitude: 40.4531, longitude: -3.6883 }}
               destination={
                 activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
@@ -780,7 +826,7 @@ export function JourneyScreen({
               subtitle={activeDriverStatus.subtitle}
               liveLabel={activeDriverStatus.badge}
             />
-              <Pressable onPress={() => setMapExpanded(true)} style={{ position: 'absolute', top: 12, right: 12, width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(16,27,45,0.9)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' }}>
+              <Pressable onPress={() => setMapExpanded(true)} style={floatingExpandButtonStyle}>
                 <Feather name="maximize-2" size={16} color="#fff" />
               </Pressable>
               <View style={styles.mapOverlay}>
@@ -789,8 +835,8 @@ export function JourneyScreen({
                     <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{activeDriverStatus.title}</Text>
                     <Text style={styles.muted}>{activeDriverStatus.subtitle}</Text>
                   </View>
-                  <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: activeDriverStatusMeta.backgroundColor }}>
-                    <Text style={{ color: activeDriverStatusMeta.color, fontFamily: 'Poppins-SemiBold' }}>{activeDriverStatus.badge}</Text>
+                  <View style={[statusBadgeStyle, { backgroundColor: activeDriverStatusMeta.backgroundColor }]}>
+                    <Text style={[statusTextStyle, { color: activeDriverStatusMeta.color }]}>{activeDriverStatus.badge}</Text>
                   </View>
                 </View>
                 <Text style={styles.helperText}>{activeDriverStatus.detail}</Text>
@@ -799,7 +845,7 @@ export function JourneyScreen({
                     <SecondaryButton
                       label={activeDriverNavigationLabel}
                       onPress={() =>
-                        void openGoogleMapsDirections(
+                        openGoogleMapsDirections(
                           activeDriverRequest?.status === 'ACCEPTED' || activeDriverRequest?.status === 'ARRIVED_AT_PICKUP'
                             ? destinationLabelToQuery(match, activeDriverRequest.pickupLabel)
                             : destinationLabelToQuery(match, activeDriverRequest?.destinationLabel || selectedDestination || match.venue),
@@ -826,8 +872,8 @@ export function JourneyScreen({
 
           <Modal visible={mapExpanded} animationType="slide" presentationStyle="fullScreen" onRequestClose={() => setMapExpanded(false)}>
             <SafeAreaView style={styles.safeArea}>
-              <View style={[styles.container, { paddingTop: 12 }]}> 
-                <View style={[styles.header, { marginBottom: 0 }]}> 
+              <View style={[styles.container, compactPageStyle]}> 
+                <View style={[styles.header, compactHeaderStyle]}> 
                   <View style={styles.rowBetween}>
                     <View style={styles.rowLeft}>
                       <Text style={styles.kicker}>{t(locale, 'common.liveMap')}</Text>
@@ -837,9 +883,9 @@ export function JourneyScreen({
                     <SecondaryButton label={t(locale, 'common.refuse')} onPress={() => setMapExpanded(false)} icon={<Feather name="x" size={16} color="#22d3ee" />} />
                   </View>
                 </View>
-                <View style={[styles.mapPanel, { minHeight: 620 }]}> 
+                <View style={[styles.mapPanel, expandedMapStyle]}> 
                   <MapboxNaviView
-                    height={540}
+                    height={700}
                     origin={{ latitude: 40.4531, longitude: -3.6883 }}
                     destination={
                       activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
@@ -859,8 +905,8 @@ export function JourneyScreen({
                         <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{activeDriverStatus.title}</Text>
                         <Text style={styles.muted}>{activeDriverStatus.subtitle}</Text>
                       </View>
-                      <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: activeDriverStatusMeta.backgroundColor }}>
-                        <Text style={{ color: activeDriverStatusMeta.color, fontFamily: 'Poppins-SemiBold' }}>{activeDriverStatus.badge}</Text>
+                      <View style={[statusBadgeStyle, { backgroundColor: activeDriverStatusMeta.backgroundColor }]}>
+                        <Text style={[statusTextStyle, { color: activeDriverStatusMeta.color }]}>{activeDriverStatus.badge}</Text>
                       </View>
                     </View>
                     <Text style={styles.helperText}>{activeDriverStatus.detail}</Text>
@@ -869,7 +915,7 @@ export function JourneyScreen({
                         <SecondaryButton
                           label={activeDriverNavigationLabel}
                           onPress={() =>
-                            void openGoogleMapsDirections(
+                            openGoogleMapsDirections(
                               activeDriverRequest?.status === 'ACCEPTED' || activeDriverRequest?.status === 'ARRIVED_AT_PICKUP'
                                 ? destinationLabelToQuery(match, activeDriverRequest.pickupLabel)
                                 : destinationLabelToQuery(match, activeDriverRequest?.destinationLabel || selectedDestination || match.venue),
@@ -877,7 +923,11 @@ export function JourneyScreen({
                           }
                           icon={<Feather name="navigation" size={16} color="#22d3ee" />}
                         />
-                        <SecondaryButton label={journeyText(locale, 'voiceGuidance')} onPress={announceNavigationSummary} icon={<Ionicons name="volume-high-outline" size={16} color="#22d3ee" />} />
+                                              <SecondaryButton
+                        label={journeyText(locale, 'voiceGuidance')}
+                        onPress={() => toggleVoiceGuidance()}
+                        icon={<Ionicons name={voiceGuidanceEnabled ? 'volume-high-outline' : 'volume-mute-outline'} size={16} color="#22d3ee" />}
+                      />
                       </View>
                     ) : null}
                   </View>
@@ -902,7 +952,7 @@ export function JourneyScreen({
         <Card title={t(locale, 'common.liveMap')} subtitle={t(locale, 'common.pickupTracking')} wide>
           <View style={styles.mapPanel}>
             <MapboxNaviView
-              height={320}
+              height={420}
               origin={{ latitude: 40.4531, longitude: -3.6883 }}
               destination={
                 rideRequest?.status === 'IN_PROGRESS' && rideRequest.destinationLatitude != null && rideRequest.destinationLongitude != null
@@ -922,8 +972,8 @@ export function JourneyScreen({
                   <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{passengerStatus.title}</Text>
                   <Text style={styles.muted}>{passengerStatus.subtitle}</Text>
                 </View>
-                <View style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: passengerStatusMeta.backgroundColor }}>
-                  <Text style={{ color: passengerStatusMeta.color, fontFamily: 'Poppins-SemiBold' }}>{passengerStatus.badge}</Text>
+                <View style={[statusBadgeStyle, { backgroundColor: passengerStatusMeta.backgroundColor }]}>
+                  <Text style={[statusTextStyle, { color: passengerStatusMeta.color }]}>{passengerStatus.badge}</Text>
                 </View>
               </View>
               <Text style={styles.helperText}>{passengerStatus.detail}</Text>
@@ -938,7 +988,7 @@ export function JourneyScreen({
               ) : null}
               {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
               <View style={styles.ctaRow}>
-                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#22d3ee" />} />
+                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#22d3ee" />} />
               </View>
             </View>
           </View>
@@ -999,7 +1049,7 @@ export function JourneyScreen({
                         label={provider.providerType.toLowerCase().includes('taxi') || provider.providerType.toLowerCase().includes('vtc')
                           ? t(locale, 'common.sendRequest')
                           : t(locale, 'common.navigate')}
-                        onPress={() => void reserveRide(provider)}
+                        onPress={() => reserveRide(provider)}
                         icon={<Ionicons name="car-outline" size={16} color="#f8fafc" />}
                       />
                     </View>
@@ -1040,7 +1090,7 @@ export function JourneyScreen({
               ) : null}
               {statusMessage ? <Text style={styles.helperText}>{statusMessage}</Text> : null}
               <View style={styles.ctaRow}>
-                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => void openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#22d3ee" />} />
+                <SecondaryButton label={t(locale, 'common.openInGoogleMaps')} onPress={() => openGoogleMapsDirections(mapQuery)} icon={<Feather name="map" size={16} color="#22d3ee" />} />
               </View>
             </View>
           ) : (

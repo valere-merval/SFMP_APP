@@ -609,13 +609,13 @@ export function AuthScreen({
 
 const authStyles = StyleSheet.create({
   authHeader: {
-    paddingTop: 6,
-    paddingBottom: 10,
-    gap: 6,
+    paddingTop: 0,
+    paddingBottom: 6,
+    gap: 4,
   },
   authContainer: {
     paddingTop: 0,
-    paddingBottom: 22,
+    paddingBottom: 18,
     marginBottom: 0,
   },
   dropdown: {

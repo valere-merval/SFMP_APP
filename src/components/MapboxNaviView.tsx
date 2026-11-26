@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Mapbox from '@rnmapbox/maps';
 import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE_URL } from '../config';
 import { styles } from '../ui';
@@ -20,10 +20,7 @@ type MapboxNaviViewProps = {
 };
 
 type Point = [number, number];
-type Bounds = {
-  ne: Point;
-  sw: Point;
-};
+type Bounds = { ne: Point; sw: Point };
 
 type RouteFeature = {
   type: 'Feature';
@@ -39,12 +36,7 @@ Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
 const defaultCoordinate: Coordinate = { latitude: 40.4531, longitude: -3.6883 };
 
 function escapeHtml(input: string) {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function toPoint(coordinate: Coordinate): Point {
@@ -71,15 +63,9 @@ function buildRouteFeature(route: Coordinate[]): RouteFeature {
   };
 }
 
-export function MapboxNaviView({ origin, destination, route, height = 320, title, subtitle, liveLabel }: MapboxNaviViewProps) {
-  const safeOrigin = useMemo(
-    () => origin ?? destination ?? route?.[0] ?? defaultCoordinate,
-    [destination, origin, route],
-  );
-  const safeDestination = useMemo(
-    () => destination ?? route?.[route.length - 1] ?? safeOrigin,
-    [destination, route, safeOrigin],
-  );
+export function MapboxNaviView({ origin, destination, route, height = 380, title, subtitle, liveLabel }: MapboxNaviViewProps) {
+  const safeOrigin = useMemo(() => origin ?? destination ?? route?.[0] ?? defaultCoordinate, [destination, origin, route]);
+  const safeDestination = useMemo(() => destination ?? route?.[route.length - 1] ?? safeOrigin, [destination, route, safeOrigin]);
   const routeCoords = useMemo(
     () => (route ?? []).filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude)),
     [route],
@@ -92,17 +78,17 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
 
   if (!MAPBOX_ACCESS_TOKEN || MAPBOX_ACCESS_TOKEN === 'PASTE_YOUR_MAPBOX_ACCESS_TOKEN_HERE') {
     return (
-      <View style={[styles.mapView, { height, alignItems: 'center', justifyContent: 'center', backgroundColor: '#10192d', borderRadius: 24 }]}>
-        <Text style={{ color: '#fff', fontFamily: 'Poppins-SemiBold' }}>Navigation token missing</Text>
-        <Text style={{ color: 'rgba(255,255,255,0.7)', marginTop: 6, textAlign: 'center' }}>Add your navigation token in src/config.ts to enable live routing.</Text>
+      <View style={[naviStyles.fallback, { height }]}>
+        <Text style={naviStyles.fallbackTitle}>Navigation token missing</Text>
+        <Text style={naviStyles.fallbackSubtitle}>Add your navigation token in src/config.ts to enable live routing.</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.mapView, { height, backgroundColor: '#10192d', overflow: 'hidden' }]}> 
+    <View style={[styles.mapPanel, naviStyles.container, { height }]}> 
       <Mapbox.MapView
-        style={{ flex: 1 }}
+        style={naviStyles.mapView}
         styleURL={MAPBOX_STYLE_URL}
         logoEnabled
         attributionEnabled
@@ -118,13 +104,13 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
             bounds: {
               ne: bounds.ne,
               sw: bounds.sw,
-              paddingTop: 120,
-              paddingBottom: 120,
-              paddingLeft: 60,
-              paddingRight: 60,
+              paddingTop: 150,
+              paddingBottom: 150,
+              paddingLeft: 70,
+              paddingRight: 70,
             },
             centerCoordinate: toPoint(safeOrigin),
-            zoomLevel: 14,
+            zoomLevel: 14.3,
             pitch: 58,
             heading: 12,
             animationMode: 'flyTo',
@@ -134,45 +120,112 @@ export function MapboxNaviView({ origin, destination, route, height = 320, title
 
         {routeFeature ? (
           <Mapbox.ShapeSource id="sfmp-route-source" shape={routeFeature as never}>
-            <Mapbox.LineLayer
-              id="sfmp-route-shadow"
-              style={{
-                lineColor: 'rgba(9, 17, 31, 0.36)',
-                lineWidth: 9,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
-            <Mapbox.LineLayer
-              id="sfmp-route-line"
-              style={{
-                lineColor: '#22d3ee',
-                lineWidth: 6,
-                lineCap: 'round',
-                lineJoin: 'round',
-              }}
-            />
+            <Mapbox.LineLayer id="sfmp-route-shadow" style={routeShadowStyle as never} />
+            <Mapbox.LineLayer id="sfmp-route-line" style={routeLineStyle as never} />
           </Mapbox.ShapeSource>
         ) : null}
 
         <Mapbox.PointAnnotation id="sfmp-origin" coordinate={toPoint(safeOrigin)} title="Origin">
-          <View style={{ width: 18, height: 18, borderRadius: 999, backgroundColor: '#22d3ee', borderWidth: 3, borderColor: '#fff', shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 10, elevation: 6 }} />
+          <View style={naviStyles.originMarker} />
         </Mapbox.PointAnnotation>
 
         <Mapbox.PointAnnotation id="sfmp-destination" coordinate={toPoint(safeDestination)} title="Destination">
-          <View style={{ width: 18, height: 18, borderRadius: 999, backgroundColor: '#c8f36a', borderWidth: 3, borderColor: '#fff', shadowColor: '#000', shadowOpacity: 0.28, shadowRadius: 10, elevation: 6 }} />
+          <View style={naviStyles.destinationMarker} />
         </Mapbox.PointAnnotation>
       </Mapbox.MapView>
 
-      <View pointerEvents="none" style={{ position: 'absolute', left: 16, right: 16, top: 16, backgroundColor: 'rgba(15, 23, 42, 0.56)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
-        <Text style={{ color: '#fff', fontFamily: 'Poppins-SemiBold', fontSize: 15 }} numberOfLines={1} ellipsizeMode="tail">{escapeHtml(title || 'SFMP Navi')}</Text>
-        <Text style={{ color: 'rgba(255,255,255,0.76)', fontFamily: 'Poppins-Regular', fontSize: 12, marginTop: 3, lineHeight: 18 }} numberOfLines={2} ellipsizeMode="tail">{escapeHtml(subtitle || 'Live navigation inside the app')}</Text>
-        <View style={{ marginTop: 7, alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: 'rgba(200,243,106,0.12)' }}>
-          <Text style={{ color: '#c8f36a', fontFamily: 'Poppins-SemiBold', fontSize: 12 }}>{escapeHtml(liveLabel || 'Live navigation')}</Text>
+      <View pointerEvents="none" style={naviStyles.overlay}>
+        <Text style={naviStyles.overlayTitle} numberOfLines={1} ellipsizeMode="tail">
+          {escapeHtml(title || 'SFMP Navi')}
+        </Text>
+        {subtitle ? (
+          <Text style={naviStyles.overlaySubtitle} numberOfLines={2} ellipsizeMode="tail">
+            {escapeHtml(subtitle)}
+          </Text>
+        ) : null}
+        <View style={naviStyles.liveBadge}>
+          <Text style={naviStyles.liveBadgeText}>{escapeHtml(liveLabel || 'Live navigation')}</Text>
         </View>
       </View>
     </View>
   );
 }
+
+const routeShadowStyle = {
+  lineColor: 'rgba(9, 17, 31, 0.28)',
+  lineWidth: 10,
+  lineCap: 'round',
+  lineJoin: 'round',
+} as const;
+
+const routeLineStyle = {
+  lineColor: '#00e5ff',
+  lineWidth: 6,
+  lineCap: 'round',
+  lineJoin: 'round',
+} as const;
+
+const naviStyles = StyleSheet.create({
+  container: { backgroundColor: '#09111f' },
+  mapView: { flex: 1 },
+  fallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0b1220',
+    borderRadius: 28,
+    paddingHorizontal: 20,
+  },
+  fallbackTitle: { color: '#f8fbff', fontFamily: 'Poppins-SemiBold' },
+  fallbackSubtitle: { color: 'rgba(255,255,255,0.7)', marginTop: 6, textAlign: 'center', maxWidth: 280, fontFamily: 'Poppins-Regular' },
+  originMarker: {
+    width: 18,
+    height: 18,
+    borderRadius: 999,
+    backgroundColor: '#00e5ff',
+    borderWidth: 3,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  destinationMarker: {
+    width: 18,
+    height: 18,
+    borderRadius: 999,
+    backgroundColor: '#ccff00',
+    borderWidth: 3,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  overlay: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    top: 14,
+    backgroundColor: 'rgba(9, 15, 29, 0.22)',
+    borderRadius: 22,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  overlayTitle: { color: '#f8fbff', fontFamily: 'Poppins-SemiBold', fontSize: 14 },
+  overlaySubtitle: { color: 'rgba(255,255,255,0.74)', fontFamily: 'Poppins-Regular', fontSize: 12, marginTop: 2, lineHeight: 17 },
+  liveBadge: {
+    marginTop: 7,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0,229,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,229,255,0.16)',
+  },
+  liveBadgeText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 12 },
+});
 
 export default MapboxNaviView;

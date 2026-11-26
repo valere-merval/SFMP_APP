@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MapboxNaviView from '../components/MapboxNaviView';
@@ -19,6 +19,11 @@ const defaultRegion = {
   latitude: 40.4531,
   longitude: -3.6883,
 };
+
+const mobilityStyles = StyleSheet.create({
+  listGap: { gap: 12 },
+  selectedCard: { borderColor: '#c8f36a', borderWidth: 1.5 },
+});
 
 function mobilityLabel(item: MobilityCard) {
   const normalized = item.mode.toLowerCase();
@@ -81,7 +86,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
 
         <Card title={t(locale, 'common.available')} subtitle={t(locale, 'common.liveTracking')} wide>
           {mobility.length ? (
-            <View style={{ gap: 12 }}>
+            <View style={mobilityStyles.listGap}>
               {mobility.map((item) => {
                 const isSelected = item.id === selected?.id;
                 const label = mobilityLabel(item);
@@ -89,7 +94,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
                   <Pressable
                     key={item.id}
                     onPress={() => setSelectedId(item.id)}
-                    style={[styles.miniCard, isSelected && { borderColor: '#c8f36a', borderWidth: 1.5 }]}
+                    style={[styles.miniCard, isSelected && mobilityStyles.selectedCard]}
                   >
                     <View style={styles.rowBetween}>
                       <View style={styles.rowLeft}>

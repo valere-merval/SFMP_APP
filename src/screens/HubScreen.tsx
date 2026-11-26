@@ -155,7 +155,7 @@ export function HubScreen({
 
   useEffect(() => {
     let mounted = true;
-    void loadVoiceGuidanceEnabled().then((enabled) => {
+    loadVoiceGuidanceEnabled().then((enabled) => {
       if (mounted) {
         setVoiceGuidanceEnabled(enabled);
       }
@@ -217,9 +217,9 @@ export function HubScreen({
         setLiveTransportProviders(baseTransportProviders);
       }
     };
-    void refresh();
+    refresh();
     const timer = setInterval(() => {
-      void refresh();
+      refresh();
     }, 8000);
     return () => {
       mounted = false;
@@ -230,7 +230,7 @@ export function HubScreen({
   const toggleVoiceGuidance = () => {
     const nextEnabled = !voiceGuidanceEnabled;
     setVoiceGuidanceEnabled(nextEnabled);
-    void saveVoiceGuidanceEnabled(nextEnabled);
+    saveVoiceGuidanceEnabled(nextEnabled);
     if (!nextEnabled) {
       stopVoiceGuidance();
       return;
@@ -261,9 +261,9 @@ export function HubScreen({
       }
     };
 
-    void refresh();
+    refresh();
     const timer = setInterval(() => {
-      void refresh();
+      refresh();
     }, 5000);
 
     return () => {
@@ -290,9 +290,9 @@ export function HubScreen({
       }
     };
 
-    void refresh();
+    refresh();
     const timer = setInterval(() => {
-      void refresh();
+      refresh();
     }, 7000);
 
     return () => {
@@ -319,9 +319,9 @@ export function HubScreen({
       }
     };
 
-    void refresh();
+    refresh();
     const timer = setInterval(() => {
-      void refresh();
+      refresh();
     }, 9000);
 
     return () => {
@@ -356,9 +356,9 @@ export function HubScreen({
       }
     };
     setDriverRequestsLoading(true);
-    void refresh();
+    refresh();
     const timer = setInterval(() => {
-      void refresh();
+      refresh();
     }, 6000);
     return () => {
       mounted = false;
@@ -681,13 +681,13 @@ export function HubScreen({
                           <SecondaryButton
                             label={t(locale, 'common.refuse')}
                             onPress={() => {
-                              void refuseRideRequest(request.id);
+                              refuseRideRequest(request.id);
                             }}
                           />
                           <PrimaryButton
                             label={t(locale, 'common.accept')}
                             onPress={() => {
-                              void getCurrentCoordinates()
+                              getCurrentCoordinates()
                                 .then((driverCoordinates) =>
                                   acceptRideRequest(request.id, {
                                     driverLatitude: driverCoordinates?.latitude,
@@ -732,13 +732,13 @@ export function HubScreen({
                           <SecondaryButton
                             label={t(locale, 'common.arrived')}
                             onPress={() => {
-                              void markRideRequestArrived(request.id);
+                              markRideRequestArrived(request.id);
                             }}
                           />
                           <PrimaryButton
                             label={t(locale, 'common.startTrip')}
                             onPress={() => {
-                              void startRideRequestTrip(request.id);
+                              startRideRequestTrip(request.id);
                             }}
                             icon={
                               <Ionicons
@@ -754,13 +754,13 @@ export function HubScreen({
                           <SecondaryButton
                             label={t(locale, 'common.passengerBoarded')}
                             onPress={() => {
-                              void startRideRequestTrip(request.id);
+                              startRideRequestTrip(request.id);
                             }}
                           />
                           <PrimaryButton
                             label={t(locale, 'common.startTrip')}
                             onPress={() => {
-                              void startRideRequestTrip(request.id);
+                              startRideRequestTrip(request.id);
                             }}
                             icon={
                               <Ionicons
@@ -776,7 +776,7 @@ export function HubScreen({
                           <SecondaryButton
                             label={t(locale, 'common.completeTrip')}
                             onPress={() => {
-                              void completeRideRequestTrip(request.id);
+                              completeRideRequestTrip(request.id);
                             }}
                           />
                         </View>
@@ -898,7 +898,7 @@ export function HubScreen({
               />
               <View style={localStyles.mapOverlay}>
                 <View style={styles.rowBetween}>
-                  <View style={{ flex: 1 }}>
+                  <View style={localStyles.mapOverlayContent}>
                     <Text style={localStyles.mapOverlayTitle}>
                       {rideRequest
                         ? rideRequest.status === 'IN_PROGRESS'
@@ -928,17 +928,11 @@ export function HubScreen({
                     accessibilityRole="button"
                     accessibilityLabel={voiceGuidanceEnabled ? 'Mute voice guidance' : 'Enable voice guidance'}
                     onPress={toggleVoiceGuidance}
-                    style={({ pressed }) => [{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 22,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: voiceGuidanceEnabled ? 'rgba(29,63,179,0.18)' : 'rgba(7,12,24,0.42)',
-                      borderWidth: 1,
-                      borderColor: voiceGuidanceEnabled ? 'rgba(29,63,179,0.22)' : 'rgba(255,255,255,0.10)',
-                      opacity: pressed ? 0.7 : 1,
-                    }]}
+                    style={({ pressed }) => [
+                      localStyles.voiceButton,
+                      voiceGuidanceEnabled ? localStyles.voiceButtonActive : localStyles.voiceButtonInactive,
+                      pressed && localStyles.voiceButtonPressed,
+                    ]}
                   >
                     <Ionicons
                       name={voiceGuidanceEnabled ? 'volume-high-outline' : 'volume-mute-outline'}
@@ -947,20 +941,20 @@ export function HubScreen({
                     />
                   </Pressable>
                 </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                <View style={localStyles.mapOverlayWrap}>
                   {rideRequest?.driverDisplayName ? (
-                    <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
-                      <Text style={localStyles.mapOverlayText}>{rideRequest.driverDisplayName}</Text>
+                    <View style={localStyles.mapBadge}>
+                      <Text style={localStyles.mapBadgeText}>{rideRequest.driverDisplayName}</Text>
                     </View>
                   ) : null}
                   {rideRequest?.driverVehiclePlate ? (
-                    <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
-                      <Text style={localStyles.mapOverlayText}>{rideRequest.driverVehiclePlate}</Text>
+                    <View style={localStyles.mapBadge}>
+                      <Text style={localStyles.mapBadgeText}>{rideRequest.driverVehiclePlate}</Text>
                     </View>
                   ) : null}
                   {rideRequest?.driverDistanceKm != null || rideRequest?.driverEtaMinutes != null ? (
-                    <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
-                      <Text style={localStyles.mapOverlayText}>
+                    <View style={localStyles.mapBadge}>
+                      <Text style={localStyles.mapBadgeText}>
                         {rideRequest.driverDistanceKm != null ? `${rideRequest.driverDistanceKm} km` : t(locale, 'common.loading')} · {rideRequest.driverEtaMinutes != null ? `${rideRequest.driverEtaMinutes} min` : t(locale, 'common.loading')}
                       </Text>
                     </View>
@@ -1512,5 +1506,43 @@ const localStyles = {
     fontSize: 9,
     flexShrink: 1,
     maxWidth: '100%',
+  },
+  mapOverlayContent: {
+    flex: 1,
+  },
+  mapOverlayWrap: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 8,
+    marginTop: 10,
+  },
+  mapBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  mapBadgeText: {
+    color: '#06B6D4',
+    fontFamily: 'Poppins-SemiBold',
+  },
+  voiceButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    borderWidth: 1,
+  },
+  voiceButtonActive: {
+    backgroundColor: 'rgba(29,63,179,0.18)',
+    borderColor: 'rgba(29,63,179,0.22)',
+  },
+  voiceButtonInactive: {
+    backgroundColor: 'rgba(7,12,24,0.42)',
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  voiceButtonPressed: {
+    opacity: 0.7,
   },
 };
