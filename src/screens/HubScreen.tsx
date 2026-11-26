@@ -906,7 +906,7 @@ export function HubScreen({
             )}
             <View style={localStyles.mapPanel}>
               <MapboxNaviView
-                height={620}
+                height={680}
                 origin={liveRouteOrigin}
                 destination={liveRouteDestination}
                 route={liveRoute}
@@ -1604,7 +1604,7 @@ const localStyles = {
   mapPanel: {
     marginTop: 20,
     overflow: 'hidden' as const,
-    minHeight: 640,
+    minHeight: 700,
     borderRadius: 30,
     backgroundColor: '#070d18',
     borderWidth: 1,
