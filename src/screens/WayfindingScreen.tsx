@@ -1,8 +1,8 @@
 import React from 'react';
-import { Linking, Platform, ScrollView, Text, View } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Linking, ScrollView, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MapboxNaviView from '../components/MapboxNaviView';
 import { getScreenCopy } from '../screenCopy';
 import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
 import {
@@ -70,24 +70,14 @@ export function WayfindingScreen({
         </Card>
         <Card title={copy.mapTitle} subtitle={copy.mapSubtitle} wide>
           <View style={styles.mapPanel}>
-            <MapView
-              style={styles.mapView}
-              initialRegion={{
-                latitude: venueCoordinate.latitude,
-                longitude: venueCoordinate.longitude,
-                latitudeDelta: 0.03,
-                longitudeDelta: 0.03,
-              }}
-              provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-              showsCompass={false}
-              showsTraffic
-            >
-              <Marker
-                coordinate={venueCoordinate}
-                title={title}
-                description="Match venue"
-              />
-            </MapView>
+            <MapboxNaviView
+              height={320}
+              origin={venueCoordinate}
+              destination={venueCoordinate}
+              title={venueName}
+              subtitle={`${city}, ${country}`}
+              liveLabel={copy.mapSubtitle}
+            />
             <View style={styles.mapOverlay}>
               <Text style={styles.cardTitle}>{venueName}</Text>
               <Text style={styles.muted}>
