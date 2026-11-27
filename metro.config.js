@@ -8,9 +8,8 @@ const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
  */
 const config = {
   resolver: {
-    // Keep Metro on CommonJS resolution for packages that still break on the
-    // ESM/package-exports path and surface `import.meta` at runtime.
-    unstable_enablePackageExports: false,
+    // Keep package exports enabled so RN image assets resolve correctly.
+    unstable_enablePackageExports: true,
   },
 };
 
