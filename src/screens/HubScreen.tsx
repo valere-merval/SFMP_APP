@@ -695,132 +695,158 @@ export function HubScreen({
                     {t(locale, 'common.loading')}
                   </Text>
                 ) : driverRequests.length ? (
-                  driverRequests.map(request => (
-                    <View key={request.id}>
-                      <View>
-                        <Text style={localStyles.mapOverlayTitle}>
-                          {request.passengerName}
-                        </Text>
-                        <Text
-                          numberOfLines={2}
-                          style={localStyles.mapOverlayText}
-                        >
+                  driverRequests.map(request => {
+                    const requestRideStatus = rideStatusStyle(request.status, locale);
+                    return (
+                      <View key={request.id} style={localStyles.requestCard}>
+                        <View style={localStyles.requestTopRow}>
+                          <View style={localStyles.requestPassengerWrap}>
+                            <View style={localStyles.requestAvatar}>
+                              <Text style={localStyles.requestAvatarText}>
+                                {(request.passengerName || 'P').slice(0, 1).toUpperCase()}
+                              </Text>
+                            </View>
+                            <View style={localStyles.requestHeaderCopy}>
+                              <Text style={localStyles.mapOverlayTitle} numberOfLines={1}>
+                                {request.passengerName}
+                              </Text>
+                              <Text numberOfLines={1} style={localStyles.mapOverlayText}>
+                                {request.pickupLabel}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={localStyles.requestStatusPill}>
+                            <Text style={localStyles.requestStatusPillText}>{requestRideStatus.label}</Text>
+                          </View>
+                        </View>
+                        <Text numberOfLines={2} style={localStyles.requestRouteText}>
                           {request.pickupLabel} → {request.destinationLabel}
                         </Text>
-                        <Text
-                          numberOfLines={2}
-                          style={localStyles.mapOverlayText}
-                        >
-                          {request.status}
-                        </Text>
+                        <View style={localStyles.requestMetaRow}>
+                          {request.driverDistanceKm != null ? (
+                            <View style={localStyles.requestMetaChip}>
+                              <Text style={localStyles.requestMetaChipText}>{request.driverDistanceKm} km</Text>
+                            </View>
+                          ) : null}
+                          {request.driverEtaMinutes != null ? (
+                            <View style={localStyles.requestMetaChip}>
+                              <Text style={localStyles.requestMetaChipText}>{request.driverEtaMinutes} min</Text>
+                            </View>
+                          ) : null}
+                          {request.driverVehiclePlate ? (
+                            <View style={localStyles.requestMetaChip}>
+                              <Text style={localStyles.requestMetaChipText}>{request.driverVehiclePlate}</Text>
+                            </View>
+                          ) : null}
+                        </View>
+                        {request.status === 'PENDING' ? (
+                          <View style={styles.ctaRow}>
+                            <SecondaryButton
+                              label={t(locale, 'common.refuse')}
+                              onPress={() => {
+                                refuseRideRequest(request.id);
+                              }}
+                            />
+                            <PrimaryButton
+                              label={t(locale, 'common.accept')}
+                              onPress={() => {
+                                getCurrentCoordinates()
+                                  .then((driverCoordinates) =>
+                                    acceptRideRequest(request.id, {
+                                      driverLatitude: driverCoordinates?.latitude,
+                                      driverLongitude: driverCoordinates?.longitude,
+                                    }),
+                                  )
+                                  .then(accepted => {
+                                    setDriverRequests(current =>
+                                      current.map(item =>
+                                        item.id === accepted.id ? accepted : item,
+                                      ),
+                                    );
+                                    setRideRequest(accepted);
+                                    setRequestStatus(
+                                      `${accepted.passengerName}${
+                                        accepted.driverDisplayName ? ` · ${accepted.driverDisplayName}` : ''
+                                      }${
+                                        accepted.driverVehiclePlate ? ` · ${accepted.driverVehiclePlate}` : ''
+                                      }${
+                                        accepted.driverDistanceKm != null
+                                          ? ` · ${accepted.driverDistanceKm} km`
+                                          : ''
+                                      }${
+                                        accepted.driverEtaMinutes != null
+                                          ? ` · ${accepted.driverEtaMinutes} min`
+                                          : ''
+                                      }`,
+                                    );
+                                  });
+                              }}
+                              icon={
+                                <Ionicons
+                                  name="checkmark"
+                                  size={16}
+                                  color="#f8fafc"
+                                />
+                              }
+                            />
+                          </View>
+                        ) : request.status === 'ACCEPTED' ? (
+                          <View style={styles.ctaRow}>
+                            <SecondaryButton
+                              label={t(locale, 'common.arrived')}
+                              onPress={() => {
+                                markRideRequestArrived(request.id);
+                              }}
+                            />
+                            <PrimaryButton
+                              label={t(locale, 'common.startTrip')}
+                              onPress={() => {
+                                startRideRequestTrip(request.id);
+                              }}
+                              icon={
+                                <Ionicons
+                                  name="navigate-circle-outline"
+                                  size={16}
+                                  color="#f8fafc"
+                                />
+                              }
+                            />
+                          </View>
+                        ) : request.status === 'ARRIVED_AT_PICKUP' ? (
+                          <View style={styles.ctaRow}>
+                            <SecondaryButton
+                              label={t(locale, 'common.passengerBoarded')}
+                              onPress={() => {
+                                startRideRequestTrip(request.id);
+                              }}
+                            />
+                            <PrimaryButton
+                              label={t(locale, 'common.startTrip')}
+                              onPress={() => {
+                                startRideRequestTrip(request.id);
+                              }}
+                              icon={
+                                <Ionicons
+                                  name="navigate-circle-outline"
+                                  size={16}
+                                  color="#f8fafc"
+                                />
+                              }
+                            />
+                          </View>
+                        ) : request.status === 'IN_PROGRESS' ? (
+                          <View style={styles.ctaRow}>
+                            <SecondaryButton
+                              label={t(locale, 'common.completeTrip')}
+                              onPress={() => {
+                                completeRideRequestTrip(request.id);
+                              }}
+                            />
+                          </View>
+                        ) : null}
                       </View>
-                      {request.status === 'PENDING' ? (
-                        <View style={styles.ctaRow}>
-                          <SecondaryButton
-                            label={t(locale, 'common.refuse')}
-                            onPress={() => {
-                              refuseRideRequest(request.id);
-                            }}
-                          />
-                          <PrimaryButton
-                            label={t(locale, 'common.accept')}
-                            onPress={() => {
-                              getCurrentCoordinates()
-                                .then((driverCoordinates) =>
-                                  acceptRideRequest(request.id, {
-                                    driverLatitude: driverCoordinates?.latitude,
-                                    driverLongitude: driverCoordinates?.longitude,
-                                  }),
-                                )
-                                .then(accepted => {
-                                  setDriverRequests(current =>
-                                    current.map(item =>
-                                      item.id === accepted.id ? accepted : item,
-                                    ),
-                                  );
-                                  setRideRequest(accepted);
-                                  setRequestStatus(
-                                    `${accepted.passengerName}${
-                                      accepted.driverDisplayName ? ` · ${accepted.driverDisplayName}` : ''
-                                    }${
-                                      accepted.driverVehiclePlate ? ` · ${accepted.driverVehiclePlate}` : ''
-                                    }${
-                                      accepted.driverDistanceKm != null
-                                        ? ` · ${accepted.driverDistanceKm} km`
-                                        : ''
-                                    }${
-                                      accepted.driverEtaMinutes != null
-                                        ? ` · ${accepted.driverEtaMinutes} min`
-                                        : ''
-                                    }`,
-                                  );
-                                });
-                            }}
-                            icon={
-                              <Ionicons
-                                name="checkmark"
-                                size={16}
-                                color="#f8fafc"
-                              />
-                            }
-                          />
-                        </View>
-                      ) : request.status === 'ACCEPTED' ? (
-                        <View style={styles.ctaRow}>
-                          <SecondaryButton
-                            label={t(locale, 'common.arrived')}
-                            onPress={() => {
-                              markRideRequestArrived(request.id);
-                            }}
-                          />
-                          <PrimaryButton
-                            label={t(locale, 'common.startTrip')}
-                            onPress={() => {
-                              startRideRequestTrip(request.id);
-                            }}
-                            icon={
-                              <Ionicons
-                                name="navigate-circle-outline"
-                                size={16}
-                                color="#f8fafc"
-                              />
-                            }
-                          />
-                        </View>
-                      ) : request.status === 'ARRIVED_AT_PICKUP' ? (
-                        <View style={styles.ctaRow}>
-                          <SecondaryButton
-                            label={t(locale, 'common.passengerBoarded')}
-                            onPress={() => {
-                              startRideRequestTrip(request.id);
-                            }}
-                          />
-                          <PrimaryButton
-                            label={t(locale, 'common.startTrip')}
-                            onPress={() => {
-                              startRideRequestTrip(request.id);
-                            }}
-                            icon={
-                              <Ionicons
-                                name="navigate-circle-outline"
-                                size={16}
-                                color="#f8fafc"
-                              />
-                            }
-                          />
-                        </View>
-                      ) : request.status === 'IN_PROGRESS' ? (
-                        <View style={styles.ctaRow}>
-                          <SecondaryButton
-                            label={t(locale, 'common.completeTrip')}
-                            onPress={() => {
-                              completeRideRequestTrip(request.id);
-                            }}
-                          />
-                        </View>
-                      ) : null}
-                    </View>
-                  ))
+                    );
+                  })
                 ) : (
                   <EmptyState
                     icon="car-sport-outline"
@@ -1666,6 +1692,86 @@ const localStyles = {
   },
   mapBadgeText: {
     color: '#d9ff6f',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+  },
+  requestCard: {
+    padding: 14,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+    gap: 12,
+  },
+  requestTopRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    gap: 10,
+  },
+  requestPassengerWrap: {
+    flex: 1,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 10,
+    minWidth: 0,
+  },
+  requestAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: 'rgba(0,229,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(157, 245, 255, 0.16)',
+  },
+  requestAvatarText: {
+    color: '#f8fbff',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 13,
+  },
+  requestHeaderCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: 1,
+  },
+  requestStatusPill: {
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(200,243,106,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(200,243,106,0.15)',
+  },
+  requestStatusPillText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 10,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.6,
+  },
+  requestRouteText: {
+    color: '#e4efff',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  requestMetaRow: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 6,
+  },
+  requestMetaChip: {
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  requestMetaChipText: {
+    color: '#9df5ff',
     fontFamily: 'Poppins-SemiBold',
     fontSize: 11,
   },
