@@ -7,6 +7,7 @@ import { requestCurrentCoordinates, type Coordinate } from '../location';
 import type { LiveData, MobilityCard } from '../types';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import { t, type Locale } from '../i18n';
+import { openGoogleMapsDirections } from '../maps';
 
 type MicroMobilityScreenProps = {
   locale: Locale;
@@ -23,6 +24,13 @@ function mobilityLabel(locale: Locale, item: MobilityCard) {
   }
   return { label: t(locale, 'journey.scooterLabel'), icon: 'scooter-outline' as const };
 }
+
+const mobilityDestination = (item: MobilityCard) => {
+  if (item.latitude != null && item.longitude != null) {
+    return `${item.latitude},${item.longitude}`;
+  }
+  return item.stationAddress?.trim() || '';
+};
 
 export function MicroMobilityScreen({ locale, data, venueName, city, country }: MicroMobilityScreenProps) {
   const mobility = useMemo(
@@ -96,20 +104,32 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
           <MapboxNaviView
             height={390}
             origin={currentLocation}
-            destination={selected ? currentLocation ?? undefined : currentLocation}
+            destination={
+              selected?.latitude != null && selected.longitude != null
+                ? { latitude: selected.latitude, longitude: selected.longitude }
+                : currentLocation ?? undefined
+            }
             title={selectedLabel?.label ?? mapTitle}
-            subtitle={selected ? selected.mode : mapTitle}
+            subtitle={selected ? `${selected.mode}${selected.stationAddress ? ` · ${selected.stationAddress}` : ''}` : mapTitle}
             liveLabel={selected ? `${selected.duration} · ${selected.price}` : t(locale, 'common.backendUnavailable')}
           />
           <View style={styles.ctaRow}>
             <PrimaryButton
               label={t(locale, 'common.navigate')}
-              onPress={() => undefined}
+              onPress={() => {
+                if (selected) {
+                  void openGoogleMapsDirections(mobilityDestination(selected) || mapTitle);
+                }
+              }}
               icon={<Ionicons name="walk-outline" size={16} color="#f8fafc" />}
             />
             <SecondaryButton
               label={t(locale, 'common.openInGoogleMaps')}
-              onPress={() => undefined}
+              onPress={() => {
+                if (selected) {
+                  void openGoogleMapsDirections(mobilityDestination(selected) || mapTitle);
+                }
+              }}
               icon={<Ionicons name="map-outline" size={16} color="#22d3ee" />}
             />
           </View>

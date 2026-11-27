@@ -52,6 +52,10 @@ export type MobilityCard = {
   duration: string;
   price: string;
   badge: string;
+  stationAddress?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  vehicleLabel?: string;
 };
 
 export type BookingCard = {
@@ -220,6 +224,9 @@ export type TransportProviderView = {
   active: boolean;
   city: string;
   country: string;
+  stationAddress?: string;
+  stationLatitude?: number | null;
+  stationLongitude?: number | null;
   ownerName: string;
   driverName: string;
   vehiclePlate: string;

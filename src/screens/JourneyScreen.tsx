@@ -13,7 +13,7 @@ import { t, type Locale } from '../i18n';
 import { requestCurrentCoordinates, type Coordinate } from '../location';
 import { loadVoiceGuidanceEnabled, saveVoiceGuidanceEnabled, speakVoiceGuidance, stopVoiceGuidance } from '../voice';
 
-type ModeKey = 'bus' | 'train' | 'metro' | 'scooter' | 'bike' | 'taxi' | 'vtc';
+type ModeKey = 'bus' | 'train' | 'tram' | 'metro' | 'scooter' | 'bike' | 'taxi' | 'vtc';
 
 type ModeCard = {
   key: ModeKey;
@@ -26,6 +26,7 @@ type ModeCard = {
 const modeCards: ModeCard[] = [
   { key: 'bus', labelKey: 'journey.busLabel', subtitleKey: 'journey.busSubtitle', icon: <Ionicons name="bus-outline" size={20} color="#f8fafc" />, regex: /bus/i },
   { key: 'train', labelKey: 'journey.trainLabel', subtitleKey: 'journey.trainSubtitle', icon: <Ionicons name="train-outline" size={20} color="#f8fafc" />, regex: /train/i },
+  { key: 'tram', labelKey: 'journey.tramLabel', subtitleKey: 'journey.tramSubtitle', icon: <Ionicons name="train-outline" size={20} color="#f8fafc" />, regex: /tram|streetcar|light rail/i },
   { key: 'metro', labelKey: 'journey.metroLabel', subtitleKey: 'journey.metroSubtitle', icon: <Ionicons name="subway-outline" size={20} color="#f8fafc" />, regex: /metro|subway/i },
   { key: 'scooter', labelKey: 'journey.scooterLabel', subtitleKey: 'journey.scooterSubtitle', icon: <Feather name="navigation" size={20} color="#f8fafc" />, regex: /scooter/i },
   { key: 'bike', labelKey: 'journey.bikeLabel', subtitleKey: 'journey.bikeSubtitle', icon: <Feather name="map-pin" size={20} color="#f8fafc" />, regex: /bike|bicycle/i },

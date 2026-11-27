@@ -5,6 +5,7 @@ import { loadTransportAvailability, loadTransportProfile, saveTransportAvailabil
 import { type LiveData, type TransportProviderView } from '../types';
 import { Card, EmptyState, PrimaryButton, SecondaryButton, styles as uiStyles } from '../ui';
 import { t, type Locale } from '../i18n';
+import { openGoogleMapsDirections } from '../maps';
 
 const modeLabel = (locale: Locale, providerType: string) => {
   const value = providerType.trim().toLowerCase();
@@ -13,7 +14,15 @@ const modeLabel = (locale: Locale, providerType: string) => {
   if (value.includes('shuttle')) return t(locale, 'journey.shuttleLabel');
   if (value.includes('bus')) return t(locale, 'journey.busLabel');
   if (value.includes('train')) return t(locale, 'journey.trainLabel');
+  if (value.includes('tram')) return t(locale, 'journey.tramLabel');
   return providerType;
+};
+
+const providerDestination = (provider: TransportProviderView) => {
+  if (provider.stationLatitude != null && provider.stationLongitude != null) {
+    return `${provider.stationLatitude},${provider.stationLongitude}`;
+  }
+  return provider.stationAddress?.trim() || `${provider.city}, ${provider.country}`;
 };
 
 export function TransportScreen({
@@ -252,7 +261,16 @@ export function TransportScreen({
                     <Text style={screenStyles.providerTitle}>{provider.displayName}</Text>
                     <Text style={screenStyles.providerBody}>{provider.driverName} · {provider.vehicleLabel}</Text>
                     <Text style={screenStyles.providerBody}>{provider.city}, {provider.country}</Text>
+                    {provider.stationAddress ? <Text style={screenStyles.providerBody}>{provider.stationAddress}</Text> : null}
                     {provider.publicNotes ? <Text style={screenStyles.providerNotes}>{provider.publicNotes}</Text> : null}
+                    <Pressable
+                      onPress={() => {
+                        void openGoogleMapsDirections(providerDestination(provider));
+                      }}
+                      style={screenStyles.stationButton}
+                    >
+                      <Text style={screenStyles.stationButtonText}>{t(locale, 'common.navigate')}</Text>
+                    </Pressable>
                   </View>
                 ))}
               </View>
@@ -390,6 +408,15 @@ const screenStyles = StyleSheet.create({
   providerTitle: { color: '#f8fafc', fontFamily: 'Poppins-Bold', fontSize: 16 },
   providerBody: { color: '#9fb2cb', fontFamily: 'Poppins-Regular' },
   providerNotes: { color: '#f8fafc', fontFamily: 'Poppins-Medium' },
+  stationButton: {
+    marginTop: 2,
+    alignSelf: 'flex-start',
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    backgroundColor: '#c8f36a',
+  },
+  stationButtonText: { color: '#09111f', fontFamily: 'Poppins-Bold', fontSize: 12 },
   summaryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   summaryPill: {
     minWidth: 78,
