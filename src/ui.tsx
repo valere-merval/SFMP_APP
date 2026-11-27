@@ -172,7 +172,7 @@ export const styles = StyleSheet.create({
   container: {
     gap: 14,
     backgroundColor: '#0a0f1d',
-    paddingBottom: 160,
+    paddingBottom: 220,
   },
   header: {
     padding: 18,

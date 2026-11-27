@@ -97,8 +97,8 @@ export function MapboxNaviView({ origin, destination, route, height = 600, title
   if (!MAPBOX_ACCESS_TOKEN || MAPBOX_ACCESS_TOKEN === 'PASTE_YOUR_MAPBOX_ACCESS_TOKEN_HERE' || !Mapbox) {
     return (
       <View style={[naviStyles.fallback, { height }]}>
-        <Text style={naviStyles.fallbackTitle}>Navigation token missing</Text>
-        <Text style={naviStyles.fallbackSubtitle}>Add your navigation token in src/config.ts to enable live routing.</Text>
+        <Text style={naviStyles.fallbackTitle}>Navigation unavailable</Text>
+        <Text style={naviStyles.fallbackSubtitle}>Waiting for the live position needed to start guidance.</Text>
       </View>
     );
   }

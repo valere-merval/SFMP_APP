@@ -105,7 +105,7 @@ function formatCountdown(date: string, time: string) {
 
 type Coordinate = { latitude: number; longitude: number };
 
-const fallbackCoordinate: Coordinate = { latitude: 40.4531, longitude: -3.6883 };
+const fallbackCoordinate: Coordinate | null = null;
 
 function getCurrentCoordinates(): Promise<Coordinate | null> {
   const geolocation = (globalThis as typeof globalThis & {
@@ -506,14 +506,14 @@ export function HubScreen({
       : null;
   const liveRouteOrigin =
     rideRequest?.status === 'IN_PROGRESS'
-      ? rideDriverCoordinate ?? ridePickupCoordinate ?? currentLocation ?? fallbackCoordinate
-      : rideDriverCoordinate ?? ridePickupCoordinate ?? currentLocation ?? fallbackCoordinate;
+      ? rideDriverCoordinate ?? ridePickupCoordinate ?? currentLocation ?? null
+      : rideDriverCoordinate ?? ridePickupCoordinate ?? currentLocation ?? null;
   const liveRouteDestination =
     rideRequest?.status === 'IN_PROGRESS'
-      ? rideDestinationCoordinate ?? ridePickupCoordinate ?? currentLocation ?? fallbackCoordinate
+      ? rideDestinationCoordinate ?? ridePickupCoordinate ?? currentLocation ?? null
       : rideRequest?.status === 'ACCEPTED' || rideRequest?.status === 'ARRIVED_AT_PICKUP'
-        ? ridePickupCoordinate ?? rideDestinationCoordinate ?? currentLocation ?? fallbackCoordinate
-        : rideDestinationCoordinate ?? ridePickupCoordinate ?? currentLocation ?? fallbackCoordinate;
+        ? ridePickupCoordinate ?? rideDestinationCoordinate ?? currentLocation ?? null
+        : rideDestinationCoordinate ?? ridePickupCoordinate ?? currentLocation ?? null;
   const liveRoute = buildRideRouteCoordinates(
     rideRequest?.status === 'IN_PROGRESS'
       ? rideDriverCoordinate
