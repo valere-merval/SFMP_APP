@@ -33,6 +33,57 @@ function FlagBadge({ value, title }: { value: string; title: string }) {
   return <Text style={localStyles.flagText}>{value}</Text>;
 }
 
+const hubSectionCopy = {
+  en: {
+    signalsHint: 'Traffic + reroutes stay readable while you scroll.',
+    messagesHint: 'Live fan messages adapt to the match context.',
+    signalsPill: 'Live traffic',
+    messagesPill: 'Context aware',
+  },
+  fr: {
+    signalsHint: 'Les signaux de trafic et de détour restent lisibles pendant le scroll.',
+    messagesHint: 'Les messages fans s’adaptent au contexte du match.',
+    signalsPill: 'Trafic en direct',
+    messagesPill: 'Contexte adaptatif',
+  },
+  de: {
+    signalsHint: 'Verkehr und Umleitungen bleiben beim Scrollen gut lesbar.',
+    messagesHint: 'Kontextnachrichten passen sich dem Spiel an.',
+    signalsPill: 'Live-Verkehr',
+    messagesPill: 'Kontextbezogen',
+  },
+  es: {
+    signalsHint: 'El tráfico y los desvíos siguen claros al desplazarte.',
+    messagesHint: 'Los mensajes se adaptan al contexto del partido.',
+    signalsPill: 'Tráfico en vivo',
+    messagesPill: 'Contexto dinámico',
+  },
+  pt: {
+    signalsHint: 'Trânsito e desvios seguem legíveis durante a rolagem.',
+    messagesHint: 'As mensagens se adaptam ao contexto da partida.',
+    signalsPill: 'Tráfego ao vivo',
+    messagesPill: 'Contexto adaptável',
+  },
+  ar: {
+    signalsHint: 'يبقى المرور والتحويلات واضحين أثناء التمرير.',
+    messagesHint: 'تتكيف رسائل المشجعين مع سياق المباراة.',
+    signalsPill: 'حركة مباشرة',
+    messagesPill: 'سياق متكيف',
+  },
+  zh: {
+    signalsHint: '滚动时，交通与绕行信息依然清晰可读。',
+    messagesHint: '球迷消息会随比赛情境自动调整。',
+    signalsPill: '实时交通',
+    messagesPill: '情境自适应',
+  },
+  ru: {
+    signalsHint: 'Поток и объезды остаются читаемыми при прокрутке.',
+    messagesHint: 'Сообщения для фанатов подстраиваются под контекст матча.',
+    signalsPill: 'Живой трафик',
+    messagesPill: 'Контекстно',
+  },
+} as const;
+
 function formatCountdown(date: string, time: string) {
   const target = new Date(`${date}T${time.length === 5 ? `${time}:00` : time}`);
   if (Number.isNaN(target.getTime())) {
@@ -103,6 +154,7 @@ export function HubScreen({
   onChangeEvent: () => void;
 }) {
   const copy = getScreenCopy(locale).hub;
+  const hubCopy = hubSectionCopy[locale];
   const hero = selectedMatch;
   const [ticket, setTicket] = useState<TicketPurchaseResponse | null>(null);
   const [ticketError, setTicketError] = useState<string | null>(null);
@@ -1173,6 +1225,13 @@ export function HubScreen({
         {/*</Card>*/}
 
         <Card title={copy.signalsTitle} subtitle={copy.signalsSubtitle}>
+          <View style={localStyles.sectionNote}>
+            <Text style={localStyles.sectionHint}>{hubCopy.signalsHint}</Text>
+            <View style={localStyles.localePillsRow}>
+              <View style={localStyles.localePill}><Text style={localStyles.localePillText}>{hubCopy.signalsPill}</Text></View>
+              <View style={localStyles.localePillSecondary}><Text style={localStyles.localePillSecondaryText}>{copy.signalsSubtitle}</Text></View>
+            </View>
+          </View>
           {data ? (
             <>
               {data.traffic.map(item => (
@@ -1204,6 +1263,13 @@ export function HubScreen({
         </Card>
 
         <Card title={copy.messagesTitle} subtitle={copy.messagesSubtitle}>
+          <View style={localStyles.sectionNote}>
+            <Text style={localStyles.sectionHint}>{hubCopy.messagesHint}</Text>
+            <View style={localStyles.localePillsRow}>
+              <View style={localStyles.localePill}><Text style={localStyles.localePillText}>{hubCopy.messagesPill}</Text></View>
+              <View style={localStyles.localePillSecondary}><Text style={localStyles.localePillSecondaryText}>{copy.messagesSubtitle}</Text></View>
+            </View>
+          </View>
           {data ? (
             data.contextualMessages.map(item => (
               <Row
@@ -1445,6 +1511,47 @@ const localStyles = {
     textTransform: 'uppercase' as const,
     fontSize: 12,
     fontFamily: 'Poppins-Bold',
+  },
+  sectionNote: {
+    gap: 10,
+    marginBottom: 12,
+  },
+  sectionHint: {
+    color: '#cbd5e1',
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: 'Poppins-Regular',
+  },
+  localePillsRow: {
+    flexDirection: 'row' as const,
+    flexWrap: 'wrap' as const,
+    gap: 8,
+  },
+  localePill: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: 'rgba(203, 213, 225, 0.12)',
+  },
+  localePillText: {
+    color: '#d9ff6f',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+    letterSpacing: 0.4,
+  },
+  localePillSecondary: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: 'rgba(6, 182, 212, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.2)',
+  },
+  localePillSecondaryText: {
+    color: '#cbd5e1',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+    letterSpacing: 0.4,
   },
   matchHeader: {
     flexDirection: 'row' as const,
