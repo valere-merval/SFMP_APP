@@ -778,19 +778,6 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
               </View>
             </Pressable>
             {availabilityError ? <Text style={screenStyles.error}>{availabilityError}</Text> : null}
-            <Pressable
-              onPress={() => setShowDriverForm((value) => !value)}
-              style={showDriverForm ? screenStyles.primaryToggleActive : screenStyles.primaryToggle}
-            >
-              <Feather name={hasDriverProfile ? 'edit-3' : 'user-plus'} size={16} color={showDriverForm ? '#f8fafc' : '#22d3ee'} />
-              <Text style={showDriverForm ? screenStyles.primaryToggleTextActive : screenStyles.primaryToggleText}>
-                {showDriverForm
-                  ? t(locale, 'profile.closeDriverForm')
-                  : hasDriverProfile
-                    ? t(locale, 'profile.editDriverProfile')
-                    : t(locale, 'profile.registerDriver')}
-              </Text>
-            </Pressable>
             <PrimaryButton
               label={t(locale, 'nav.transport')}
               onPress={() => setShowTransportPanel(true)}
@@ -1141,8 +1128,8 @@ const screenStyles = StyleSheet.create({
   availabilityButtonOff: { backgroundColor: '#fff4e6', borderColor: '#fdba74' },
   availabilityButtonDisabled: { opacity: 0.7 },
   availabilityButtonTextBlock: { flex: 1, gap: 2 },
-  availabilityButtonLabel: { color: '#f8fafc', fontSize: 18, fontFamily: 'Poppins-Bold', textTransform: 'uppercase', letterSpacing: 0.4 },
-  availabilityButtonSub: { color: '#9fb2cb', fontFamily: 'Poppins-Regular' },
+  availabilityButtonLabel: { color: '#07101b', fontSize: 18, fontFamily: 'Poppins-Bold', textTransform: 'uppercase', letterSpacing: 0.4 },
+  availabilityButtonSub: { color: '#0f172a', fontFamily: 'Poppins-Regular' },
   dropdownButton: {
     borderRadius: 18,
     paddingHorizontal: 14,
