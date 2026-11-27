@@ -76,6 +76,9 @@ export function TransportScreen({
     [providers],
   );
   const vtcCount = globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('vtc')).length;
+  const trainCount = globalAvailableProviders.filter((provider) => /train/i.test(provider.providerType)).length;
+  const tramCount = globalAvailableProviders.filter((provider) => /tram|streetcar|light rail/i.test(provider.providerType)).length;
+  const busCount = globalAvailableProviders.filter((provider) => /bus/i.test(provider.providerType)).length;
 
   useEffect(() => {
     let mounted = true;
@@ -169,11 +172,25 @@ export function TransportScreen({
     <View style={screenStyles.screen}>
       <ScrollView contentContainerStyle={screenStyles.container} showsVerticalScrollIndicator={false}>
         <View style={screenStyles.hero}>
-          <Text style={screenStyles.kicker}>TRANSPORT</Text>
+          <Text style={screenStyles.kicker}>TRANSPORT LIVE</Text>
           <Text style={screenStyles.title}>Disponibilité chauffeur</Text>
           <Text style={screenStyles.subtitle}>
             Ton profil chauffeur se gère dans le profil utilisateur. Ici tu bascules seulement entre disponible ou pas disponible pour le match choisi.
           </Text>
+          <View style={uiStyles.statsRow}>
+            <View style={uiStyles.statBox}>
+              <Text style={uiStyles.statLabel}>Actifs</Text>
+              <Text style={uiStyles.statValue}>{globalAvailableProviders.length}</Text>
+            </View>
+            <View style={uiStyles.statBox}>
+              <Text style={uiStyles.statLabel}>Chauffeurs</Text>
+              <Text style={uiStyles.statValue}>{visibleProviders.length}</Text>
+            </View>
+            <View style={uiStyles.statBox}>
+              <Text style={uiStyles.statLabel}>Modes</Text>
+              <Text style={uiStyles.statValue}>{[trainCount, tramCount, busCount, vtcCount].filter((value) => value > 0).length}</Text>
+            </View>
+          </View>
         </View>
 
         <Card title="Match ciblé" subtitle="Choisis l’événement" wide>
@@ -235,8 +252,9 @@ export function TransportScreen({
           <View style={screenStyles.summaryRow}>
             <SummaryPill label="VTC" value={vtcCount} active={vtcCount > 0} />
             <SummaryPill label="Taxi" value={globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('taxi')).length} active={globalAvailableProviders.some((provider) => provider.providerType.toLowerCase().includes('taxi'))} />
-            <SummaryPill label="Bus" value={globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('bus')).length} active={globalAvailableProviders.some((provider) => provider.providerType.toLowerCase().includes('bus'))} />
-            <SummaryPill label="Train" value={globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('train')).length} active={globalAvailableProviders.some((provider) => provider.providerType.toLowerCase().includes('train'))} />
+            <SummaryPill label="Bus" value={busCount} active={busCount > 0} />
+            <SummaryPill label="Train" value={trainCount} active={trainCount > 0} />
+            <SummaryPill label="Tram" value={tramCount} active={tramCount > 0} />
           </View>
           <Text style={uiStyles.helperText}>
             Quand tu passes à disponible, la liste live dans Reise se met à jour et les fans voient ton mode apparaître immédiatement.
@@ -260,8 +278,16 @@ export function TransportScreen({
                     </View>
                     <Text style={screenStyles.providerTitle}>{provider.displayName}</Text>
                     <Text style={screenStyles.providerBody}>{provider.driverName} · {provider.vehicleLabel}</Text>
-                    <Text style={screenStyles.providerBody}>{provider.city}, {provider.country}</Text>
-                    {provider.stationAddress ? <Text style={screenStyles.providerBody}>{provider.stationAddress}</Text> : null}
+                    <View style={screenStyles.providerMetaRow}>
+                      <View style={screenStyles.providerMetaChip}>
+                        <Text style={screenStyles.providerMetaText}>{provider.city}, {provider.country}</Text>
+                      </View>
+                      {provider.stationAddress ? (
+                        <View style={screenStyles.providerMetaChipSoft}>
+                          <Text style={screenStyles.providerMetaText}>{provider.stationAddress}</Text>
+                        </View>
+                      ) : null}
+                    </View>
                     {provider.publicNotes ? <Text style={screenStyles.providerNotes}>{provider.publicNotes}</Text> : null}
                     <Pressable
                       onPress={() => {
@@ -378,12 +404,17 @@ const screenStyles = StyleSheet.create({
   success: { color: '#14532d', fontFamily: 'Poppins-Medium' },
   error: { color: '#b42318', fontFamily: 'Poppins-Medium' },
   providerCard: {
-    padding: 14,
-    borderRadius: 18,
+    padding: 18,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: '#06B6D4',
+    borderColor: 'rgba(0, 229, 255, 0.18)',
     backgroundColor: '#0b1220',
-    gap: 8,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
   },
   providerTop: {
     flexDirection: 'row',
@@ -407,7 +438,25 @@ const screenStyles = StyleSheet.create({
   providerStatus: { color: '#c8f36a', fontFamily: 'Oswald-SemiBold' },
   providerTitle: { color: '#f8fafc', fontFamily: 'Poppins-Bold', fontSize: 16 },
   providerBody: { color: '#9fb2cb', fontFamily: 'Poppins-Regular' },
-  providerNotes: { color: '#f8fafc', fontFamily: 'Poppins-Medium' },
+  providerMetaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  providerMetaChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0, 229, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 229, 255, 0.12)',
+  },
+  providerMetaChipSoft: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: 'rgba(201, 243, 106, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(201, 243, 106, 0.12)',
+  },
+  providerMetaText: { color: '#effbff', fontFamily: 'Poppins-Medium', fontSize: 11 },
+  providerNotes: { color: '#f8fafc', fontFamily: 'Poppins-Medium', backgroundColor: 'rgba(148,163,184,0.08)', padding: 12, borderRadius: 14 },
   stationButton: {
     marginTop: 2,
     alignSelf: 'flex-start',

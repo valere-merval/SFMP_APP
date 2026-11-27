@@ -37,6 +37,8 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
     () => (data?.mobility ?? []).filter((item) => /scooter|bike|bicycle/i.test(item.mode)),
     [data],
   );
+  const bikeCount = mobility.filter((item) => /bike|bicycle/i.test(item.mode)).length;
+  const scooterCount = mobility.filter((item) => /scooter/i.test(item.mode)).length;
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [selectedId, setSelectedId] = useState(mobility[0]?.id ?? '');
   const selected = mobility.find((item) => item.id === selectedId) ?? mobility[0] ?? null;
@@ -91,12 +93,13 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
             </View>
           </View>
           <Text style={heroStyles.heroSubtitle} numberOfLines={2}>
-            {selected ? `${selectedLabel?.label ?? selected.mode} · ${selected.duration}` : t(locale, 'common.available')}
+            {selected ? `${selectedLabel?.label ?? selected.mode} · ${selected.duration} · ${selected.price}` : t(locale, 'common.available')}
           </Text>
           <View style={heroStyles.heroChips}>
             <View style={heroStyles.heroChip}><Text style={heroStyles.heroChipText}>{venueName ?? t(locale, 'common.destination')}</Text></View>
             <View style={heroStyles.heroChip}><Text style={heroStyles.heroChipText}>{selected?.badge ?? t(locale, 'common.backendUnavailable')}</Text></View>
-            <View style={heroStyles.heroChip}><Text style={heroStyles.heroChipText}>{selected?.price ?? '--'}</Text></View>
+            <View style={heroStyles.heroChip}><Text style={heroStyles.heroChipText}>{bikeCount} bikes</Text></View>
+            <View style={heroStyles.heroChip}><Text style={heroStyles.heroChipText}>{scooterCount} scooters</Text></View>
           </View>
         </View>
 
@@ -166,7 +169,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
                     <View style={styles.rowBetween}>
                       <View style={styles.rowLeft}>
                         <View style={styles.buttonContent}>
-                          <View style={styles.buttonIcon}>
+                          <View style={[styles.buttonIcon, item.mode.toLowerCase().includes('scooter') ? mobilityList.scooterIcon : mobilityList.bikeIcon]}>
                             <Ionicons name={label.icon} size={18} color="#f8fafc" />
                           </View>
                           <View style={mobilityList.metaColumn}>
@@ -177,7 +180,19 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
                       </View>
                       <Pill subtle>{item.badge}</Pill>
                     </View>
-                    <Text style={styles.helperText}>{item.duration} · {item.price}</Text>
+                    <View style={mobilityList.metaRow}>
+                      <View style={mobilityList.metaChip}>
+                        <Text style={mobilityList.metaChipText}>{item.duration}</Text>
+                      </View>
+                      <View style={mobilityList.metaChipSoft}>
+                        <Text style={mobilityList.metaChipText}>{item.price}</Text>
+                      </View>
+                      {item.stationAddress ? (
+                        <View style={mobilityList.metaChipGhost}>
+                          <Text style={mobilityList.metaChipText} numberOfLines={1}>{item.stationAddress}</Text>
+                        </View>
+                      ) : null}
+                    </View>
                   </Pressable>
                 );
               })}
@@ -193,8 +208,46 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
 
 const mobilityList = StyleSheet.create({
   listGap: { gap: 12 },
-  selectedCard: { borderColor: '#c8f36a', borderWidth: 1.5 },
+  selectedCard: {
+    borderColor: '#c8f36a',
+    borderWidth: 1.5,
+    backgroundColor: '#0d1627',
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
   metaColumn: { gap: 2, minWidth: 0 },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
+  metaChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(157, 245, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(157, 245, 255, 0.12)',
+  },
+  metaChipSoft: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(201, 243, 106, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(201, 243, 106, 0.12)',
+  },
+  metaChipGhost: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(148, 163, 184, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(148, 163, 184, 0.12)',
+    maxWidth: '100%',
+  },
+  metaChipText: { color: '#f8fbff', fontFamily: 'Poppins-Medium', fontSize: 11 },
+  bikeIcon: { backgroundColor: 'rgba(157, 245, 255, 0.16)' },
+  scooterIcon: { backgroundColor: 'rgba(201, 243, 106, 0.16)' },
 });
 
 const heroStyles = StyleSheet.create({

@@ -36,19 +36,19 @@ const modeCards: ModeCard[] = [
 
 const floatingExpandButtonStyle = {
   position: 'absolute',
-  top: 12,
-  right: 12,
-  width: 38,
-  height: 38,
-  borderRadius: 19,
+  top: 14,
+  right: 14,
+  width: 44,
+  height: 44,
+  borderRadius: 22,
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: 'rgba(16,27,45,0.9)',
+  backgroundColor: 'rgba(7, 13, 24, 0.92)',
   borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.14)',
+  borderColor: 'rgba(0, 229, 255, 0.18)',
 } as const;
 
-const statusBadgeStyle = { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999 } as const;
+const statusBadgeStyle = { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999 } as const;
 
 const statusTextStyle = { fontFamily: 'Poppins-SemiBold' } as const;
 
@@ -57,44 +57,49 @@ const compactHeaderStyle = { marginBottom: 0 } as const;
 const liveVehiclePanelStyle = {
   flexDirection: 'row' as const,
   alignItems: 'center' as const,
-  gap: 14,
-  marginTop: 14,
-  padding: 16,
-  borderRadius: 28,
-  backgroundColor: 'rgba(7, 13, 24, 0.84)',
+  gap: 16,
+  marginTop: 16,
+  padding: 18,
+  borderRadius: 30,
+  backgroundColor: 'rgba(7, 13, 24, 0.88)',
   borderWidth: 1,
-  borderColor: 'rgba(148, 163, 184, 0.18)',
+  borderColor: 'rgba(34, 211, 238, 0.16)',
+  shadowColor: '#000',
+  shadowOpacity: 0.2,
+  shadowRadius: 18,
+  shadowOffset: { width: 0, height: 10 },
+  elevation: 4,
 } as const;
 const liveVehicleImageStyle = {
-  width: 96,
-  height: 96,
-  borderRadius: 26,
+  width: 108,
+  height: 108,
+  borderRadius: 30,
   backgroundColor: 'rgba(15, 23, 42, 0.92)',
 } as const;
 const liveVehicleImageFallbackStyle = {
-  width: 96,
-  height: 96,
-  borderRadius: 26,
+  width: 108,
+  height: 108,
+  borderRadius: 30,
   backgroundColor: 'rgba(15, 23, 42, 0.92)',
   alignItems: 'center' as const,
   justifyContent: 'center' as const,
 } as const;
-const liveVehicleMetaStyle = { flex: 1, gap: 8 } as const;
+const liveVehicleMetaStyle = { flex: 1, gap: 10 } as const;
 const liveVehiclePlateStyle = {
   alignSelf: 'flex-start' as const,
-  paddingHorizontal: 12,
-  paddingVertical: 6,
+  paddingHorizontal: 14,
+  paddingVertical: 7,
   borderRadius: 999,
-  backgroundColor: 'rgba(34, 211, 238, 0.12)',
+  backgroundColor: 'rgba(34, 211, 238, 0.14)',
   borderWidth: 1,
-  borderColor: 'rgba(34, 211, 238, 0.32)',
+  borderColor: 'rgba(34, 211, 238, 0.34)',
 } as const;
 const liveVehicleChipRowStyle = { flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: 8 } as const;
 const liveVehicleChipStyle = {
-  paddingHorizontal: 10,
+  paddingHorizontal: 11,
   paddingVertical: 6,
   borderRadius: 999,
-  backgroundColor: 'rgba(148, 163, 184, 0.1)',
+  backgroundColor: 'rgba(148, 163, 184, 0.12)',
   borderWidth: 1,
   borderColor: 'rgba(148, 163, 184, 0.14)',
 } as const;
@@ -1163,7 +1168,7 @@ export function JourneyScreen({
                   <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{passengerStatus.badge}</Text>
                   <Text style={styles.muted}>{requestSummary}</Text>
                 </View>
-                <Pill subtle={rideRequest.status === 'ACCEPTED'}>{passengerStatus.badge}</Pill>
+                <Pill>{passengerStatus.badge}</Pill>
               </View>
               <Text style={styles.helperText}>
                 {rideRequest.status === 'PENDING'
