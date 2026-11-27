@@ -1,4 +1,5 @@
 import { PermissionsAndroid, Platform } from 'react-native';
+import Geolocation from 'react-native-geolocation-service';
 
 export type Coordinate = {
   latitude: number;
@@ -10,33 +11,43 @@ async function requestAndroidLocationPermission() {
     return true;
   }
 
-  const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, {
-    title: 'Location access required',
-    message: 'Smart Fan Mobility needs your current position to start live navigation and match pickups.',
-    buttonPositive: 'Allow location',
-    buttonNegative: 'Not now',
-  });
+  const results = await PermissionsAndroid.requestMultiple([
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+  ]);
 
-  return granted === PermissionsAndroid.RESULTS.GRANTED;
+  return (
+    results[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED ||
+    results[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED
+  );
 }
 
-export async function requestCurrentCoordinates(): Promise<Coordinate | null> {
-  const permissionGranted = await requestAndroidLocationPermission();
-  if (!permissionGranted) {
-    return null;
+async function requestIosLocationPermission() {
+  if (Platform.OS !== 'ios') {
+    return true;
   }
 
-  const geolocation = (globalThis as typeof globalThis & {
-    navigator?: { geolocation?: { getCurrentPosition: Function } };
-  }).navigator?.geolocation;
+  try {
+    const status = await Geolocation.requestAuthorization('whenInUse');
+    return status === 'granted';
+  } catch {
+    return false;
+  }
+}
 
-  if (!geolocation?.getCurrentPosition) {
-    return null;
+export async function requestLocationPermission() {
+  const iosGranted = await requestIosLocationPermission();
+  if (!iosGranted) {
+    return false;
   }
 
+  return requestAndroidLocationPermission();
+}
+
+async function readCurrentCoordinates(): Promise<Coordinate | null> {
   return new Promise((resolve) => {
-    geolocation.getCurrentPosition(
-      (position: { coords?: { latitude?: number; longitude?: number } }) => {
+    Geolocation.getCurrentPosition(
+      (position) => {
         const latitude = position.coords?.latitude;
         const longitude = position.coords?.longitude;
         if (typeof latitude === 'number' && typeof longitude === 'number') {
@@ -46,7 +57,26 @@ export async function requestCurrentCoordinates(): Promise<Coordinate | null> {
         resolve(null);
       },
       () => resolve(null),
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 },
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 10000,
+        showLocationDialog: true,
+        forceRequestLocation: true,
+      },
     );
   });
+}
+
+export async function getCurrentCoordinates(): Promise<Coordinate | null> {
+  return readCurrentCoordinates();
+}
+
+export async function requestCurrentCoordinates(): Promise<Coordinate | null> {
+  const permissionGranted = await requestLocationPermission();
+  if (!permissionGranted) {
+    return null;
+  }
+
+  return readCurrentCoordinates();
 }

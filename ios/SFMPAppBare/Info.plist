@@ -34,7 +34,9 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string>Allow SFMP to access your location so live navigation, pickups, and driver tracking can work.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Allow SFMP to access your location so live navigation, pickups, and driver tracking can work.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allow SFMP to pick photos for driver documents.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

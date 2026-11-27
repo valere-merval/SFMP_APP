@@ -8,7 +8,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { clearAuthToken, getSessionUser, hydrateAuthToken, loadUserProfile, type UserProfileView } from './src/api';
 import { fetchCatalog } from './src/catalog';
-import { requestCurrentCoordinates, type Coordinate } from './src/location';
+import { getCurrentCoordinates, requestLocationPermission, type Coordinate } from './src/location';
 import { detectLanguage, t, type Locale } from './src/i18n';
 import { EventCatalogScreen } from './src/screens/EventCatalogScreen';
 import { HubScreen } from './src/screens/HubScreen';
@@ -270,13 +270,9 @@ function App(): React.JSX.Element {
       const savedLocationConsent = await AsyncStorage.getItem(LOCATION_CONSENT_KEY);
       if (savedLocationConsent === 'granted') {
         setLocationConsent(true);
-        const coords = await requestCurrentCoordinates();
+        const coords = await getCurrentCoordinates();
         if (coords) {
           setDeviceLocation(coords);
-        } else {
-          setLocationConsent(false);
-          setLocationPromptError(t(locale, 'common.locationRequired'));
-          await AsyncStorage.removeItem(LOCATION_CONSENT_KEY);
         }
       } else {
         setLocationConsent(false);
@@ -331,18 +327,23 @@ function App(): React.JSX.Element {
 
   const requestLocationConsent = useCallback(async () => {
     setLocationPromptError(null);
-    const coords = await requestCurrentCoordinates();
-    if (coords) {
-      setDeviceLocation(coords);
-      setLocationConsent(true);
-      await AsyncStorage.setItem(LOCATION_CONSENT_KEY, 'granted');
-      return true;
+    const permissionGranted = await requestLocationPermission();
+    if (!permissionGranted) {
+      setLocationConsent(false);
+      setLocationPromptError(t(locale, 'common.locationRequired'));
+      await AsyncStorage.removeItem(LOCATION_CONSENT_KEY);
+      return false;
     }
 
-    setLocationConsent(false);
-    setLocationPromptError(t(locale, 'common.locationRequired'));
-    await AsyncStorage.removeItem(LOCATION_CONSENT_KEY);
-    return false;
+    setLocationConsent(true);
+    await AsyncStorage.setItem(LOCATION_CONSENT_KEY, 'granted');
+
+    const coords = await getCurrentCoordinates();
+    if (coords) {
+      setDeviceLocation(coords);
+    }
+
+    return true;
   }, [locale]);
 
   useEffect(() => {
