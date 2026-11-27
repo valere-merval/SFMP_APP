@@ -162,7 +162,7 @@ export function MapboxNaviView({ origin, destination, route, height = 600, title
       </Mapbox.MapView>
 
       <View pointerEvents="none" style={naviStyles.overlay}>
-        <View style={[naviStyles.overlayShell, compactChrome && naviStyles.overlayShellCompact]}>
+        <View style={compactChrome ? naviStyles.overlayShellMinimal : naviStyles.overlayShell}>
           <View style={naviStyles.overlayRow}>
             <View style={naviStyles.overlayTextBlock}>
               <View style={naviStyles.liveBadge}>
@@ -258,6 +258,12 @@ const naviStyles = StyleSheet.create({
   },
   overlayShellCompact: {
     backgroundColor: 'rgba(8, 15, 27, 0.005)',
+    borderColor: 'transparent',
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+  },
+  overlayShellMinimal: {
+    backgroundColor: 'transparent',
     borderColor: 'transparent',
     paddingVertical: 0,
     paddingHorizontal: 0,

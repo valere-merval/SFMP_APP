@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { City, Country } from 'country-state-city';
 import Feather from 'react-native-vector-icons/Feather';
@@ -292,7 +293,7 @@ export function AuthScreen({
   };
 
   return (
-    <View>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView
         contentContainerStyle={[styles.container, authStyles.authContainer]}
         showsVerticalScrollIndicator={false}
@@ -643,7 +644,7 @@ export function AuthScreen({
           </Text>
         ) : null}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
