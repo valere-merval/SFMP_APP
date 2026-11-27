@@ -944,9 +944,9 @@ const screenStyles = StyleSheet.create({
   heroHeader: {
     backgroundColor: 'rgba(7, 13, 24, 0.92)',
     borderRadius: 28,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    gap: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 12,
     borderWidth: 1,
     borderColor: 'rgba(157, 245, 255, 0.08)',
     shadowColor: '#000',
@@ -1027,7 +1027,7 @@ const screenStyles = StyleSheet.create({
   heroChipText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 12 },
   languageControlCard: {
     gap: 10,
-    padding: 14,
+    padding: 12,
     borderRadius: 22,
     backgroundColor: 'rgba(11, 18, 32, 0.82)',
     borderWidth: 1,

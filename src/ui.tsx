@@ -418,8 +418,8 @@ export const styles = StyleSheet.create({
     marginBottom: 0,
   },
   brandLogoWrapCompact: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -428,7 +428,7 @@ export const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   brandLogo: { width: 56, height: 56 },
-  brandLogoCompact: { width: 40, height: 40 },
+  brandLogoCompact: { width: 36, height: 36 },
   avatarPhoto: {
     alignItems: 'center',
     justifyContent: 'center',

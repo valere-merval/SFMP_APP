@@ -651,12 +651,12 @@ export function AuthScreen({
 const authStyles = StyleSheet.create({
   authHeader: {
     paddingTop: 0,
-    paddingBottom: 4,
-    gap: 8,
+    paddingBottom: 0,
+    gap: 6,
   },
   authContainer: {
     paddingTop: 0,
-    paddingBottom: 18,
+    paddingBottom: 8,
     marginBottom: 0,
   },
   heroTopRow: {
