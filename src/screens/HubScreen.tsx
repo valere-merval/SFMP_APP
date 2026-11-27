@@ -84,6 +84,105 @@ const hubSectionCopy = {
   },
 } as const;
 
+const hubLiveRotationCopy = {
+  en: {
+    signals: [
+      { tag: 'Roadworks', title: 'North access lane reduced', detail: 'Expect slower arrivals near Gate B for the next 15 min.' },
+      { tag: 'Event flow', title: 'Shuttle priority active', detail: 'Use the dedicated lane for faster boarding to the stadium.' },
+      { tag: 'Traffic pulse', title: 'Crowd surge after warm-up', detail: 'Main boulevard density is increasing; allow extra time.' },
+    ],
+    messages: [
+      { tag: 'Fans', title: 'Meet-up reminder', detail: 'Supporters heading from the center should regroup at the plaza.' },
+      { tag: 'Ride', title: 'Driver arrival update', detail: 'Your matched driver is 6 min away and sending live route updates.' },
+      { tag: 'Match day', title: 'Gate guidance', detail: 'Keep your ticket ready; gate staff are routing arrivals by sector.' },
+    ],
+  },
+  fr: {
+    signals: [
+      { tag: 'Travaux', title: 'Voie d’accès nord réduite', detail: 'Prévoir un peu plus de temps près de la porte B pendant 15 min.' },
+      { tag: 'Flux', title: 'Priorité navette active', detail: 'Utilise la voie dédiée pour embarquer plus vite vers le stade.' },
+      { tag: 'Trafic', title: 'Pic de foule après l’échauffement', detail: 'Le boulevard principal se densifie, laisse une marge.' },
+    ],
+    messages: [
+      { tag: 'Fans', title: 'Rappel du point de rendez-vous', detail: 'Les supporters venant du centre doivent se regrouper sur la place.' },
+      { tag: 'Trajet', title: 'Mise à jour chauffeur', detail: 'Ton chauffeur est à 6 min et envoie le suivi live.' },
+      { tag: 'Jour de match', title: 'Consigne portes', detail: 'Garde ton billet prêt, les arrivées sont orientées par secteur.' },
+    ],
+  },
+  de: {
+    signals: [
+      { tag: 'Baustelle', title: 'Nordzufahrt verengt', detail: 'Rund um Tor B ist in den nächsten 15 Min. mehr Zeit einzuplanen.' },
+      { tag: 'Ablauf', title: 'Shuttle-Vorrang aktiv', detail: 'Nutze die Sonderspur für schnelleres Boarding zum Stadion.' },
+      { tag: 'Verkehr', title: 'Publikumsanstieg nach dem Warm-up', detail: 'Die Hauptstraße wird dichter; bitte etwas Puffer einplanen.' },
+    ],
+    messages: [
+      { tag: 'Fans', title: 'Treffpunkt-Erinnerung', detail: 'Supporter aus der Innenstadt sollen sich am Platz sammeln.' },
+      { tag: 'Fahrt', title: 'Fahrer-Update', detail: 'Dein Fahrer ist in 6 Min. da und teilt Live-Routenupdates.' },
+      { tag: 'Spieltag', title: 'Torhinweis', detail: 'Ticket bereithalten; das Personal leitet Ankünfte nach Sektor.' },
+    ],
+  },
+  es: {
+    signals: [
+      { tag: 'Obras', title: 'Carril norte reducido', detail: 'Calcula más tiempo cerca de la puerta B durante 15 min.' },
+      { tag: 'Flujo', title: 'Prioridad de shuttle activa', detail: 'Usa el carril dedicado para embarcar antes hacia el estadio.' },
+      { tag: 'Tráfico', title: 'Aumento tras el calentamiento', detail: 'La avenida principal se está llenando; deja margen.' },
+    ],
+    messages: [
+      { tag: 'Fans', title: 'Recordatorio de encuentro', detail: 'Los aficionados del centro deben reunirse en la plaza.' },
+      { tag: 'Viaje', title: 'Actualización del conductor', detail: 'Tu conductor está a 6 min y comparte seguimiento en vivo.' },
+      { tag: 'Partido', title: 'Guía de puertas', detail: 'Ten tu entrada lista; el acceso se está dirigiendo por sector.' },
+    ],
+  },
+  pt: {
+    signals: [
+      { tag: 'Obras', title: 'Faixa norte reduzida', detail: 'Considere mais tempo perto do portão B pelos próximos 15 min.' },
+      { tag: 'Fluxo', title: 'Prioridade de shuttle ativa', detail: 'Use a faixa dedicada para embarque mais rápido ao estádio.' },
+      { tag: 'Tráfego', title: 'Pico após o aquecimento', detail: 'A via principal está ficando mais cheia; reserve margem.' },
+    ],
+    messages: [
+      { tag: 'Fans', title: 'Lembrete do ponto de encontro', detail: 'Torcedores do centro devem se reunir na praça.' },
+      { tag: 'Viagem', title: 'Atualização do motorista', detail: 'Seu motorista está a 6 min e envia o trajeto ao vivo.' },
+      { tag: 'Jogo', title: 'Orientação de portões', detail: 'Mantenha o ingresso pronto; as chegadas estão sendo direcionadas por setor.' },
+    ],
+  },
+  ar: {
+    signals: [
+      { tag: 'أعمال', title: 'المسار الشمالي أضيق الآن', detail: 'توقع تأخيرًا بسيطًا قرب البوابة B خلال 15 دقيقة.' },
+      { tag: 'تدفق', title: 'أولوية النقل السريع مفعّلة', detail: 'استخدم المسار المخصص للصعود الأسرع نحو الملعب.' },
+      { tag: 'ازدحام', title: 'زيادة بعد الإحماء', detail: 'الشارع الرئيسي يزداد ازدحامًا؛ اترك وقتًا إضافيًا.' },
+    ],
+    messages: [
+      { tag: 'المشجعون', title: 'تذكير بنقطة اللقاء', detail: 'المشجعون القادمون من الوسط يجتمعون في الساحة.' },
+      { tag: 'الرحلة', title: 'تحديث السائق', detail: 'سائقك على بعد 6 دقائق ويرسل التتبع المباشر.' },
+      { tag: 'يوم المباراة', title: 'إرشاد البوابات', detail: 'احتفظ بالتذكرة جاهزة؛ تتم توجيه الدخول حسب القطاع.' },
+    ],
+  },
+  zh: {
+    signals: [
+      { tag: '施工', title: '北侧通道缩减', detail: '未来 15 分钟，B 门附近请预留更多时间。' },
+      { tag: '流程', title: '接驳优先通道已开启', detail: '请走专用通道，更快前往体育场。' },
+      { tag: '交通', title: '热身后人流上升', detail: '主干道拥挤度正在增加，请预留缓冲时间。' },
+    ],
+    messages: [
+      { tag: '球迷', title: '集合提醒', detail: '从市中心出发的球迷请在广场集合。' },
+      { tag: '行程', title: '司机更新', detail: '你的司机还有 6 分钟，并会发送实时路线。' },
+      { tag: '比赛日', title: '入口指引', detail: '请准备好门票；现场会按区域引导入场。' },
+    ],
+  },
+  ru: {
+    signals: [
+      { tag: 'Работы', title: 'Северный проезд сужен', detail: 'Около ворот B в ближайшие 15 минут будет медленнее.' },
+      { tag: 'Поток', title: 'Приоритет шаттлов включён', detail: 'Используйте выделенную полосу для более быстрого посадочного потока.' },
+      { tag: 'Трафик', title: 'После разминки поток вырос', detail: 'Основная магистраль загружена — закладывайте запас.' },
+    ],
+    messages: [
+      { tag: 'Фанаты', title: 'Напоминание о встрече', detail: 'Болельщикам из центра нужно собраться на площади.' },
+      { tag: 'Поездка', title: 'Обновление по водителю', detail: 'Ваш водитель будет через 6 минут и отправляет live-маршрут.' },
+      { tag: 'Матч', title: 'Подсказка по воротам', detail: 'Держите билет под рукой; вход распределяется по секторам.' },
+    ],
+  },
+} as const;
+
 function formatCountdown(date: string, time: string) {
   const target = new Date(`${date}T${time.length === 5 ? `${time}:00` : time}`);
   if (Number.isNaN(target.getTime())) {
@@ -174,6 +273,7 @@ export function HubScreen({
   const [driverRequestsLoading, setDriverRequestsLoading] = useState(false);
   const [driverAvailability, setDriverAvailability] = useState<import('../types').TransportAvailabilityView | null>(null);
   const [voiceGuidanceEnabled, setVoiceGuidanceEnabled] = useState(true);
+  const [rotationIndex, setRotationIndex] = useState(0);
   const lastVoiceSummaryRef = useRef('');
   const isDriver = driverAvailability?.available === true;
   const destinationOptions = useMemo(
@@ -218,6 +318,18 @@ export function HubScreen({
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    setRotationIndex(0);
+    const timer = setInterval(() => {
+      setRotationIndex((current) => (current + 1) % 3);
+    }, 30000);
+
+    return () => clearInterval(timer);
+  }, [locale]);
+
+  const activeSignalsNote = hubLiveRotationCopy[locale].signals[rotationIndex % hubLiveRotationCopy[locale].signals.length];
+  const activeMessagesNote = hubLiveRotationCopy[locale].messages[rotationIndex % hubLiveRotationCopy[locale].messages.length];
 
   const rideVoiceSummary = useMemo(() => {
     if (!rideRequest) {
@@ -1231,6 +1343,11 @@ export function HubScreen({
         <Card title={copy.signalsTitle} subtitle={copy.signalsSubtitle}>
           <View style={localStyles.sectionNote}>
             <Text style={localStyles.sectionHint}>{hubCopy.signalsHint}</Text>
+            <View style={localStyles.rotationCard}>
+              <View style={localStyles.rotationChip}><Text style={localStyles.rotationChipText}>{activeSignalsNote.tag}</Text></View>
+              <Text style={localStyles.rotationTitle}>{activeSignalsNote.title}</Text>
+              <Text style={localStyles.rotationDetail}>{activeSignalsNote.detail}</Text>
+            </View>
             <View style={localStyles.localePillsRow}>
               <View style={localStyles.localePill}><Text style={localStyles.localePillText}>{hubCopy.signalsPill}</Text></View>
               <View style={localStyles.localePillSecondary}><Text style={localStyles.localePillSecondaryText}>{copy.signalsSubtitle}</Text></View>
@@ -1269,6 +1386,11 @@ export function HubScreen({
         <Card title={copy.messagesTitle} subtitle={copy.messagesSubtitle}>
           <View style={localStyles.sectionNote}>
             <Text style={localStyles.sectionHint}>{hubCopy.messagesHint}</Text>
+            <View style={localStyles.rotationCard}>
+              <View style={localStyles.rotationChip}><Text style={localStyles.rotationChipText}>{activeMessagesNote.tag}</Text></View>
+              <Text style={localStyles.rotationTitle}>{activeMessagesNote.title}</Text>
+              <Text style={localStyles.rotationDetail}>{activeMessagesNote.detail}</Text>
+            </View>
             <View style={localStyles.localePillsRow}>
               <View style={localStyles.localePill}><Text style={localStyles.localePillText}>{hubCopy.messagesPill}</Text></View>
               <View style={localStyles.localePillSecondary}><Text style={localStyles.localePillSecondaryText}>{copy.messagesSubtitle}</Text></View>
@@ -1521,6 +1643,40 @@ const localStyles = {
     marginBottom: 12,
   },
   sectionHint: {
+    color: '#cbd5e1',
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: 'Poppins-Regular',
+  },
+  rotationCard: {
+    gap: 6,
+    padding: 12,
+    borderRadius: 18,
+    backgroundColor: 'rgba(12, 18, 34, 0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 211, 238, 0.12)',
+  },
+  rotationChip: {
+    alignSelf: 'flex-start' as const,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(217, 255, 111, 0.14)',
+  },
+  rotationChipText: {
+    color: '#d9ff6f',
+    fontSize: 10,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase' as const,
+    fontFamily: 'Poppins-Bold',
+  },
+  rotationTitle: {
+    color: '#f8fafc',
+    fontSize: 15,
+    lineHeight: 20,
+    fontFamily: 'Poppins-SemiBold',
+  },
+  rotationDetail: {
     color: '#cbd5e1',
     fontSize: 12,
     lineHeight: 18,
