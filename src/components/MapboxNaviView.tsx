@@ -162,11 +162,6 @@ export function MapboxNaviView({ origin, destination, route, height = 520, title
               <Text style={naviStyles.liveBadgeText}>{escapeHtml(liveLabel || 'Live')}</Text>
             </View>
           </View>
-          {subtitle ? (
-            <Text style={naviStyles.overlaySubtitle} numberOfLines={1} ellipsizeMode="tail">
-              {escapeHtml(subtitle)}
-            </Text>
-          ) : null}
         </View>
       </View>
     </View>
@@ -235,13 +230,13 @@ const naviStyles = StyleSheet.create({
     borderWidth: 0,
   },
   overlayShell: {
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 22,
-    backgroundColor: 'rgba(8, 15, 27, 0.08)',
+    gap: 0,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(8, 15, 27, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.04)',
   },
   overlayRow: {
     flexDirection: 'row',
@@ -249,15 +244,14 @@ const naviStyles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
   },
-  overlayTitle: { color: '#f8fbff', fontFamily: 'Poppins-SemiBold', fontSize: 12, flexShrink: 1 },
-  overlaySubtitle: { color: 'rgba(255,255,255,0.58)', fontFamily: 'Poppins-Regular', fontSize: 10, lineHeight: 14 },
+  overlayTitle: { color: '#f8fbff', fontFamily: 'Poppins-SemiBold', fontSize: 11.5, flexShrink: 1 },
   liveBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
     borderRadius: 999,
-    backgroundColor: 'rgba(0,229,255,0.1)',
+    backgroundColor: 'rgba(0,229,255,0.08)',
   },
-  liveBadgeText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 10 },
+  liveBadgeText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 9.5 },
 });
 
 export default MapboxNaviView;
