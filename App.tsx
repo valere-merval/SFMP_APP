@@ -107,6 +107,23 @@ const shellStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0, 229, 255, 0.16)',
   },
+  locationActionButton: {
+    minHeight: 38,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(200, 243, 106, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(200, 243, 106, 0.28)',
+  },
+  locationActionText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   locationGate: {
     ...StyleSheet.absoluteFill,
     zIndex: 50,
@@ -236,6 +253,7 @@ function App(): React.JSX.Element {
   const [userProfile, setUserProfile] = useState<AppUserProfile>(null);
   const [deviceLocation, setDeviceLocation] = useState<Coordinate | null>(null);
   const [locationConsent, setLocationConsent] = useState<boolean | null>(null);
+  const [locationPromptVisible, setLocationPromptVisible] = useState(false);
   const [locationPromptError, setLocationPromptError] = useState<string | null>(null);
   const navigationRef = useRef<any>(null);
 
@@ -270,12 +288,14 @@ function App(): React.JSX.Element {
       const savedLocationConsent = await AsyncStorage.getItem(LOCATION_CONSENT_KEY);
       if (savedLocationConsent === 'granted') {
         setLocationConsent(true);
+        setLocationPromptVisible(false);
         const coords = await getCurrentCoordinates();
         if (coords) {
           setDeviceLocation(coords);
         }
       } else {
         setLocationConsent(false);
+        setLocationPromptVisible(true);
       }
 
       const token = await hydrateAuthToken();
@@ -330,12 +350,14 @@ function App(): React.JSX.Element {
     const permissionGranted = await requestLocationPermission();
     if (!permissionGranted) {
       setLocationConsent(false);
+      setLocationPromptVisible(true);
       setLocationPromptError(t(locale, 'common.locationRequired'));
       await AsyncStorage.removeItem(LOCATION_CONSENT_KEY);
       return false;
     }
 
     setLocationConsent(true);
+    setLocationPromptVisible(false);
     await AsyncStorage.setItem(LOCATION_CONSENT_KEY, 'granted');
 
     const coords = await getCurrentCoordinates();
@@ -345,6 +367,7 @@ function App(): React.JSX.Element {
 
     return true;
   }, [locale]);
+
 
   useEffect(() => {
     let active = true;
@@ -447,7 +470,7 @@ function App(): React.JSX.Element {
     [catalog, catalogError, catalogLoading, handleBackToCatalog, handleBackToMatches, loadCatalog, selectedMatch],
   );
 
-  const showLocationGate = session === 'app' && locationConsent !== true;
+  const showLocationGate = session === 'app' && locationConsent !== true && locationPromptVisible;
 
   if (!ready || !iconsReady) {
     return (
@@ -491,6 +514,19 @@ function App(): React.JSX.Element {
                 <BrandLogo compact />
               </Pressable>
             </View>
+            {locationConsent !== true ? (
+              <Pressable
+                style={shellStyles.locationActionButton}
+                onPress={() => {
+                  setLocationPromptVisible(true);
+                  setLocationPromptError(null);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Open location permission prompt"
+              >
+                <Text style={shellStyles.locationActionText}>{t(locale, 'common.allowLocation')}</Text>
+              </Pressable>
+            ) : null}
             <Pressable
               style={shellStyles.avatarButton}
               onPress={handleOpenProfile}
@@ -525,6 +561,25 @@ function App(): React.JSX.Element {
                     ]}
                   >
                     <Text style={{ color: '#08111f', fontFamily: 'Poppins-SemiBold' }}>{t(locale, 'common.allowLocation')}</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      setLocationPromptVisible(false);
+                      setLocationPromptError(null);
+                    }}
+                    style={({ pressed }) => [
+                      {
+                        borderRadius: 18,
+                        paddingVertical: 14,
+                        alignItems: 'center',
+                        backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                        borderWidth: 1,
+                        borderColor: 'rgba(255, 255, 255, 0.08)',
+                        opacity: pressed ? 0.85 : 1,
+                      },
+                    ]}
+                  >
+                    <Text style={{ color: '#dce5f5', fontFamily: 'Poppins-SemiBold' }}>Plus tard</Text>
                   </Pressable>
                   <Text style={shellStyles.locationGateError}>{locationPromptError ?? ''}</Text>
                 </View>
