@@ -879,8 +879,10 @@ export function JourneyScreen({
               <View style={styles.mapOverlay}>
                 <View style={styles.rowBetween}>
                   <View style={styles.rowLeft}>
-                    <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">{activeDriverStatus.badge}</Text>
-                    <Text style={styles.muted} numberOfLines={1} ellipsizeMode="tail">
+                    <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
+                      {activeDriverStatus.badge}
+                    </Text>
+                    <Text style={styles.helperText} numberOfLines={1} ellipsizeMode="tail">
                       {activeDriverRequest ? `${activeDriverRequest.passengerName} · ${activeDriverRequest.pickupLabel}` : activeDriverStatus.detail}
                     </Text>
                   </View>
@@ -888,6 +890,11 @@ export function JourneyScreen({
                     <Text style={[statusTextStyle, { color: activeDriverStatusMeta.color }]}>{activeDriverStatus.badge}</Text>
                   </View>
                 </View>
+                {activeDriverRequest?.driverDistanceKm != null || activeDriverRequest?.driverEtaMinutes != null ? (
+                  <Text style={styles.helperText} numberOfLines={1}>
+                    {activeDriverRequest.driverDistanceKm != null ? `${activeDriverRequest.driverDistanceKm} km` : journeyText(locale, 'distanceUpdating')} · {activeDriverRequest.driverEtaMinutes != null ? `${activeDriverRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
+                  </Text>
+                ) : null}
                 {activeDriverNavigationLabel ? (
                   <View style={styles.ctaRow}>
                     <SecondaryButton
@@ -907,11 +914,6 @@ export function JourneyScreen({
                       icon={<Ionicons name={voiceGuidanceEnabled ? 'volume-high-outline' : 'volume-mute-outline'} size={16} color="#22d3ee" />}
                     />
                   </View>
-                ) : null}
-                {activeDriverRequest?.driverDistanceKm != null || activeDriverRequest?.driverEtaMinutes != null ? (
-                  <Text style={styles.helperText}>
-                    {activeDriverRequest.driverDistanceKm != null ? `${activeDriverRequest.driverDistanceKm} km` : journeyText(locale, 'distanceUpdating')} · {activeDriverRequest.driverEtaMinutes != null ? `${activeDriverRequest.driverEtaMinutes} min` : journeyText(locale, 'etaUpdating')}
-                  </Text>
                 ) : null}
               </View>
             </View>

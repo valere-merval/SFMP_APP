@@ -972,7 +972,7 @@ export function HubScreen({
                             : rideRequest.destinationLabel
                         : requestDestination || hero.venue}
                     </Text>
-                    <Text numberOfLines={2} style={localStyles.mapOverlayText}>
+                    <Text numberOfLines={1} style={localStyles.mapOverlayText}>
                       {rideRequest
                         ? rideRequest.status === 'PENDING'
                           ? `${t(locale, 'common.requestPending')} · ${rideRequest.pickupLabel}`
@@ -1654,12 +1654,12 @@ const localStyles = {
     left: 8,
     right: 8,
     bottom: 8,
-    padding: 10,
+    padding: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(7, 12, 24, 0.06)',
+    backgroundColor: 'rgba(7, 12, 24, 0.03)',
     gap: 4,
     borderWidth: 1,
-    borderColor: 'rgba(157, 245, 255, 0.04)',
+    borderColor: 'rgba(157, 245, 255, 0.03)',
   },
   mapOverlayTitle: {
     color: '#fff',
