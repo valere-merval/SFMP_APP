@@ -10,6 +10,7 @@ import { googleMapsDirectionsUrl, openGoogleMapsDirections, buildRideRouteCoordi
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import type { LiveData, MatchCard, RideRequestView, TransportAvailabilityView, TransportProviderView } from '../types';
 import { t, type Locale } from '../i18n';
+import { requestCurrentCoordinates, type Coordinate } from '../location';
 import { loadVoiceGuidanceEnabled, saveVoiceGuidanceEnabled, speakVoiceGuidance, stopVoiceGuidance } from '../voice';
 
 type ModeKey = 'bus' | 'train' | 'metro' | 'scooter' | 'bike' | 'taxi' | 'vtc';
@@ -408,11 +409,13 @@ export function JourneyScreen({
   loading: _loading,
   locale,
   selectedMatch,
+  currentLocation,
 }: {
   data: LiveData | null;
   loading: boolean;
   locale: Locale;
   selectedMatch: MatchCard | null;
+  currentLocation: Coordinate | null;
 }) {
   const copy = getScreenCopy(locale).journey;
   const match = selectedMatch ?? data?.matches?.[0] ?? null;
@@ -642,6 +645,12 @@ export function JourneyScreen({
         setRequestLoading(false);
         return;
       }
+      const liveOrigin = currentLocation ?? (await requestCurrentCoordinates());
+      if (!liveOrigin) {
+        setRequestError(t(locale, 'common.locationRequired'));
+        setRequestLoading(false);
+        return;
+      }
       const request = await createRideRequest({
         matchId: match.id,
         matchTitle: `${match.homeTeam} vs ${match.awayTeam}`,
@@ -649,6 +658,8 @@ export function JourneyScreen({
         passengerName: me?.fullName,
         providerType: provider.providerType,
         pickupLabel: `${match.city} live pickup`,
+        pickupLatitude: liveOrigin.latitude,
+        pickupLongitude: liveOrigin.longitude,
         destinationLabel: selectedDestination || match.venue,
         note: `Live ride request for ${provider.displayName}`,
       });
@@ -836,8 +847,16 @@ export function JourneyScreen({
                             />
                             <PrimaryButton
                               label={t(locale, 'common.accept')}
-                              onPress={() => {
-                                acceptRideRequest(request.id).then((accepted) => {
+                              onPress={async () => {
+                                const driverLocation = currentLocation ?? (await requestCurrentCoordinates());
+                                if (!driverLocation) {
+                                  setRequestError(t(locale, 'common.locationRequired'));
+                                  return;
+                                }
+                                acceptRideRequest(request.id, {
+                                  driverLatitude: driverLocation.latitude,
+                                  driverLongitude: driverLocation.longitude,
+                                }).then((accepted) => {
                                   setDriverRequests((current) => current.map((item) => (item.id === accepted.id ? accepted : item)));
                                   setStatusMessage(
                                     `${accepted.passengerName}${accepted.driverDistanceKm != null ? ` · ${accepted.driverDistanceKm} km` : ''}${accepted.driverEtaMinutes != null ? ` · ${accepted.driverEtaMinutes} min` : ''}`,
@@ -868,13 +887,13 @@ export function JourneyScreen({
             <View style={styles.mapPanel}>
               <MapboxNaviView
                 height={740}
-                origin={{ latitude: 40.4531, longitude: -3.6883 }}
+                origin={currentLocation}
                 destination={
                   activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
                     ? { latitude: activeDriverRequest.destinationLatitude, longitude: activeDriverRequest.destinationLongitude }
                     : activeDriverRequest?.pickupLatitude != null && activeDriverRequest?.pickupLongitude != null
                       ? { latitude: activeDriverRequest.pickupLatitude, longitude: activeDriverRequest.pickupLongitude }
-                      : { latitude: 40.4531, longitude: -3.6883 }
+                      : currentLocation
                 }
                 route={activeDriverRoute}
                 title={activeDriverStatus.title}
@@ -951,13 +970,13 @@ export function JourneyScreen({
                 <View style={[styles.mapPanel, expandedMapStyle]}>
                   <MapboxNaviView
                     height={780}
-                    origin={{ latitude: 40.4531, longitude: -3.6883 }}
+                    origin={currentLocation}
                     destination={
                       activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
                         ? { latitude: activeDriverRequest.destinationLatitude, longitude: activeDriverRequest.destinationLongitude }
                         : activeDriverRequest?.pickupLatitude != null && activeDriverRequest?.pickupLongitude != null
                           ? { latitude: activeDriverRequest.pickupLatitude, longitude: activeDriverRequest.pickupLongitude }
-                          : { latitude: 40.4531, longitude: -3.6883 }
+                          : currentLocation
                     }
                     route={activeDriverRoute}
                     title={activeDriverStatus.title}
@@ -1020,13 +1039,13 @@ export function JourneyScreen({
           <View style={styles.mapPanel}>
             <MapboxNaviView
               height={640}
-              origin={{ latitude: 40.4531, longitude: -3.6883 }}
+              origin={currentLocation}
               destination={
                 rideRequest?.status === 'IN_PROGRESS' && rideRequest.destinationLatitude != null && rideRequest.destinationLongitude != null
                   ? { latitude: rideRequest.destinationLatitude, longitude: rideRequest.destinationLongitude }
                   : rideRequest?.pickupLatitude != null && rideRequest?.pickupLongitude != null
                     ? { latitude: rideRequest.pickupLatitude, longitude: rideRequest.pickupLongitude }
-                    : { latitude: 40.4531, longitude: -3.6883 }
+                    : currentLocation
               }
               route={passengerRoute}
               title={passengerStatus.title}

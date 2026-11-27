@@ -51,7 +51,6 @@ type RouteFeature = {
   };
 };
 
-const defaultCoordinate: Coordinate = { latitude: 40.4531, longitude: -3.6883 };
 
 function escapeHtml(input: string) {
   return input.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -82,15 +81,15 @@ function buildRouteFeature(route: Coordinate[]): RouteFeature {
 }
 
 export function MapboxNaviView({ origin, destination, route, height = 600, title, subtitle, liveLabel, compactChrome = true }: MapboxNaviViewProps) {
-  const safeOrigin = useMemo(() => origin ?? destination ?? route?.[0] ?? defaultCoordinate, [destination, origin, route]);
+  const safeOrigin = useMemo(() => origin ?? destination ?? route?.[0] ?? null, [destination, origin, route]);
   const safeDestination = useMemo(() => destination ?? route?.[route.length - 1] ?? safeOrigin, [destination, route, safeOrigin]);
   const routeCoords = useMemo(
     () => (route ?? []).filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude)),
     [route],
   );
   const bounds = useMemo(() => {
-    const points = routeCoords.length > 1 ? routeCoords : [safeOrigin, safeDestination];
-    return buildBounds(points);
+    const points = routeCoords.length > 1 ? routeCoords : safeOrigin && safeDestination ? [safeOrigin, safeDestination] : [];
+    return points.length > 0 ? buildBounds(points as Coordinate[]) : null;
   }, [routeCoords, safeDestination, safeOrigin]);
   const routeFeature = useMemo(() => (routeCoords.length > 1 ? buildRouteFeature(routeCoords) : null), [routeCoords]);
   const Mapbox = getMapbox();
@@ -100,6 +99,15 @@ export function MapboxNaviView({ origin, destination, route, height = 600, title
       <View style={[naviStyles.fallback, { height }]}>
         <Text style={naviStyles.fallbackTitle}>Navigation token missing</Text>
         <Text style={naviStyles.fallbackSubtitle}>Add your navigation token in src/config.ts to enable live routing.</Text>
+      </View>
+    );
+  }
+
+  if (!safeOrigin || !safeDestination || !bounds) {
+    return (
+      <View style={[naviStyles.fallback, { height }]}>
+        <Text style={naviStyles.fallbackTitle}>Navigation pending</Text>
+        <Text style={naviStyles.fallbackSubtitle}>Waiting for the live position needed to start guidance.</Text>
       </View>
     );
   }
@@ -128,7 +136,7 @@ export function MapboxNaviView({ origin, destination, route, height = 600, title
               paddingLeft: 90,
               paddingRight: 90,
             },
-            centerCoordinate: toPoint(safeOrigin),
+            centerCoordinate: toPoint(safeOrigin!),
             zoomLevel: 14.3,
             pitch: 58,
             heading: 12,
@@ -144,11 +152,11 @@ export function MapboxNaviView({ origin, destination, route, height = 600, title
           </Mapbox.ShapeSource>
         ) : null}
 
-        <Mapbox.PointAnnotation id="sfmp-origin" coordinate={toPoint(safeOrigin)} title="Origin">
+        <Mapbox.PointAnnotation id="sfmp-origin" coordinate={toPoint(safeOrigin!)} title="Origin">
           <View style={naviStyles.originMarker} />
         </Mapbox.PointAnnotation>
 
-        <Mapbox.PointAnnotation id="sfmp-destination" coordinate={toPoint(safeDestination)} title="Destination">
+        <Mapbox.PointAnnotation id="sfmp-destination" coordinate={toPoint(safeDestination!)} title="Destination">
           <View style={naviStyles.destinationMarker} />
         </Mapbox.PointAnnotation>
       </Mapbox.MapView>

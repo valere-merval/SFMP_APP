@@ -8,6 +8,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { clearAuthToken, getSessionUser, hydrateAuthToken, loadUserProfile, type UserProfileView } from './src/api';
 import { fetchCatalog } from './src/catalog';
+import { requestCurrentCoordinates, type Coordinate } from './src/location';
 import { detectLanguage, t, type Locale } from './src/i18n';
 import { EventCatalogScreen } from './src/screens/EventCatalogScreen';
 import { HubScreen } from './src/screens/HubScreen';
@@ -21,6 +22,7 @@ import type { EventCatalogCard, LiveData, MatchCard } from './src/types';
 import { AvatarPhoto, BrandLogo } from './src/ui';
 
 const LOCALE_KEY = 'sfmp_locale';
+const LOCATION_CONSENT_KEY = 'sfmp_location_consent';
 
 const fonts = {
   tab: 'Poppins-SemiBold',
@@ -105,6 +107,49 @@ const shellStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0, 229, 255, 0.16)',
   },
+  locationGate: {
+    ...StyleSheet.absoluteFill,
+    zIndex: 50,
+    backgroundColor: 'rgba(5, 9, 18, 0.94)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  locationGateCard: {
+    width: '100%',
+    maxWidth: 420,
+    borderRadius: 28,
+    padding: 22,
+    backgroundColor: 'rgba(14, 19, 33, 0.98)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 229, 255, 0.14)',
+  },
+  locationGateTitle: {
+    color: '#f8fbff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 18,
+  },
+  locationGateBody: {
+    color: '#b2bfd4',
+    fontFamily: 'Poppins-Regular',
+    marginTop: 10,
+    lineHeight: 20,
+  },
+  locationGateHint: {
+    color: '#8da0bd',
+    fontFamily: 'Poppins-Regular',
+    marginTop: 8,
+    lineHeight: 18,
+  },
+  locationGateActions: {
+    marginTop: 18,
+    gap: 12,
+  },
+  locationGateError: {
+    color: '#ff9db3',
+    fontFamily: 'Poppins-Medium',
+    marginTop: 10,
+  },
 });
 
 function useCatalogShell() {
@@ -116,7 +161,7 @@ function useCatalogShell() {
   return value;
 }
 
-function HubRoute({ locale }: { locale: Locale }) {
+function HubRoute({ locale, currentLocation }: { locale: Locale; currentLocation: Coordinate | null }) {
   const { catalog, catalogLoading, catalogError, selectedMatch, onRetryCatalog, onChangeMatch, onChangeEvent } = useCatalogShell();
   return (
     <HubScreen
@@ -128,13 +173,14 @@ function HubRoute({ locale }: { locale: Locale }) {
       onRetryCatalog={onRetryCatalog}
       onChangeMatch={onChangeMatch}
       onChangeEvent={onChangeEvent}
+      currentLocation={currentLocation}
     />
   );
 }
 
-function JourneyRoute({ locale }: { locale: Locale }) {
+function JourneyRoute({ locale, currentLocation }: { locale: Locale; currentLocation: Coordinate | null }) {
   const { catalog, catalogLoading, selectedMatch } = useCatalogShell();
-  return <JourneyScreen locale={locale} data={catalog} loading={catalogLoading} selectedMatch={selectedMatch} />;
+  return <JourneyScreen locale={locale} data={catalog} loading={catalogLoading} selectedMatch={selectedMatch} currentLocation={currentLocation} />;
 }
 
 function MobilityRoute({ locale }: { locale: Locale }) {
@@ -188,7 +234,26 @@ function App(): React.JSX.Element {
   const [selectedCatalogId, setSelectedCatalogId] = useState<string | null>(null);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<AppUserProfile>(null);
+  const [deviceLocation, setDeviceLocation] = useState<Coordinate | null>(null);
+  const [locationConsent, setLocationConsent] = useState<boolean | null>(null);
+  const [locationPromptError, setLocationPromptError] = useState<string | null>(null);
   const navigationRef = useRef<any>(null);
+
+  const loadCatalog = useCallback(async () => {
+    setCatalogLoading(true);
+    setCatalogError(null);
+    try {
+      const nextCatalog = await fetchCatalog();
+      setCatalog(nextCatalog);
+      return nextCatalog;
+    } catch {
+      setCatalog(null);
+      setCatalogError(t(locale, 'common.backendUnavailable'));
+      return null;
+    } finally {
+      setCatalogLoading(false);
+    }
+  }, [locale]);
 
   useEffect(() => {
     let mounted = true;
@@ -198,12 +263,50 @@ function App(): React.JSX.Element {
       if (mounted) {
         setIconsReady(true);
       }
+      const savedLocale = await AsyncStorage.getItem(LOCALE_KEY);
+      if (savedLocale && ['en', 'es', 'fr', 'de', 'pt', 'ar', 'zh', 'ru'].includes(savedLocale)) {
+        setLocale(savedLocale as Locale);
+      }
+      const savedLocationConsent = await AsyncStorage.getItem(LOCATION_CONSENT_KEY);
+      if (savedLocationConsent === 'granted') {
+        setLocationConsent(true);
+        const coords = await requestCurrentCoordinates();
+        if (coords) {
+          setDeviceLocation(coords);
+        } else {
+          setLocationConsent(false);
+          setLocationPromptError(t(locale, 'common.locationRequired'));
+          await AsyncStorage.removeItem(LOCATION_CONSENT_KEY);
+        }
+      } else {
+        setLocationConsent(false);
+      }
+
+      const token = await hydrateAuthToken();
+      if (!token) {
+        if (mounted) {
+          setReady(true);
+          setSession('auth');
+        }
+        return;
+      }
+
+      if (mounted) {
+        setSession('catalog');
+        setReady(true);
+      }
+
+      try {
+        await loadCatalog();
+      } catch {
+        // Keep the stored token and stay signed in until the user logs out manually.
+      }
     })();
 
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [loadCatalog]);
 
   const refreshUserProfile = useCallback(async () => {
     try {
@@ -226,20 +329,20 @@ function App(): React.JSX.Element {
     await AsyncStorage.setItem(LOCALE_KEY, nextLocale);
   }, []);
 
-  const loadCatalog = useCallback(async () => {
-    setCatalogLoading(true);
-    setCatalogError(null);
-    try {
-      const nextCatalog = await fetchCatalog();
-      setCatalog(nextCatalog);
-      return nextCatalog;
-    } catch {
-      setCatalog(null);
-      setCatalogError(t(locale, 'common.backendUnavailable'));
-      return null;
-    } finally {
-      setCatalogLoading(false);
+  const requestLocationConsent = useCallback(async () => {
+    setLocationPromptError(null);
+    const coords = await requestCurrentCoordinates();
+    if (coords) {
+      setDeviceLocation(coords);
+      setLocationConsent(true);
+      await AsyncStorage.setItem(LOCATION_CONSENT_KEY, 'granted');
+      return true;
     }
+
+    setLocationConsent(false);
+    setLocationPromptError(t(locale, 'common.locationRequired'));
+    await AsyncStorage.removeItem(LOCATION_CONSENT_KEY);
+    return false;
   }, [locale]);
 
   useEffect(() => {
@@ -343,6 +446,8 @@ function App(): React.JSX.Element {
     [catalog, catalogError, catalogLoading, handleBackToCatalog, handleBackToMatches, loadCatalog, selectedMatch],
   );
 
+  const showLocationGate = session === 'app' && locationConsent !== true;
+
   if (!ready || !iconsReady) {
     return (
       <SafeAreaProvider>
@@ -397,6 +502,34 @@ function App(): React.JSX.Element {
               />
             </Pressable>
           </View>
+          {showLocationGate ? (
+            <View style={shellStyles.locationGate}>
+              <View style={shellStyles.locationGateCard}>
+                <Text style={shellStyles.locationGateTitle}>{t(locale, 'common.locationRequired')}</Text>
+                <Text style={shellStyles.locationGateBody}>{t(locale, 'common.locationRequiredBody')}</Text>
+                <Text style={shellStyles.locationGateHint}>{t(locale, 'common.locationRequiredHint')}</Text>
+                <View style={shellStyles.locationGateActions}>
+                  <Pressable
+                    onPress={() => {
+                      void requestLocationConsent();
+                    }}
+                    style={({ pressed }) => [
+                      {
+                        borderRadius: 18,
+                        paddingVertical: 14,
+                        alignItems: 'center',
+                        backgroundColor: '#00d4ff',
+                        opacity: pressed ? 0.85 : 1,
+                      },
+                    ]}
+                  >
+                    <Text style={{ color: '#08111f', fontFamily: 'Poppins-SemiBold' }}>{t(locale, 'common.allowLocation')}</Text>
+                  </Pressable>
+                  <Text style={shellStyles.locationGateError}>{locationPromptError ?? ''}</Text>
+                </View>
+              </View>
+            </View>
+          ) : null}
           {session === 'catalog' ? (
             <EventCatalogScreen
               locale={locale}
@@ -478,13 +611,13 @@ function App(): React.JSX.Element {
                 })}
                 >
                   <AppStack.Screen name="Hub">
-                    {() => <HubRoute locale={locale} />}
+                    {() => <HubRoute locale={locale} currentLocation={deviceLocation} />}
                   </AppStack.Screen>
                   <AppStack.Screen name="Wayfinding">
                     {() => <WayfindingRoute locale={locale} />}
                   </AppStack.Screen>
                   <AppStack.Screen name="Journey">
-                    {() => <JourneyRoute locale={locale} />}
+                    {() => <JourneyRoute locale={locale} currentLocation={deviceLocation} />}
                   </AppStack.Screen>
                   <AppStack.Screen name="Mobility">
                     {() => <MobilityRoute locale={locale} />}

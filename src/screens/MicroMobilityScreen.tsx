@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MapboxNaviView from '../components/MapboxNaviView';
+import { requestCurrentCoordinates, type Coordinate } from '../location';
 import type { LiveData, MobilityCard } from '../types';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import { t, type Locale } from '../i18n';
@@ -13,11 +14,6 @@ type MicroMobilityScreenProps = {
   venueName?: string;
   city?: string;
   country?: string;
-};
-
-const defaultRegion = {
-  latitude: 40.4531,
-  longitude: -3.6883,
 };
 
 function mobilityLabel(locale: Locale, item: MobilityCard) {
@@ -33,9 +29,23 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
     () => (data?.mobility ?? []).filter((item) => /scooter|bike|bicycle/i.test(item.mode)),
     [data],
   );
+  const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [selectedId, setSelectedId] = useState(mobility[0]?.id ?? '');
   const selected = mobility.find((item) => item.id === selectedId) ?? mobility[0] ?? null;
   const mapTitle = venueName ?? ([city, country].filter(Boolean).join(', ') || t(locale, 'common.destination'));
+
+  useEffect(() => {
+    let mounted = true;
+    void requestCurrentCoordinates().then((coordinate) => {
+      if (mounted) {
+        setCurrentLocation(coordinate);
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   if (!data) {
     return (
@@ -85,8 +95,8 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
         <Card title={t(locale, 'common.liveMap')} subtitle={t(locale, 'common.pickupTracking')} wide>
           <MapboxNaviView
             height={390}
-            origin={defaultRegion}
-            destination={defaultRegion}
+            origin={currentLocation}
+            destination={selected ? currentLocation ?? undefined : currentLocation}
             title={selectedLabel?.label ?? mapTitle}
             subtitle={selected ? selected.mode : mapTitle}
             liveLabel={selected ? `${selected.duration} · ${selected.price}` : t(locale, 'common.backendUnavailable')}

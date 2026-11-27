@@ -133,6 +133,11 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Accept',
     'common.refuse': 'Refuse',
     'common.navigate': 'Navigate',
+    'common.locationRequired': 'Location access is required to use live navigation.',
+    'common.locationRequiredBody':
+      'Accept access to your current position so rides, pickups and live navigation can start from the right place.',
+    'common.locationRequiredHint': 'If you deny it, the app stays locked.',
+    'common.allowLocation': 'Allow location',
     'transport.driverAvailabilityHint':
       'Tap to switch your status immediately.',
     'profile.userProfileTitle': 'User profile',
@@ -344,6 +349,11 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Aceptar',
     'common.refuse': 'Rechazar',
     'common.navigate': 'Navegar',
+    'common.locationRequired': 'Se necesita acceso a la ubicación para usar la navegación en vivo.',
+    'common.locationRequiredBody':
+      'Acepta el acceso a tu posición actual para que los viajes, recogidas y la navegación comiencen desde el lugar correcto.',
+    'common.locationRequiredHint': 'Si lo rechazas, la app permanecerá bloqueada.',
+    'common.allowLocation': 'Permitir ubicación',
     'transport.driverAvailabilityHint':
       'Toca para cambiar tu estado al instante.',
     'profile.editDriverProfile': 'Editar perfil de conductor',
@@ -466,6 +476,11 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Accepter',
     'common.refuse': 'Refuser',
     'common.navigate': 'Naviguer',
+    'common.locationRequired': "L'accès à la localisation est requis pour utiliser la navigation en direct.",
+    'common.locationRequiredBody':
+      'Accepte l’accès à ta position actuelle pour que les trajets, les prises en charge et la navigation démarrent au bon endroit.',
+    'common.locationRequiredHint': "Si tu refuses, l’application reste verrouillée.",
+    'common.allowLocation': 'Autoriser la localisation',
     'transport.driverAvailabilityHint':
       'Appuyez pour basculer votre statut immédiatement.',
     'profile.editDriverProfile': 'Modifier le profil chauffeur',
@@ -584,6 +599,11 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Annehmen',
     'common.refuse': 'Ablehnen',
     'common.navigate': 'Navigieren',
+    'common.locationRequired': 'Standortzugriff ist erforderlich, um die Live-Navigation zu nutzen.',
+    'common.locationRequiredBody':
+      'Erlaube den Zugriff auf deinen aktuellen Standort, damit Fahrten, Abholungen und die Navigation am richtigen Ort starten.',
+    'common.locationRequiredHint': 'Wenn du ablehnst, bleibt die App gesperrt.',
+    'common.allowLocation': 'Standort erlauben',
     'transport.driverAvailabilityHint':
       'Tippe, um deinen Status sofort umzuschalten.',
     'profile.editDriverProfile': 'Fahrerprofil bearbeiten',
@@ -701,6 +721,11 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Aceitar',
     'common.refuse': 'Recusar',
     'common.navigate': 'Navegar',
+    'common.locationRequired': 'É necessário acesso à localização para usar a navegação ao vivo.',
+    'common.locationRequiredBody':
+      'Aceita o acesso à tua posição atual para que viagens, recolhas e navegação comecem no ponto certo.',
+    'common.locationRequiredHint': 'Se recusares, a aplicação fica bloqueada.',
+    'common.allowLocation': 'Permitir localização',
     'transport.driverAvailabilityHint':
       'Toque para alternar seu status imediatamente.',
     'profile.editDriverProfile': 'Editar perfil de motorista',
@@ -813,7 +838,12 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.requestRefused': 'رفض السائق الطلب',
     'common.accept': 'قبول',
     'common.refuse': 'رفض',
-    'common.navigate': 'تنقّل',
+    'common.navigate': 'التنقل',
+    'common.locationRequired': 'مطلوب إذن الموقع لاستخدام الملاحة المباشرة.',
+    'common.locationRequiredBody':
+      'اسمح بالوصول إلى موقعك الحالي حتى تبدأ الرحلات والاستلام والملاحة من المكان الصحيح.',
+    'common.locationRequiredHint': 'إذا رفضت، سيبقى التطبيق مقفلاً.',
+    'common.allowLocation': 'السماح بالموقع',
     'transport.driverAvailabilityHint': 'اضغط لتبديل حالتك فورًا.',
     'profile.editDriverProfile': 'تعديل ملف السائق',
     'common.notAvailable': 'غير متاح',
@@ -922,6 +952,10 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': '接受',
     'common.refuse': '拒绝',
     'common.navigate': '导航',
+    'common.locationRequired': '使用实时导航需要位置权限。',
+    'common.locationRequiredBody': '允许访问当前定位，行程、接送和导航才能从正确的位置开始。',
+    'common.locationRequiredHint': '如果你拒绝，应用将保持锁定。',
+    'common.allowLocation': '允许定位',
     'transport.driverAvailabilityHint': '点按即可立即切换你的状态。',
     'profile.editDriverProfile': '编辑司机资料',
     'common.notAvailable': '不可用',
@@ -1033,6 +1067,11 @@ const TRANSLATIONS: Record<Locale, Record<string, string>> = {
     'common.accept': 'Принять',
     'common.refuse': 'Отклонить',
     'common.navigate': 'Навигация',
+    'common.locationRequired': 'Для живой навигации нужен доступ к местоположению.',
+    'common.locationRequiredBody':
+      'Разрешите доступ к вашему текущему местоположению, чтобы поездки, подача и навигация стартовали с правильной точки.',
+    'common.locationRequiredHint': 'Если отказаться, приложение останется заблокированным.',
+    'common.allowLocation': 'Разрешить геолокацию',
     'transport.driverAvailabilityHint':
       'Нажмите, чтобы сразу переключить свой статус.',
     'profile.editDriverProfile': 'Редактировать профиль водителя',

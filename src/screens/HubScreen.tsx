@@ -143,6 +143,7 @@ export function HubScreen({
   onRetryCatalog,
   onChangeMatch,
   onChangeEvent,
+  currentLocation,
 }: {
   data: LiveData | null;
   selectedMatch: MatchCard | null;
@@ -152,6 +153,7 @@ export function HubScreen({
   onRetryCatalog: () => void;
   onChangeMatch: () => void;
   onChangeEvent: () => void;
+  currentLocation: Coordinate | null;
 }) {
   const copy = getScreenCopy(locale).hub;
   const hubCopy = hubSectionCopy[locale];
@@ -458,7 +460,7 @@ export function HubScreen({
         return;
       }
 
-      const passengerCoordinates = (await getCurrentCoordinates()) ?? undefined;
+      const passengerCoordinates = currentLocation ?? (await getCurrentCoordinates()) ?? undefined;
 
       const response = await createRideRequest({
         matchId: hero.id,
@@ -504,14 +506,14 @@ export function HubScreen({
       : null;
   const liveRouteOrigin =
     rideRequest?.status === 'IN_PROGRESS'
-      ? rideDriverCoordinate ?? ridePickupCoordinate ?? fallbackCoordinate
-      : rideDriverCoordinate ?? ridePickupCoordinate ?? fallbackCoordinate;
+      ? rideDriverCoordinate ?? ridePickupCoordinate ?? currentLocation ?? fallbackCoordinate
+      : rideDriverCoordinate ?? ridePickupCoordinate ?? currentLocation ?? fallbackCoordinate;
   const liveRouteDestination =
     rideRequest?.status === 'IN_PROGRESS'
-      ? rideDestinationCoordinate ?? ridePickupCoordinate ?? fallbackCoordinate
+      ? rideDestinationCoordinate ?? ridePickupCoordinate ?? currentLocation ?? fallbackCoordinate
       : rideRequest?.status === 'ACCEPTED' || rideRequest?.status === 'ARRIVED_AT_PICKUP'
-        ? ridePickupCoordinate ?? rideDestinationCoordinate ?? fallbackCoordinate
-        : rideDestinationCoordinate ?? ridePickupCoordinate ?? fallbackCoordinate;
+        ? ridePickupCoordinate ?? rideDestinationCoordinate ?? currentLocation ?? fallbackCoordinate
+        : rideDestinationCoordinate ?? ridePickupCoordinate ?? currentLocation ?? fallbackCoordinate;
   const liveRoute = buildRideRouteCoordinates(
     rideRequest?.status === 'IN_PROGRESS'
       ? rideDriverCoordinate
@@ -801,14 +803,16 @@ export function HubScreen({
                             />
                             <PrimaryButton
                               label={t(locale, 'common.accept')}
-                              onPress={() => {
-                                getCurrentCoordinates()
-                                  .then((driverCoordinates) =>
-                                    acceptRideRequest(request.id, {
-                                      driverLatitude: driverCoordinates?.latitude,
-                                      driverLongitude: driverCoordinates?.longitude,
-                                    }),
-                                  )
+                              onPress={async () => {
+                                const driverCoordinates = currentLocation ?? (await getCurrentCoordinates());
+                                if (!driverCoordinates) {
+                                  setRequestError(t(locale, 'common.locationRequired'));
+                                  return;
+                                }
+                                acceptRideRequest(request.id, {
+                                  driverLatitude: driverCoordinates.latitude,
+                                  driverLongitude: driverCoordinates.longitude,
+                                })
                                   .then(accepted => {
                                     setDriverRequests(current =>
                                       current.map(item =>

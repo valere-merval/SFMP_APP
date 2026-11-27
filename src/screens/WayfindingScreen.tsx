@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Linking, ScrollView, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MapboxNaviView from '../components/MapboxNaviView';
+import { requestCurrentCoordinates, type Coordinate } from '../location';
 import { getScreenCopy } from '../screenCopy';
 import { openGoogleMapsDirections, openGoogleMapsSearch } from '../maps';
 import {
@@ -31,12 +32,25 @@ export function WayfindingScreen({
   country?: string;
 }) {
   const copy = getScreenCopy(locale).wayfinding;
+  const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const title = `${venueName}, ${city}`;
   const venueCoordinate = {
     latitude: 40.4531,
     longitude: -3.6883,
   };
 
+  useEffect(() => {
+    let mounted = true;
+    void requestCurrentCoordinates().then((coordinate) => {
+      if (mounted) {
+        setCurrentLocation(coordinate);
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
   return (
     <View style={styles.safeArea}>
       <ScrollView
@@ -72,7 +86,7 @@ export function WayfindingScreen({
           <View style={styles.mapPanel}>
             <MapboxNaviView
               height={320}
-              origin={venueCoordinate}
+              origin={currentLocation}
               destination={venueCoordinate}
               title={venueName}
               subtitle={`${city}, ${country}`}
