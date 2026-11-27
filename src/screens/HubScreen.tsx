@@ -1745,7 +1745,7 @@ const localStyles = {
   mapPanel: {
     marginTop: 18,
     overflow: 'hidden' as const,
-    minHeight: 840,
+    minHeight: 760,
     borderRadius: 30,
     backgroundColor: '#070d18',
     borderWidth: 1,
@@ -1758,7 +1758,7 @@ const localStyles = {
   },
   mapView: {
     width: '100%',
-    height: 730,
+    height: 660,
   },
   mapOverlay: {
     position: 'absolute' as const,
