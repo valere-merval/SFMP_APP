@@ -496,7 +496,7 @@ function App(): React.JSX.Element {
                         selectedMatch={selectedMatch}
                         onProfileUpdated={refreshUserProfile}
                         onLocaleChange={(nextLocale) => {
-                          setLocale(nextLocale);
+                          void handleLocaleChange(nextLocale);
                           setActiveTab('Profile');
                           requestAnimationFrame(() => {
                             navigationRef.current?.navigate?.('Profile');

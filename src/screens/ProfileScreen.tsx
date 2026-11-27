@@ -213,6 +213,10 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
   const localeRef = useRef(locale);
 
   useEffect(() => {
+    localeRef.current = locale;
+  }, [locale]);
+
+  useEffect(() => {
     let mounted = true;
     (async () => {
       try {

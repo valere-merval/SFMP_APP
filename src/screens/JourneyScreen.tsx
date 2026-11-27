@@ -14,14 +14,22 @@ import { loadVoiceGuidanceEnabled, saveVoiceGuidanceEnabled, speakVoiceGuidance,
 
 type ModeKey = 'bus' | 'train' | 'metro' | 'scooter' | 'bike' | 'taxi' | 'vtc';
 
-const modeCards: Array<{ key: ModeKey; label: string; subtitle: string; icon: React.ReactNode; regex: RegExp }> = [
-  { key: 'bus', label: 'Bus', subtitle: 'Walk to the station', icon: <Ionicons name="bus-outline" size={20} color="#f8fafc" />, regex: /bus/i },
-  { key: 'train', label: 'Train', subtitle: 'Walk to the station', icon: <Ionicons name="train-outline" size={20} color="#f8fafc" />, regex: /train/i },
-  { key: 'metro', label: 'Metro', subtitle: 'Walk to the station', icon: <Ionicons name="subway-outline" size={20} color="#f8fafc" />, regex: /metro|subway/i },
-  { key: 'scooter', label: 'Scooter', subtitle: 'Walk to the scooter', icon: <Feather name="navigation" size={20} color="#f8fafc" />, regex: /scooter/i },
-  { key: 'bike', label: 'Bike', subtitle: 'Walk to the bike', icon: <Feather name="map-pin" size={20} color="#f8fafc" />, regex: /bike|bicycle/i },
-  { key: 'taxi', label: 'Taxi', subtitle: 'Send a live request', icon: <Ionicons name="car-outline" size={20} color="#f8fafc" />, regex: /taxi/i },
-  { key: 'vtc', label: 'VTC', subtitle: 'Send a live request', icon: <Ionicons name="car-sport-outline" size={20} color="#f8fafc" />, regex: /vtc|chauffeur|driver/i },
+type ModeCard = {
+  key: ModeKey;
+  labelKey: string;
+  subtitleKey: string;
+  icon: React.ReactNode;
+  regex: RegExp;
+};
+
+const modeCards: ModeCard[] = [
+  { key: 'bus', labelKey: 'journey.busLabel', subtitleKey: 'journey.busSubtitle', icon: <Ionicons name="bus-outline" size={20} color="#f8fafc" />, regex: /bus/i },
+  { key: 'train', labelKey: 'journey.trainLabel', subtitleKey: 'journey.trainSubtitle', icon: <Ionicons name="train-outline" size={20} color="#f8fafc" />, regex: /train/i },
+  { key: 'metro', labelKey: 'journey.metroLabel', subtitleKey: 'journey.metroSubtitle', icon: <Ionicons name="subway-outline" size={20} color="#f8fafc" />, regex: /metro|subway/i },
+  { key: 'scooter', labelKey: 'journey.scooterLabel', subtitleKey: 'journey.scooterSubtitle', icon: <Feather name="navigation" size={20} color="#f8fafc" />, regex: /scooter/i },
+  { key: 'bike', labelKey: 'journey.bikeLabel', subtitleKey: 'journey.bikeSubtitle', icon: <Feather name="map-pin" size={20} color="#f8fafc" />, regex: /bike|bicycle/i },
+  { key: 'taxi', labelKey: 'journey.taxiLabel', subtitleKey: 'journey.taxiSubtitle', icon: <Ionicons name="car-outline" size={20} color="#f8fafc" />, regex: /taxi/i },
+  { key: 'vtc', labelKey: 'journey.vtcLabel', subtitleKey: 'journey.vtcSubtitle', icon: <Ionicons name="car-sport-outline" size={20} color="#f8fafc" />, regex: /vtc|chauffeur|driver/i },
 ];
 
 const floatingExpandButtonStyle = {
@@ -1070,9 +1078,9 @@ export function JourneyScreen({
               >
                 <View style={styles.buttonContent}>
                   <View style={styles.buttonIcon}>{mode.icon}</View>
-                  <Text style={[styles.tabChipText, activeMode === mode.key && styles.tabChipTextActive]}>{mode.label}</Text>
+                  <Text style={[styles.tabChipText, activeMode === mode.key && styles.tabChipTextActive]}>{t(locale, mode.labelKey)}</Text>
                 </View>
-                <Text style={styles.helperText}>{availableModes.get(mode.key) ?? 0} {t(locale, 'common.available')} · {mode.subtitle}</Text>
+                <Text style={styles.helperText}>{availableModes.get(mode.key) ?? 0} {t(locale, 'common.available')} · {t(locale, mode.subtitleKey)}</Text>
               </Pressable>
             ))}
           </View>

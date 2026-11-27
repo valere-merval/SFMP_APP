@@ -179,27 +179,27 @@ export function MapboxNaviView({ origin, destination, route, height = 600, title
 }
 
 const routeShadowStyle = {
-  lineColor: 'rgba(9, 17, 31, 0.28)',
-  lineWidth: 10,
+  lineColor: 'rgba(9, 17, 31, 0.24)',
+  lineWidth: 11,
   lineCap: 'round',
   lineJoin: 'round',
 } as const;
 
 const routeLineStyle = {
   lineColor: '#00e5ff',
-  lineWidth: 6,
+  lineWidth: 6.5,
   lineCap: 'round',
   lineJoin: 'round',
 } as const;
 
 const naviStyles = StyleSheet.create({
-  container: { backgroundColor: '#09111f' },
+  container: { backgroundColor: 'rgba(9, 17, 31, 0.08)' },
   mapView: { flex: 1 },
   fallback: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0b1220',
-    borderRadius: 28,
+    backgroundColor: 'rgba(11, 18, 32, 0.2)',
+    borderRadius: 32,
     paddingHorizontal: 20,
   },
   fallbackTitle: { color: '#f8fbff', fontFamily: 'Poppins-SemiBold' },

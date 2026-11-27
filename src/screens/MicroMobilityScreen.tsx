@@ -20,12 +20,12 @@ const defaultRegion = {
   longitude: -3.6883,
 };
 
-function mobilityLabel(item: MobilityCard) {
+function mobilityLabel(locale: Locale, item: MobilityCard) {
   const normalized = item.mode.toLowerCase();
   if (normalized.includes('bike') || normalized.includes('bicycle')) {
-    return { label: 'Bike', icon: 'bicycle-outline' as const };
+    return { label: t(locale, 'journey.bikeLabel'), icon: 'bicycle-outline' as const };
   }
-  return { label: 'Scooter', icon: 'scooter-outline' as const };
+  return { label: t(locale, 'journey.scooterLabel'), icon: 'scooter-outline' as const };
 }
 
 export function MicroMobilityScreen({ locale, data, venueName, city, country }: MicroMobilityScreenProps) {
@@ -47,7 +47,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
     );
   }
 
-  const selectedLabel = selected ? mobilityLabel(selected) : null;
+  const selectedLabel = selected ? mobilityLabel(locale, selected) : null;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -63,8 +63,8 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
             <View style={heroStyles.heroBrandBlock}>
               <View style={heroStyles.heroBrandDot} />
               <View style={heroStyles.heroBrandText}>
-                <Text style={heroStyles.heroKicker}>Live mobility</Text>
-                <Text style={heroStyles.heroTitle}>Scooters & bikes</Text>
+                <Text style={heroStyles.heroKicker}>{t(locale, 'mobility.liveTitle')}</Text>
+                <Text style={heroStyles.heroTitle}>{t(locale, 'mobility.scootersAndBikes')}</Text>
               </View>
             </View>
             <View style={heroStyles.livePill}>
@@ -73,7 +73,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
             </View>
           </View>
           <Text style={heroStyles.heroSubtitle} numberOfLines={2}>
-            {selected ? `${selected.mode} · ${selected.duration}` : t(locale, 'common.available')}
+            {selected ? `${selectedLabel?.label ?? selected.mode} · ${selected.duration}` : t(locale, 'common.available')}
           </Text>
           <View style={heroStyles.heroChips}>
             <View style={heroStyles.heroChip}><Text style={heroStyles.heroChipText}>{venueName ?? t(locale, 'common.destination')}</Text></View>
@@ -106,15 +106,15 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
           {selected ? (
             <View style={heroStyles.detailRow}>
               <View style={heroStyles.detailCard}>
-                <Text style={heroStyles.detailLabel}>Mode</Text>
+                <Text style={heroStyles.detailLabel}>{t(locale, 'mobility.mode')}</Text>
                 <Text style={heroStyles.detailValue}>{selected.mode}</Text>
               </View>
               <View style={heroStyles.detailCard}>
-                <Text style={heroStyles.detailLabel}>ETA</Text>
+                <Text style={heroStyles.detailLabel}>{t(locale, 'mobility.eta')}</Text>
                 <Text style={heroStyles.detailValue}>{selected.duration}</Text>
               </View>
               <View style={heroStyles.detailCard}>
-                <Text style={heroStyles.detailLabel}>Price</Text>
+                <Text style={heroStyles.detailLabel}>{t(locale, 'mobility.price')}</Text>
                 <Text style={heroStyles.detailValue}>{selected.price}</Text>
               </View>
             </View>
@@ -126,7 +126,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
             <View style={mobilityList.listGap}>
               {mobility.map((item) => {
                 const isSelected = item.id === selected?.id;
-                const label = mobilityLabel(item);
+                const label = mobilityLabel(locale, item);
                 return (
                   <Pressable
                     key={item.id}
