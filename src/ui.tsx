@@ -69,7 +69,7 @@ export function Bullet({ children }: { children: React.ReactNode }) {
 
 export function BrandLogo({ compact = false }: { compact?: boolean }) {
   return (
-    <View style={[styles.brandLogoWrap, compact && styles.brandLogoWrapCompact]}>
+    <View style={compact ? styles.brandLogoWrapCompact : styles.brandLogoWrap}>
       <Image
         source={require('../assets/smart-fan-mobility-logo.jpg')}
         style={[styles.brandLogo, compact && styles.brandLogoCompact]}
@@ -413,12 +413,20 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   brandLogoWrap: {
-    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 0,
   },
-  brandLogoWrapCompact: { marginBottom: 0 },
+  brandLogoWrapCompact: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    flexGrow: 0,
+    marginBottom: 0,
+    overflow: 'hidden',
+  },
   brandLogo: { width: 56, height: 56 },
   brandLogoCompact: { width: 40, height: 40 },
   avatarPhoto: {
