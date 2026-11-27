@@ -497,7 +497,7 @@ export function HubScreen({
               </View>
             </View>
             <Text style={localStyles.dispatchTitle}>
-              {t(locale, 'common.driver')} · {t(locale, 'common.live')}
+              DISPATCH CHAUFFEUR LIVE
             </Text>
             <Text style={localStyles.dispatchSubtitle} numberOfLines={2}>
               {hero ? `${hero.homeTeam} vs ${hero.awayTeam} · ${hero.venue}` : copy.eyebrow}
@@ -513,7 +513,7 @@ export function HubScreen({
               </View>
               <View style={localStyles.dispatchStatCard}>
                 <Text style={localStyles.dispatchStatValue}>{voiceGuidanceEnabled ? 'ON' : 'OFF'}</Text>
-                <Text style={localStyles.dispatchStatLabel}>Voice</Text>
+                <Text style={localStyles.dispatchStatLabel}>VOICE</Text>
               </View>
               <View style={localStyles.dispatchStatCard}>
                 <Text style={localStyles.dispatchStatValue}>{hero ? countdown.toUpperCase() : 'LIVE'}</Text>
@@ -906,7 +906,7 @@ export function HubScreen({
             )}
             <View style={localStyles.mapPanel}>
               <MapboxNaviView
-                height={760}
+                height={800}
                 origin={liveRouteOrigin}
                 destination={liveRouteDestination}
                 route={liveRoute}
@@ -1287,9 +1287,9 @@ const localStyles = {
   },
   dispatchPanel: {
     marginTop: 12,
-    padding: 16,
+    padding: 18,
     borderRadius: 28,
-    backgroundColor: 'rgba(7, 12, 24, 0.9)',
+    backgroundColor: 'rgba(7, 12, 24, 0.92)',
     borderWidth: 1,
     borderColor: 'rgba(157, 245, 255, 0.12)',
     gap: 14,

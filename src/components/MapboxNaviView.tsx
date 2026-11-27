@@ -239,9 +239,9 @@ const naviStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 22,
-    backgroundColor: 'rgba(8, 15, 27, 0.14)',
+    backgroundColor: 'rgba(8, 15, 27, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   overlayRow: {
     flexDirection: 'row',
