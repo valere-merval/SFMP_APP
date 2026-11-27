@@ -53,7 +53,6 @@ const statusTextStyle = { fontFamily: 'Poppins-SemiBold' } as const;
 
 const compactPageStyle = { paddingTop: 12 } as const;
 const compactHeaderStyle = { marginBottom: 0 } as const;
-const expandedMapStyle = { minHeight: 620 } as const;
 const liveVehiclePanelStyle = {
   flexDirection: 'row' as const,
   alignItems: 'center' as const,
@@ -886,7 +885,7 @@ export function JourneyScreen({
           <View style={styles.card}>
             <View style={styles.mapPanel}>
               <MapboxNaviView
-                height={740}
+                height={780}
                 origin={currentLocation}
                 destination={
                   activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
@@ -967,9 +966,9 @@ export function JourneyScreen({
                   </View>
                 </View>
 
-                <View style={[styles.mapPanel, expandedMapStyle]}>
+                <View style={styles.mapPanel}>
                   <MapboxNaviView
-                    height={780}
+                    height={840}
                     origin={currentLocation}
                     destination={
                       activeDriverRequest?.status === 'IN_PROGRESS' && activeDriverRequest.destinationLatitude != null && activeDriverRequest.destinationLongitude != null
@@ -1038,7 +1037,7 @@ export function JourneyScreen({
         <Card title={t(locale, 'common.liveMap')} subtitle={t(locale, 'common.pickupTracking')} wide>
           <View style={styles.mapPanel}>
             <MapboxNaviView
-              height={640}
+              height={720}
               origin={currentLocation}
               destination={
                 rideRequest?.status === 'IN_PROGRESS' && rideRequest.destinationLatitude != null && rideRequest.destinationLongitude != null
