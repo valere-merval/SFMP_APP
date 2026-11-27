@@ -178,6 +178,7 @@ function getAvatarFallbackName(profile: AppUserProfile) {
 
 function App(): React.JSX.Element {
   const [ready, setReady] = useState(false);
+  const [iconsReady, setIconsReady] = useState(false);
   const [session, setSession] = useState<'auth' | 'catalog' | 'matches' | 'app'>('auth');
   const [activeTab, setActiveTab] = useState<keyof TabParamList>('Hub');
   const [locale, setLocale] = useState<Locale>(() => detectLanguage());
@@ -190,8 +191,18 @@ function App(): React.JSX.Element {
   const navigationRef = useRef<any>(null);
 
   useEffect(() => {
-    Feather.loadFont();
-    Ionicons.loadFont();
+    let mounted = true;
+
+    (async () => {
+      await Promise.allSettled([Feather.loadFont(), Ionicons.loadFont()]);
+      if (mounted) {
+        setIconsReady(true);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const refreshUserProfile = useCallback(async () => {
@@ -332,7 +343,7 @@ function App(): React.JSX.Element {
     [catalog, catalogError, catalogLoading, handleBackToCatalog, handleBackToMatches, loadCatalog, selectedMatch],
   );
 
-  if (!ready) {
+  if (!ready || !iconsReady) {
     return (
       <SafeAreaProvider>
         <SafeAreaView style={bootstrapStyles.loadingShell} edges={['top', 'left', 'right']}>
@@ -347,7 +358,7 @@ function App(): React.JSX.Element {
     <SafeAreaProvider>
       <SafeAreaView
         edges={['top', 'bottom']}
-        style={{ backgroundColor: '#070d18' }}
+        style={shellStyles.topBarSafeArea}
       >
         {/* Header content */}
       </SafeAreaView>

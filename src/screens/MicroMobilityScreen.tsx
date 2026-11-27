@@ -139,7 +139,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
                           <View style={styles.buttonIcon}>
                             <Ionicons name={label.icon} size={18} color="#f8fafc" />
                           </View>
-                          <View style={{ gap: 2, minWidth: 0 }}>
+                          <View style={mobilityList.metaColumn}>
                             <Text style={styles.cardTitle} numberOfLines={1}>{label.label}</Text>
                             <Text style={styles.muted} numberOfLines={1}>{item.mode}</Text>
                           </View>
@@ -164,6 +164,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
 const mobilityList = StyleSheet.create({
   listGap: { gap: 12 },
   selectedCard: { borderColor: '#c8f36a', borderWidth: 1.5 },
+  metaColumn: { gap: 2, minWidth: 0 },
 });
 
 const heroStyles = StyleSheet.create({

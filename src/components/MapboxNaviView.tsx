@@ -36,6 +36,7 @@ type MapboxNaviViewProps = {
   title?: string;
   subtitle?: string;
   liveLabel?: string;
+  compactChrome?: boolean;
 };
 
 type Point = [number, number];
@@ -80,7 +81,7 @@ function buildRouteFeature(route: Coordinate[]): RouteFeature {
   };
 }
 
-export function MapboxNaviView({ origin, destination, route, height = 520, title, subtitle, liveLabel }: MapboxNaviViewProps) {
+export function MapboxNaviView({ origin, destination, route, height = 600, title, subtitle, liveLabel, compactChrome = true }: MapboxNaviViewProps) {
   const safeOrigin = useMemo(() => origin ?? destination ?? route?.[0] ?? defaultCoordinate, [destination, origin, route]);
   const safeDestination = useMemo(() => destination ?? route?.[route.length - 1] ?? safeOrigin, [destination, route, safeOrigin]);
   const routeCoords = useMemo(
@@ -153,13 +154,22 @@ export function MapboxNaviView({ origin, destination, route, height = 520, title
       </Mapbox.MapView>
 
       <View pointerEvents="none" style={naviStyles.overlay}>
-        <View style={naviStyles.overlayShell}>
+        <View style={[naviStyles.overlayShell, compactChrome && naviStyles.overlayShellCompact]}>
           <View style={naviStyles.overlayRow}>
-            <Text style={naviStyles.overlayTitle} numberOfLines={1} ellipsizeMode="tail">
-              {escapeHtml(title || 'SFMP Navi')}
-            </Text>
-            <View style={naviStyles.liveBadge}>
-              <Text style={naviStyles.liveBadgeText}>{escapeHtml(liveLabel || 'Live')}</Text>
+            <View style={naviStyles.overlayTextBlock}>
+              <View style={naviStyles.liveBadge}>
+                <Text style={naviStyles.liveBadgeText}>{escapeHtml(liveLabel || 'Live')}</Text>
+              </View>
+              {!compactChrome && title ? (
+                <Text style={naviStyles.overlayTitle} numberOfLines={1} ellipsizeMode="tail">
+                  {escapeHtml(title)}
+                </Text>
+              ) : null}
+              {!compactChrome && subtitle ? (
+                <Text style={naviStyles.overlaySubtitle} numberOfLines={1} ellipsizeMode="tail">
+                  {escapeHtml(subtitle)}
+                </Text>
+              ) : null}
             </View>
           </View>
         </View>
@@ -238,13 +248,24 @@ const naviStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.04)',
   },
+  overlayShellCompact: {
+    backgroundColor: 'rgba(8, 15, 27, 0.03)',
+    borderColor: 'transparent',
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+  },
   overlayRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
   },
+  overlayTextBlock: {
+    flex: 1,
+    gap: 4,
+  },
   overlayTitle: { color: '#f8fbff', fontFamily: 'Poppins-SemiBold', fontSize: 11.5, flexShrink: 1 },
+  overlaySubtitle: { color: 'rgba(255,255,255,0.7)', fontFamily: 'Poppins-Regular', fontSize: 10.5, flexShrink: 1 },
   liveBadge: {
     paddingHorizontal: 7,
     paddingVertical: 2,

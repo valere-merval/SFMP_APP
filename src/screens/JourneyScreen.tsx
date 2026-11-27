@@ -62,6 +62,14 @@ const liveVehicleImageStyle = {
   borderRadius: 26,
   backgroundColor: 'rgba(15, 23, 42, 0.92)',
 } as const;
+const liveVehicleImageFallbackStyle = {
+  width: 96,
+  height: 96,
+  borderRadius: 26,
+  backgroundColor: 'rgba(15, 23, 42, 0.92)',
+  alignItems: 'center' as const,
+  justifyContent: 'center' as const,
+} as const;
 const liveVehicleMetaStyle = { flex: 1, gap: 8 } as const;
 const liveVehiclePlateStyle = {
   alignSelf: 'flex-start' as const,
@@ -1144,7 +1152,7 @@ export function JourneyScreen({
                   {passengerVehicleImageUrl ? (
                     <Image source={{ uri: passengerVehicleImageUrl }} style={liveVehicleImageStyle} resizeMode="cover" />
                   ) : (
-                    <View style={[liveVehicleImageStyle, { alignItems: 'center', justifyContent: 'center' }]}>
+                    <View style={liveVehicleImageFallbackStyle}>
                       <Ionicons name="car-sport-outline" size={32} color="#cbd5e1" />
                     </View>
                   )}
