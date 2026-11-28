@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapboxNaviView from '../components/MapboxNaviView';
 import { requestCurrentCoordinates, type Coordinate } from '../location';
 import type { LiveData, MobilityCard } from '../types';
@@ -20,9 +21,9 @@ type MicroMobilityScreenProps = {
 function mobilityLabel(locale: Locale, item: MobilityCard) {
   const normalized = item.mode.toLowerCase();
   if (normalized.includes('bike') || normalized.includes('bicycle')) {
-    return { label: t(locale, 'journey.bikeLabel'), icon: 'bicycle-outline' as const };
+    return { label: t(locale, 'journey.bikeLabel'), icon: 'bicycle' as const };
   }
-  return { label: t(locale, 'journey.scooterLabel'), icon: 'scooter-outline' as const };
+  return { label: t(locale, 'journey.scooterLabel'), icon: 'scooter' as const };
 }
 
 const mobilityDestination = (item: MobilityCard) => {
@@ -170,7 +171,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
                       <View style={styles.rowLeft}>
                         <View style={styles.buttonContent}>
                           <View style={[styles.buttonIcon, item.mode.toLowerCase().includes('scooter') ? mobilityList.scooterIcon : mobilityList.bikeIcon]}>
-                            <Ionicons name={label.icon} size={18} color="#f8fafc" />
+                            <MaterialCommunityIcons name={label.icon} size={18} color="#f8fafc" />
                           </View>
                           <View style={mobilityList.metaColumn}>
                             <Text style={styles.cardTitle} numberOfLines={1}>{label.label}</Text>

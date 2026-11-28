@@ -15,6 +15,7 @@ const modeLabel = (locale: Locale, providerType: string) => {
   if (value.includes('bus')) return t(locale, 'journey.busLabel');
   if (value.includes('train')) return t(locale, 'journey.trainLabel');
   if (value.includes('tram')) return t(locale, 'journey.tramLabel');
+  if (value.includes('metro') || value.includes('subway')) return t(locale, 'journey.metroLabel');
   return providerType;
 };
 
@@ -75,9 +76,11 @@ export function TransportScreen({
     () => providers.filter((provider) => provider.active || provider.ready),
     [providers],
   );
+  const providersToShow = availableProviders.length ? availableProviders : globalAvailableProviders;
   const vtcCount = globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('vtc')).length;
   const trainCount = globalAvailableProviders.filter((provider) => /train/i.test(provider.providerType)).length;
   const tramCount = globalAvailableProviders.filter((provider) => /tram|streetcar|light rail/i.test(provider.providerType)).length;
+  const metroCount = globalAvailableProviders.filter((provider) => /metro|subway/i.test(provider.providerType)).length;
   const busCount = globalAvailableProviders.filter((provider) => /bus/i.test(provider.providerType)).length;
 
   useEffect(() => {
@@ -225,7 +228,7 @@ export function TransportScreen({
                 onPress={() => setAvailable((value) => !value)}
                 style={[screenStyles.availabilityButton, available ? screenStyles.availabilityButtonOn : screenStyles.availabilityButtonOff]}
               >
-                <Feather name={available ? 'check-circle' : 'slash'} size={28} color={available ? '#f8fafc' : '#f8fafc'} />
+                <Feather name={available ? 'check-circle' : 'slash'} size={28} color={available ? '#f8fafc' : '#09111f'} />
                 <View style={screenStyles.availabilityButtonTextBlock}>
                   <Text style={[screenStyles.availabilityButtonTitle, !available && screenStyles.availabilityButtonTitleOff]}>
                     {available ? t(locale, 'common.available') : t(locale, 'common.notAvailable')}
@@ -255,56 +258,53 @@ export function TransportScreen({
             <SummaryPill label="Bus" value={busCount} active={busCount > 0} />
             <SummaryPill label="Train" value={trainCount} active={trainCount > 0} />
             <SummaryPill label="Tram" value={tramCount} active={tramCount > 0} />
+            <SummaryPill label="Metro" value={metroCount} active={metroCount > 0} />
           </View>
           <Text style={uiStyles.helperText}>
             Quand tu passes à disponible, la liste live dans Reise se met à jour et les fans voient ton mode apparaître immédiatement.
           </Text>
         </Card>
 
-        <Card title="Chauffeurs visibles" subtitle="Fans du match" wide>
+        <Card title="Lignes disponibles" subtitle="Appuie sur une ligne pour ouvrir son itinéraire" wide>
           {providersLoading ? (
-            <EmptyState icon="loader-outline" title="Chargement des chauffeurs" subtitle="Lecture de la disponibilité live pour ce match." />
-          ) : selectedMatch ? (
-            availableProviders.length ? (
-              <View style={screenStyles.listGap}>
-                {availableProviders.map((provider: TransportProviderView) => (
-                  <View key={provider.id} style={screenStyles.providerCard}>
-                    <View style={screenStyles.providerTop}>
-                      <View style={screenStyles.providerBadge}>
-                        <Feather name="truck" size={14} color="#f8fafc" />
-                        <Text style={screenStyles.providerBadgeText}>{modeLabel(locale, provider.providerType)}</Text>
-                      </View>
-                      <Text style={screenStyles.providerStatus}>{provider.active || provider.ready ? 'Disponible' : 'Pas disponible'}</Text>
+            <EmptyState icon="loader-outline" title="Chargement des lignes" subtitle="Lecture de la disponibilité live pour ce match." />
+          ) : providersToShow.length ? (
+            <View style={screenStyles.listGap}>
+              {providersToShow.map((provider: TransportProviderView) => (
+                <Pressable key={provider.id} onPress={() => { void openGoogleMapsDirections(providerDestination(provider)); }} style={screenStyles.providerCard}>
+                  <View style={screenStyles.providerTop}>
+                    <View style={screenStyles.providerBadge}>
+                      <Feather name="truck" size={14} color="#f8fafc" />
+                      <Text style={screenStyles.providerBadgeText}>{modeLabel(locale, provider.providerType)}</Text>
                     </View>
-                    <Text style={screenStyles.providerTitle}>{provider.displayName}</Text>
-                    <Text style={screenStyles.providerBody}>{provider.driverName} · {provider.vehicleLabel}</Text>
-                    <View style={screenStyles.providerMetaRow}>
-                      <View style={screenStyles.providerMetaChip}>
-                        <Text style={screenStyles.providerMetaText}>{provider.city}, {provider.country}</Text>
-                      </View>
-                      {provider.stationAddress ? (
-                        <View style={screenStyles.providerMetaChipSoft}>
-                          <Text style={screenStyles.providerMetaText}>{provider.stationAddress}</Text>
-                        </View>
-                      ) : null}
-                    </View>
-                    {provider.publicNotes ? <Text style={screenStyles.providerNotes}>{provider.publicNotes}</Text> : null}
-                    <Pressable
-                      onPress={() => {
-                        void openGoogleMapsDirections(providerDestination(provider));
-                      }}
-                      style={screenStyles.stationButton}
-                    >
-                      <Text style={screenStyles.stationButtonText}>{t(locale, 'common.navigate')}</Text>
-                    </Pressable>
+                    <Text style={screenStyles.providerStatus}>{provider.active || provider.ready ? 'Disponible' : 'Pas disponible'}</Text>
                   </View>
-                ))}
-              </View>
-            ) : (
-              <EmptyState icon="car-outline" title="Aucun chauffeur visible" subtitle="Les chauffeurs disponibles pour ce match apparaîtront ici." />
-            )
+                  <Text style={screenStyles.providerTitle}>{provider.displayName}</Text>
+                  <Text style={screenStyles.providerBody}>{provider.driverName} · {provider.vehicleLabel}</Text>
+                  <View style={screenStyles.providerMetaRow}>
+                    <View style={screenStyles.providerMetaChip}>
+                      <Text style={screenStyles.providerMetaText}>{provider.city}, {provider.country}</Text>
+                    </View>
+                    {provider.stationAddress ? (
+                      <View style={screenStyles.providerMetaChipSoft}>
+                        <Text style={screenStyles.providerMetaText}>{provider.stationAddress}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                  {provider.publicNotes ? <Text style={screenStyles.providerNotes}>{provider.publicNotes}</Text> : null}
+                  <Pressable
+                    onPress={() => {
+                      void openGoogleMapsDirections(providerDestination(provider));
+                    }}
+                    style={screenStyles.stationButton}
+                  >
+                    <Text style={screenStyles.stationButtonText}>{t(locale, 'common.navigate')}</Text>
+                  </Pressable>
+                </Pressable>
+              ))}
+            </View>
           ) : (
-            <EmptyState icon="calendar-outline" title="Choisis un match" subtitle="La liste des chauffeurs disponibles dépend du match sélectionné." />
+            <EmptyState icon="car-outline" title="Aucune ligne visible" subtitle="Les lignes disponibles apparaîtront ici dès que le catalogue est chargé." />
           )}
         </Card>
       </ScrollView>
@@ -332,7 +332,7 @@ const screenStyles = StyleSheet.create({
     fontFamily: 'Poppins-Bold',
   },
   title: {
-    color: '#fff',
+    color: '#09111f',
     fontSize: 30,
     lineHeight: 36,
     fontFamily: 'Poppins-Bold',
@@ -394,13 +394,13 @@ const screenStyles = StyleSheet.create({
     fontFamily: 'Poppins-Bold',
     fontSize: 22,
   },
-  availabilityButtonTitleOff: { color: '#f8fafc' },
+  availabilityButtonTitleOff: { color: '#09111f' },
   availabilityButtonSubtitle: {
     color: '#f8fafc',
     fontFamily: 'Poppins-Medium',
     fontSize: 13,
   },
-  availabilityButtonSubtitleOff: { color: '#d4def0' },
+  availabilityButtonSubtitleOff: { color: '#334155' },
   success: { color: '#14532d', fontFamily: 'Poppins-Medium' },
   error: { color: '#b42318', fontFamily: 'Poppins-Medium' },
   providerCard: {
