@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, ScrollView, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -24,12 +24,14 @@ export function WayfindingScreen({
   venueName = 'Estadio Metropolitano',
   city = 'Madrid',
   country = 'Spain',
+  selectedMatchId = null,
 }: {
   data: LiveData | null;
   locale: Locale;
   venueName?: string;
   city?: string;
   country?: string;
+  selectedMatchId?: string | null;
 }) {
   const copy = getScreenCopy(locale).wayfinding;
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
@@ -38,6 +40,14 @@ export function WayfindingScreen({
     latitude: 40.4531,
     longitude: -3.6883,
   };
+  const transportLines = useMemo(() => {
+    const providers = data?.transportProviders ?? [];
+    return providers.filter((provider) => {
+      const matchOk = !selectedMatchId || provider.matchId === selectedMatchId;
+      const mode = provider.providerType.toLowerCase();
+      return matchOk && /train|tram|metro|subway|bus/i.test(mode);
+    });
+  }, [data?.transportProviders, selectedMatchId]);
 
   useEffect(() => {
     let mounted = true;
@@ -63,22 +73,22 @@ export function WayfindingScreen({
           <Text style={styles.subtitle}>{copy.subtitle}</Text>
         </View>
         <Card title={copy.linesTitle} subtitle={copy.linesSubtitle} wide>
-          {data ? (
+          {transportLines.length ? (
             <View style={styles.grid2}>
-              {data.mobility.filter(item => /bus|train/i.test(item.mode)).map(item => (
+              {transportLines.map((provider) => (
                 <MiniCard
-                  key={item.id}
-                  title={item.mode}
-                  subtitle={item.badge}
-                  meta={`${item.duration} · ${item.price}`}
+                  key={provider.id}
+                  title={provider.displayName}
+                  subtitle={`${provider.providerType} · ${provider.matchTitle}`}
+                  meta={`${provider.city}, ${provider.country}${provider.stationAddress ? ` · ${provider.stationAddress}` : ''}`}
                 />
               ))}
             </View>
           ) : (
             <EmptyState
               icon="bus-outline"
-              title={t(locale, 'common.noProviders')}
-              subtitle={t(locale, 'common.backendUnavailable')}
+              title="Aucune ligne pour ce match"
+              subtitle="Les trains, tram, métro et bus liés au match sélectionné doivent apparaître ici."
             />
           )}
         </Card>

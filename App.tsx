@@ -207,7 +207,16 @@ function MobilityRoute({ locale }: { locale: Locale }) {
 
 function WayfindingRoute({ locale }: { locale: Locale }) {
   const {catalog,  selectedMatch } = useCatalogShell();
-  return <WayfindingScreen locale={locale} venueName={selectedMatch?.venue} city={selectedMatch?.city} country={selectedMatch?.country} data={catalog} />;
+  return (
+    <WayfindingScreen
+      locale={locale}
+      venueName={selectedMatch?.venue}
+      city={selectedMatch?.city}
+      country={selectedMatch?.country}
+      data={catalog}
+      selectedMatchId={selectedMatch?.id ?? null}
+    />
+  );
 }
 
 function ProfileRoute({ locale, selectedMatch, onProfileUpdated, onLocaleChange }: { locale: Locale; selectedMatch?: MatchCard | null; onProfileUpdated?: () => void; onLocaleChange?: (locale: Locale) => void }) {
