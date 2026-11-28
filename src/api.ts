@@ -59,16 +59,24 @@ export async function clearAuthToken() {
   await AsyncStorage.removeItem(USER_KEY);
 }
 
+async function ensureAuthToken() {
+  if (authToken) return authToken;
+  const stored = await AsyncStorage.getItem(TOKEN_KEY);
+  authToken = stored ?? '';
+  return authToken;
+}
+
 async function requestJson<T>(
   path: string,
   init?: RequestInit & { skipAuth?: boolean },
 ): Promise<T> {
   const { skipAuth, ...requestInit } = init ?? {};
+  const token = skipAuth ? '' : (authToken || (await ensureAuthToken()));
   const response = await fetch(`${API_BASE}${path}`, {
     ...requestInit,
     headers: {
       'Content-Type': 'application/json',
-      ...(!skipAuth && authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(requestInit.headers ?? {}),
     },
   });

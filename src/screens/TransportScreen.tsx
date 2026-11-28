@@ -370,16 +370,6 @@ export function TransportScreen({
             <EmptyState icon="loader-outline" title="Chargement des lignes" subtitle="Lecture de la disponibilité live pour ce match." />
           ) : providersToShow.length ? (
             <View style={screenStyles.rowGap}>
-              <MapboxNaviView
-                origin={currentLocation}
-                destination={selectedDestination}
-                height={290}
-                title={selectedProvider ? selectedProvider.displayName : 'Ligne sélectionnée'}
-                subtitle={selectedProvider ? `${modeLabel(locale, selectedProvider.providerType)} · ${providerMapLabel(selectedProvider)}` : 'Sélectionne une ligne pour activer la navigation'}
-                liveLabel={selectedMatch ? `${selectedMatch.homeTeam} vs ${selectedMatch.awayTeam}` : 'Transit'}
-                compactChrome={false}
-              />
-
               <View style={screenStyles.listGap}>
                 {providersToShow.map((provider: TransportProviderView) => {
                   const destination = providerDestination(provider);
@@ -426,6 +416,16 @@ export function TransportScreen({
                   );
                 })}
               </View>
+
+              <MapboxNaviView
+                origin={currentLocation}
+                destination={selectedDestination}
+                height={290}
+                title={selectedProvider ? selectedProvider.displayName : 'Ligne sélectionnée'}
+                subtitle={selectedProvider ? `${modeLabel(locale, selectedProvider.providerType)} · ${providerMapLabel(selectedProvider)}` : 'Sélectionne une ligne pour activer la navigation'}
+                liveLabel={selectedMatch ? `${selectedMatch.homeTeam} vs ${selectedMatch.awayTeam}` : 'Transit'}
+                compactChrome={false}
+              />
             </View>
           ) : (
             <EmptyState icon="car-outline" title="Aucune ligne visible" subtitle="Les lignes disponibles apparaîtront ici dès que le catalogue est chargé." />
