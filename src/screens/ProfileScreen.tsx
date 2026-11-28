@@ -295,7 +295,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
     };
   }, []);
 
-  const fallbackCurrentMatch = useMemo(() => data?.events?.[0] ?? null, [data]);
+  const fallbackCurrentMatch = useMemo(() => data?.matches?.[0] ?? null, [data]);
   const currentMatch = selectedMatch ?? fallbackCurrentMatch;
   const cityOptions = useMemo(() => {
     if (!countryCode) return [];
@@ -584,11 +584,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
           <View style={screenStyles.heroChips}>
             <View style={screenStyles.heroChip}>
               <Text style={screenStyles.heroChipText}>
-                {currentMatch
-                  ? ('homeTeam' in currentMatch && 'awayTeam' in currentMatch)
-                    ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}`
-                    : currentMatch.title
-                  : t(locale, 'profile.currentMatch')}
+                {currentMatch ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}` : t(locale, 'profile.currentMatch')}
               </Text>
             </View>
             <View style={screenStyles.heroChip}>
@@ -626,11 +622,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
             <View style={screenStyles.heroStatCard}>
               <Text style={screenStyles.heroStatLabel}>{t(locale, 'profile.currentMatch')}</Text>
               <Text style={screenStyles.heroStatValue} numberOfLines={2}>
-                {currentMatch
-                  ? ('homeTeam' in currentMatch && 'awayTeam' in currentMatch)
-                    ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}`
-                    : currentMatch.title
-                  : t(locale, 'profile.currentMatch')}
+                {currentMatch ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}` : t(locale, 'profile.currentMatch')}
               </Text>
             </View>
             <View style={screenStyles.heroStatCard}>
@@ -761,7 +753,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
             </Pressable>
             <Text style={styles.helperText}>{showDriverForm ? t(locale, 'profile.driverFormHint') : hasDriverProfile ? t(locale, 'profile.driverFormEditPrompt') : t(locale, 'profile.driverFormPrompt')}</Text>
             <View style={screenStyles.rowGap}>
-              {currentMatch ? <Text style={styles.helperText}>{t(locale, 'profile.currentMatch')}: {('homeTeam' in currentMatch && 'awayTeam' in currentMatch) ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}` : currentMatch.title}</Text> : null}
+              {currentMatch ? <Text style={styles.helperText}>{t(locale, 'profile.currentMatch')}: {currentMatch.homeTeam} vs {currentMatch.awayTeam}</Text> : null}
               <Text style={styles.helperText}>{t(locale, 'profile.visibilityBody')}</Text>
             </View>
             <Pressable
@@ -890,7 +882,7 @@ export function ProfileScreen({ data, loading, locale, selectedMatch, onProfileU
                 <Pressable onPress={() => update('active', !draft.active)} style={[screenStyles.toggle, draft.active && screenStyles.toggleActive]}>
                   <Text style={[screenStyles.toggleText, draft.active && screenStyles.toggleTextActive]}>{draft.active ? t(locale, 'common.visible') : t(locale, 'common.hidden')}</Text>
                 </Pressable>
-                {currentMatch ? <Text style={styles.helperText}>{t(locale, 'profile.currentMatch')}: {('homeTeam' in currentMatch && 'awayTeam' in currentMatch) ? `${currentMatch.homeTeam} vs ${currentMatch.awayTeam}` : currentMatch.title}</Text> : null}
+                {currentMatch ? <Text style={styles.helperText}>{t(locale, 'profile.currentMatch')}: {currentMatch.homeTeam} vs {currentMatch.awayTeam}</Text> : null}
                 <TextInput
                   value={draft.notes}
                   onChangeText={(value) => update('notes', value)}

@@ -153,9 +153,13 @@ export function TransportScreen({
   }, []);
 
   useEffect(() => {
-    if (!initialMatchId) return;
+    if (!matches.length) return;
     if (matchId && matches.some((item) => item.id === matchId)) return;
-    setMatchId(initialMatchId);
+    if (initialMatchId && matches.some((item) => item.id === initialMatchId)) {
+      setMatchId(initialMatchId);
+      return;
+    }
+    setMatchId(matches[0].id);
   }, [initialMatchId, matchId, matches]);
 
   useEffect(() => {
