@@ -33,17 +33,62 @@ const mobilityDestination = (item: MobilityCard) => {
   return item.stationAddress?.trim() || '';
 };
 
+const allMobilityLabel = (locale: Locale) => {
+  switch (locale) {
+    case 'fr':
+      return 'Tous';
+    case 'es':
+      return 'Todos';
+    case 'de':
+      return 'Alle';
+    case 'pt':
+      return 'Todos';
+    case 'ar':
+      return 'الكل';
+    case 'zh':
+      return '全部';
+    case 'ru':
+      return 'Все';
+    default:
+      return 'All';
+  }
+};
+
 export function MicroMobilityScreen({ locale, data, venueName, city, country }: MicroMobilityScreenProps) {
   const mobility = useMemo(
     () => (data?.mobility ?? []).filter((item) => /scooter|bike|bicycle/i.test(item.mode)),
     [data],
   );
+  const [filterMode, setFilterMode] = useState<'all' | 'bike' | 'scooter'>('all');
+  const filteredMobility = useMemo(
+    () =>
+      mobility.filter((item) => {
+        if (filterMode === 'bike') return /bike|bicycle/i.test(item.mode);
+        if (filterMode === 'scooter') return /scooter/i.test(item.mode);
+        return true;
+      }),
+    [filterMode, mobility],
+  );
   const bikeCount = mobility.filter((item) => /bike|bicycle/i.test(item.mode)).length;
   const scooterCount = mobility.filter((item) => /scooter/i.test(item.mode)).length;
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
-  const [selectedId, setSelectedId] = useState(mobility[0]?.id ?? '');
-  const selected = mobility.find((item) => item.id === selectedId) ?? mobility[0] ?? null;
+  const [selectedId, setSelectedId] = useState(filteredMobility[0]?.id ?? '');
+  const selected = filteredMobility.find((item) => item.id === selectedId) ?? filteredMobility[0] ?? null;
   const mapTitle = venueName ?? ([city, country].filter(Boolean).join(', ') || t(locale, 'common.destination'));
+  const mobilityMarkers = useMemo(
+    () =>
+      filteredMobility
+        .filter((item): item is MobilityCard & { latitude: number; longitude: number } => item.latitude != null && item.longitude != null)
+        .map((item) => ({
+          id: item.id,
+          coordinate: { latitude: item.latitude, longitude: item.longitude },
+          icon: mobilityLabel(locale, item).icon,
+          label: mobilityLabel(locale, item).label,
+          accentColor: /scooter/i.test(item.mode) ? '#7c3aed' : '#22c55e',
+          iconColor: '#f8fafc',
+        })),
+    [filteredMobility, locale],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -57,6 +102,16 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!filteredMobility.length) {
+      setSelectedId('');
+      return;
+    }
+    if (!selectedId || !filteredMobility.some((item) => item.id === selectedId)) {
+      setSelectedId(filteredMobility[0].id);
+    }
+  }, [filteredMobility, selectedId]);
 
   if (!data) {
     return (
@@ -104,6 +159,26 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
           </View>
         </View>
 
+        <View style={heroStyles.filterRow}>
+          {([
+            { key: 'all', label: allMobilityLabel(locale), icon: 'dots-horizontal' },
+            { key: 'bike', label: t(locale, 'journey.bikeLabel'), icon: 'bike' },
+            { key: 'scooter', label: t(locale, 'journey.scooterLabel'), icon: 'scooter' },
+          ] as const).map((item) => {
+            const active = filterMode === item.key;
+            return (
+              <Pressable
+                key={item.key}
+                onPress={() => setFilterMode(item.key)}
+                style={[heroStyles.filterChip, active && heroStyles.filterChipActive]}
+              >
+                <MaterialCommunityIcons name={item.icon as never} size={16} color={active ? '#09111f' : '#c8f36a'} />
+                <Text style={[heroStyles.filterChipText, active && heroStyles.filterChipTextActive]}>{item.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         <Card title={t(locale, 'common.liveMap')} subtitle={t(locale, 'common.pickupTracking')} wide>
           <MapboxNaviView
             height={390}
@@ -113,6 +188,7 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
                 ? { latitude: selected.latitude, longitude: selected.longitude }
                 : currentLocation ?? undefined
             }
+            markers={mobilityMarkers}
             title={selectedLabel?.label ?? mapTitle}
             subtitle={selected ? `${selected.mode}${selected.stationAddress ? ` · ${selected.stationAddress}` : ''}` : mapTitle}
             liveLabel={selected ? `${selected.duration} · ${selected.price}` : t(locale, 'common.backendUnavailable')}
@@ -156,9 +232,9 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
         </Card>
 
         <Card title={t(locale, 'common.available')} subtitle={t(locale, 'common.liveTracking')} wide>
-          {mobility.length ? (
+          {filteredMobility.length ? (
             <View style={mobilityList.listGap}>
-              {mobility.map((item) => {
+              {filteredMobility.map((item) => {
                 const isSelected = item.id === selected?.id;
                 const label = mobilityLabel(locale, item);
                 return (
@@ -328,6 +404,35 @@ const heroStyles = StyleSheet.create({
     borderColor: 'rgba(157, 245, 255, 0.14)',
   },
   heroChipText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 11 },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(201, 243, 106, 0.18)',
+    backgroundColor: 'rgba(11, 18, 32, 0.9)',
+  },
+  filterChipActive: {
+    backgroundColor: '#c8f36a',
+    borderColor: '#c8f36a',
+  },
+  filterChipText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 12,
+  },
+  filterChipTextActive: {
+    color: '#09111f',
+  },
   detailRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   detailCard: {
     flexGrow: 1,

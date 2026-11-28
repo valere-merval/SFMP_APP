@@ -1,17 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import MapboxNaviView from '../components/MapboxNaviView';
+import { requestCurrentCoordinates, type Coordinate } from '../location';
 import { loadTransportAvailability, loadTransportProfile, saveTransportAvailability, listPublicTransportProfiles, type TransportAvailabilityView, type TransportProfileView } from '../api';
 import { type LiveData, type TransportProviderView } from '../types';
 import { Card, EmptyState, PrimaryButton, SecondaryButton, styles as uiStyles } from '../ui';
 import { t, type Locale } from '../i18n';
 import { openGoogleMapsDirections } from '../maps';
 
+type TransitFilter = 'all' | 'train' | 'tram' | 'metro' | 'bus';
+
+const transitModes: Array<{ value: TransitFilter; labelKey?: string; icon: string }> = [
+  { value: 'all', icon: 'dots-horizontal-circle-outline' },
+  { value: 'train', labelKey: 'journey.trainLabel', icon: 'train' },
+  { value: 'tram', labelKey: 'journey.tramLabel', icon: 'tram' },
+  { value: 'metro', labelKey: 'journey.metroLabel', icon: 'subway' },
+  { value: 'bus', labelKey: 'journey.busLabel', icon: 'bus' },
+];
+
 const modeLabel = (locale: Locale, providerType: string) => {
   const value = providerType.trim().toLowerCase();
-  if (value.includes('vtc')) return t(locale, 'journey.vtcLabel');
-  if (value.includes('taxi')) return t(locale, 'journey.taxiLabel');
-  if (value.includes('shuttle')) return t(locale, 'journey.shuttleLabel');
   if (value.includes('bus')) return t(locale, 'journey.busLabel');
   if (value.includes('train')) return t(locale, 'journey.trainLabel');
   if (value.includes('tram')) return t(locale, 'journey.tramLabel');
@@ -21,9 +31,43 @@ const modeLabel = (locale: Locale, providerType: string) => {
 
 const providerDestination = (provider: TransportProviderView) => {
   if (provider.stationLatitude != null && provider.stationLongitude != null) {
-    return `${provider.stationLatitude},${provider.stationLongitude}`;
+    return { latitude: provider.stationLatitude, longitude: provider.stationLongitude };
   }
-  return provider.stationAddress?.trim() || `${provider.city}, ${provider.country}`;
+  return null;
+};
+
+const providerMapLabel = (provider: TransportProviderView) =>
+  provider.stationAddress?.trim() || `${provider.city}, ${provider.country}`;
+
+const isTransitProvider = (providerType: string) => /train|tram|metro|subway|bus/i.test(providerType);
+
+const transitIcon = (providerType: string) => {
+  const value = providerType.toLowerCase();
+  if (value.includes('train')) return 'train';
+  if (value.includes('tram')) return 'tram';
+  if (value.includes('metro') || value.includes('subway')) return 'subway';
+  return 'bus';
+};
+
+const allModesLabel = (locale: Locale) => {
+  switch (locale) {
+    case 'fr':
+      return 'Tous';
+    case 'es':
+      return 'Todos';
+    case 'de':
+      return 'Alle';
+    case 'pt':
+      return 'Todos';
+    case 'ar':
+      return 'الكل';
+    case 'zh':
+      return '全部';
+    case 'ru':
+      return 'Все';
+    default:
+      return 'All';
+  }
 };
 
 export function TransportScreen({
@@ -44,6 +88,9 @@ export function TransportScreen({
   const [publicProviders, setPublicProviders] = useState<TransportProviderView[]>([]);
   const [providersLoading, setProvidersLoading] = useState(false);
   const [matchId, setMatchId] = useState(() => initialMatchId ?? '');
+  const [activeFilter, setActiveFilter] = useState<TransitFilter>('all');
+  const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string>('');
   const [available, setAvailable] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -68,20 +115,23 @@ export function TransportScreen({
     () => providers.filter((provider) => !matchId || provider.matchId === matchId),
     [matchId, providers],
   );
-  const availableProviders = useMemo(
-    () => visibleProviders.filter((provider) => provider.active || provider.ready),
+  const transitProviders = useMemo(
+    () => visibleProviders.filter((provider) => isTransitProvider(provider.providerType)),
     [visibleProviders],
   );
-  const globalAvailableProviders = useMemo(
-    () => providers.filter((provider) => provider.active || provider.ready),
-    [providers],
+  const providersToShow = useMemo(
+    () => transitProviders.filter((provider) => activeFilter === 'all' || provider.providerType.toLowerCase().includes(activeFilter)),
+    [activeFilter, transitProviders],
   );
-  const providersToShow = availableProviders.length ? availableProviders : globalAvailableProviders;
-  const vtcCount = globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('vtc')).length;
-  const trainCount = globalAvailableProviders.filter((provider) => /train/i.test(provider.providerType)).length;
-  const tramCount = globalAvailableProviders.filter((provider) => /tram|streetcar|light rail/i.test(provider.providerType)).length;
-  const metroCount = globalAvailableProviders.filter((provider) => /metro|subway/i.test(provider.providerType)).length;
-  const busCount = globalAvailableProviders.filter((provider) => /bus/i.test(provider.providerType)).length;
+  const trainCount = transitProviders.filter((provider) => /train/i.test(provider.providerType)).length;
+  const tramCount = transitProviders.filter((provider) => /tram|streetcar|light rail/i.test(provider.providerType)).length;
+  const metroCount = transitProviders.filter((provider) => /metro|subway/i.test(provider.providerType)).length;
+  const busCount = transitProviders.filter((provider) => /bus/i.test(provider.providerType)).length;
+  const selectedProvider = useMemo(
+    () => providersToShow.find((provider) => provider.id === selectedProviderId) ?? providersToShow[0] ?? null,
+    [providersToShow, selectedProviderId],
+  );
+  const selectedDestination = selectedProvider ? providerDestination(selectedProvider) : null;
 
   useEffect(() => {
     let mounted = true;
@@ -148,6 +198,33 @@ export function TransportScreen({
     };
   }, [matchId]);
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const coords = await requestCurrentCoordinates();
+        if (!mounted) return;
+        setCurrentLocation(coords);
+      } catch {
+        if (!mounted) return;
+        setCurrentLocation(null);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!providersToShow.length) {
+      setSelectedProviderId('');
+      return;
+    }
+    if (!selectedProviderId || !providersToShow.some((provider) => provider.id === selectedProviderId)) {
+      setSelectedProviderId(providersToShow[0].id);
+    }
+  }, [providersToShow, selectedProviderId]);
+
   const submit = async () => {
     if (!registeredDriver) {
       setError('Crée d’abord ton profil chauffeur dans Profil.');
@@ -182,16 +259,16 @@ export function TransportScreen({
           </Text>
           <View style={uiStyles.statsRow}>
             <View style={uiStyles.statBox}>
-              <Text style={uiStyles.statLabel}>Actifs</Text>
-              <Text style={uiStyles.statValue}>{globalAvailableProviders.length}</Text>
+              <Text style={uiStyles.statLabel}>Lignes</Text>
+              <Text style={uiStyles.statValue}>{transitProviders.length}</Text>
             </View>
             <View style={uiStyles.statBox}>
-              <Text style={uiStyles.statLabel}>Chauffeurs</Text>
-              <Text style={uiStyles.statValue}>{visibleProviders.length}</Text>
+              <Text style={uiStyles.statLabel}>Train / Tram</Text>
+              <Text style={uiStyles.statValue}>{trainCount + tramCount}</Text>
             </View>
             <View style={uiStyles.statBox}>
-              <Text style={uiStyles.statLabel}>Modes</Text>
-              <Text style={uiStyles.statValue}>{[trainCount, tramCount, busCount, vtcCount].filter((value) => value > 0).length}</Text>
+              <Text style={uiStyles.statLabel}>Bus / Metro</Text>
+              <Text style={uiStyles.statValue}>{busCount + metroCount}</Text>
             </View>
           </View>
         </View>
@@ -253,55 +330,98 @@ export function TransportScreen({
 
         <Card title="Résumé disponibilité" subtitle="Comptage live par mode" wide>
           <View style={screenStyles.summaryRow}>
-            <SummaryPill label="VTC" value={vtcCount} active={vtcCount > 0} />
-            <SummaryPill label="Taxi" value={globalAvailableProviders.filter((provider) => provider.providerType.toLowerCase().includes('taxi')).length} active={globalAvailableProviders.some((provider) => provider.providerType.toLowerCase().includes('taxi'))} />
-            <SummaryPill label="Bus" value={busCount} active={busCount > 0} />
             <SummaryPill label="Train" value={trainCount} active={trainCount > 0} />
             <SummaryPill label="Tram" value={tramCount} active={tramCount > 0} />
+            <SummaryPill label="Bus" value={busCount} active={busCount > 0} />
             <SummaryPill label="Metro" value={metroCount} active={metroCount > 0} />
           </View>
           <Text style={uiStyles.helperText}>
-            Quand tu passes à disponible, la liste live dans Reise se met à jour et les fans voient ton mode apparaître immédiatement.
+            La liste ci-dessous s’aligne sur le match choisi et le filtre actif. Clique une ligne pour lancer le trajet piéton vers la station.
           </Text>
         </Card>
 
-        <Card title="Lignes disponibles" subtitle="Appuie sur une ligne pour ouvrir son itinéraire" wide>
+        <Card title="MATCH ROUTE" subtitle="Lignes directes du match sélectionné" wide>
+          <View style={screenStyles.filterRow}>
+            {transitModes.map((mode) => {
+              const active = activeFilter === mode.value;
+              const label = mode.value === 'all' ? allModesLabel(locale) : t(locale, mode.labelKey!);
+              return (
+                <Pressable
+                  key={mode.value}
+                  onPress={() => setActiveFilter(mode.value)}
+                  style={[screenStyles.filterChip, active && screenStyles.filterChipActive]}
+                >
+                  <MaterialCommunityIcons
+                    name={mode.icon as never}
+                    size={16}
+                    color={active ? '#09111f' : '#c8f36a'}
+                  />
+                  <Text style={[screenStyles.filterChipText, active && screenStyles.filterChipTextActive]}>{label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
           {providersLoading ? (
             <EmptyState icon="loader-outline" title="Chargement des lignes" subtitle="Lecture de la disponibilité live pour ce match." />
           ) : providersToShow.length ? (
-            <View style={screenStyles.listGap}>
-              {providersToShow.map((provider: TransportProviderView) => (
-                <Pressable key={provider.id} onPress={() => { void openGoogleMapsDirections(providerDestination(provider)); }} style={screenStyles.providerCard}>
-                  <View style={screenStyles.providerTop}>
-                    <View style={screenStyles.providerBadge}>
-                      <Feather name="truck" size={14} color="#f8fafc" />
-                      <Text style={screenStyles.providerBadgeText}>{modeLabel(locale, provider.providerType)}</Text>
-                    </View>
-                    <Text style={screenStyles.providerStatus}>{provider.active || provider.ready ? 'Disponible' : 'Pas disponible'}</Text>
-                  </View>
-                  <Text style={screenStyles.providerTitle}>{provider.displayName}</Text>
-                  <Text style={screenStyles.providerBody}>{provider.driverName} · {provider.vehicleLabel}</Text>
-                  <View style={screenStyles.providerMetaRow}>
-                    <View style={screenStyles.providerMetaChip}>
-                      <Text style={screenStyles.providerMetaText}>{provider.city}, {provider.country}</Text>
-                    </View>
-                    {provider.stationAddress ? (
-                      <View style={screenStyles.providerMetaChipSoft}>
-                        <Text style={screenStyles.providerMetaText}>{provider.stationAddress}</Text>
+            <View style={screenStyles.rowGap}>
+              <MapboxNaviView
+                origin={currentLocation}
+                destination={selectedDestination}
+                height={290}
+                title={selectedProvider ? selectedProvider.displayName : 'Ligne sélectionnée'}
+                subtitle={selectedProvider ? `${modeLabel(locale, selectedProvider.providerType)} · ${providerMapLabel(selectedProvider)}` : 'Sélectionne une ligne pour activer la navigation'}
+                liveLabel={selectedMatch ? `${selectedMatch.homeTeam} vs ${selectedMatch.awayTeam}` : 'Transit'}
+                compactChrome={false}
+              />
+
+              <View style={screenStyles.listGap}>
+                {providersToShow.map((provider: TransportProviderView) => {
+                  const destination = providerDestination(provider);
+                  const active = provider.id === selectedProvider?.id;
+                  return (
+                    <Pressable
+                      key={provider.id}
+                      onPress={() => {
+                        setSelectedProviderId(provider.id);
+                      }}
+                      style={[screenStyles.providerCard, active && screenStyles.providerCardSelected]}
+                    >
+                      <View style={screenStyles.providerTop}>
+                        <View style={screenStyles.providerBadge}>
+                          <MaterialCommunityIcons name={transitIcon(provider.providerType) as never} size={16} color="#f8fafc" />
+                          <Text style={screenStyles.providerBadgeText}>{modeLabel(locale, provider.providerType)}</Text>
+                        </View>
+                        <Text style={screenStyles.providerStatus}>{provider.active || provider.ready ? 'Disponible' : 'Pas disponible'}</Text>
                       </View>
-                    ) : null}
-                  </View>
-                  {provider.publicNotes ? <Text style={screenStyles.providerNotes}>{provider.publicNotes}</Text> : null}
-                  <Pressable
-                    onPress={() => {
-                      void openGoogleMapsDirections(providerDestination(provider));
-                    }}
-                    style={screenStyles.stationButton}
-                  >
-                    <Text style={screenStyles.stationButtonText}>{t(locale, 'common.navigate')}</Text>
-                  </Pressable>
-                </Pressable>
-              ))}
+                      <Text style={screenStyles.providerTitle}>{provider.displayName}</Text>
+                      <Text style={screenStyles.providerBody}>{provider.driverName} · {provider.vehicleLabel}</Text>
+                      <View style={screenStyles.providerMetaRow}>
+                        <View style={screenStyles.providerMetaChip}>
+                          <Text style={screenStyles.providerMetaText}>{provider.city}, {provider.country}</Text>
+                        </View>
+                        {provider.stationAddress ? (
+                          <View style={screenStyles.providerMetaChipSoft}>
+                            <Text style={screenStyles.providerMetaText}>{provider.stationAddress}</Text>
+                          </View>
+                        ) : null}
+                      </View>
+                      {provider.publicNotes ? <Text style={screenStyles.providerNotes}>{provider.publicNotes}</Text> : null}
+                      <Pressable
+                        onPress={() => {
+                          if (destination) {
+                            void openGoogleMapsDirections(`${destination.latitude},${destination.longitude}`);
+                          }
+                        }}
+                        style={screenStyles.stationButton}
+                      >
+                        <Text style={screenStyles.stationButtonText}>{t(locale, 'common.navigate')}</Text>
+                      </Pressable>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
           ) : (
             <EmptyState icon="car-outline" title="Aucune ligne visible" subtitle="Les lignes disponibles apparaîtront ici dès que le catalogue est chargé." />
@@ -415,6 +535,40 @@ const screenStyles = StyleSheet.create({
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
+  },
+  providerCardSelected: {
+    borderColor: '#c8f36a',
+    shadowOpacity: 0.28,
+    transform: [{ scale: 1.01 }],
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(201, 243, 106, 0.18)',
+    backgroundColor: 'rgba(11, 18, 32, 0.9)',
+  },
+  filterChipActive: {
+    backgroundColor: '#c8f36a',
+    borderColor: '#c8f36a',
+  },
+  filterChipText: {
+    color: '#c8f36a',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 12,
+  },
+  filterChipTextActive: {
+    color: '#09111f',
   },
   providerTop: {
     flexDirection: 'row',

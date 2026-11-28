@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { MAPBOX_ACCESS_TOKEN, MAPBOX_STYLE_URL } from '../config';
 import { styles } from '../ui';
 
@@ -28,10 +29,20 @@ type Coordinate = {
   longitude: number;
 };
 
+type NaviMarker = {
+  id: string;
+  coordinate: Coordinate;
+  icon: string;
+  label?: string;
+  accentColor?: string;
+  iconColor?: string;
+};
+
 type MapboxNaviViewProps = {
   origin?: Coordinate | null;
   destination?: Coordinate | null;
   route?: Coordinate[];
+  markers?: NaviMarker[];
   height?: number;
   title?: string;
   subtitle?: string;
@@ -80,17 +91,22 @@ function buildRouteFeature(route: Coordinate[]): RouteFeature {
   };
 }
 
-export function MapboxNaviView({ origin, destination, route, height = 600, title, subtitle, liveLabel, compactChrome = true }: MapboxNaviViewProps) {
-  const safeOrigin = useMemo(() => origin ?? destination ?? route?.[0] ?? null, [destination, origin, route]);
-  const safeDestination = useMemo(() => destination ?? route?.[route.length - 1] ?? safeOrigin, [destination, route, safeOrigin]);
+export function MapboxNaviView({ origin, destination, route, markers, height = 600, title, subtitle, liveLabel, compactChrome = true }: MapboxNaviViewProps) {
+  const safeOrigin = useMemo(() => origin ?? destination ?? route?.[0] ?? markers?.[0]?.coordinate ?? null, [destination, markers, origin, route]);
+  const safeDestination = useMemo(() => destination ?? route?.[route.length - 1] ?? safeOrigin ?? markers?.[0]?.coordinate ?? null, [destination, markers, route, safeOrigin]);
   const routeCoords = useMemo(
     () => (route ?? []).filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude)),
     [route],
   );
+  const markerCoords = useMemo(
+    () => (markers ?? []).map((marker) => marker.coordinate).filter((point) => Number.isFinite(point.latitude) && Number.isFinite(point.longitude)),
+    [markers],
+  );
   const bounds = useMemo(() => {
     const points = routeCoords.length > 1 ? routeCoords : safeOrigin && safeDestination ? [safeOrigin, safeDestination] : [];
-    return points.length > 0 ? buildBounds(points as Coordinate[]) : null;
-  }, [routeCoords, safeDestination, safeOrigin]);
+    const withMarkers = [...points, ...markerCoords];
+    return withMarkers.length > 0 ? buildBounds(withMarkers as Coordinate[]) : null;
+  }, [markerCoords, routeCoords, safeDestination, safeOrigin]);
   const routeFeature = useMemo(() => (routeCoords.length > 1 ? buildRouteFeature(routeCoords) : null), [routeCoords]);
   const Mapbox = getMapbox();
 
@@ -159,6 +175,22 @@ export function MapboxNaviView({ origin, destination, route, height = 600, title
         <Mapbox.PointAnnotation id="sfmp-destination" coordinate={toPoint(safeDestination!)} title="Destination">
           <View style={naviStyles.destinationMarker} />
         </Mapbox.PointAnnotation>
+
+        {markers?.map((marker) => (
+          <Mapbox.PointAnnotation key={marker.id} id={`sfmp-marker-${marker.id}`} coordinate={toPoint(marker.coordinate)} title={marker.label || marker.id}>
+            <View style={naviStyles.markerStack}>
+              <View
+                style={[
+                  naviStyles.customMarker,
+                  { borderColor: marker.accentColor || '#c8f36a', backgroundColor: marker.accentColor ? `${marker.accentColor}22` : 'rgba(200, 243, 106, 0.18)' },
+                ]}
+              >
+                <MaterialCommunityIcons name={marker.icon as never} size={18} color={marker.iconColor || '#f8fbff'} />
+              </View>
+              {marker.label ? <Text style={naviStyles.markerLabel}>{marker.label}</Text> : null}
+            </View>
+          </Mapbox.PointAnnotation>
+        ))}
       </Mapbox.MapView>
 
       <View pointerEvents="none" style={naviStyles.overlay}>
@@ -235,6 +267,32 @@ const naviStyles = StyleSheet.create({
     shadowOpacity: 0.28,
     shadowRadius: 10,
     elevation: 6,
+  },
+  markerStack: {
+    alignItems: 'center',
+    gap: 3,
+  },
+  customMarker: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  markerLabel: {
+    color: '#f8fbff',
+    fontSize: 9,
+    fontFamily: 'Poppins-SemiBold',
+    backgroundColor: 'rgba(7, 13, 24, 0.9)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 999,
+    overflow: 'hidden',
   },
   overlay: {
     position: 'absolute',
