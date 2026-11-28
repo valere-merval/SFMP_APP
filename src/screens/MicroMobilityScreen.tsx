@@ -8,7 +8,8 @@ import { requestCurrentCoordinates, type Coordinate } from '../location';
 import type { LiveData, MobilityCard } from '../types';
 import { Card, EmptyState, Pill, PrimaryButton, SecondaryButton, styles } from '../ui';
 import { t, type Locale } from '../i18n';
-import { openGoogleMapsDirections } from '../maps';
+import { fetchPedestrianRoute, openGoogleMapsDirections } from '../maps';
+import { speakVoiceGuidance, stopVoiceGuidance, loadVoiceGuidanceEnabled } from '../voice';
 
 type MicroMobilityScreenProps = {
   locale: Locale;
@@ -73,7 +74,17 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
   const scooterCount = mobility.filter((item) => /scooter/i.test(item.mode)).length;
   const [currentLocation, setCurrentLocation] = useState<Coordinate | null>(null);
   const [selectedId, setSelectedId] = useState(filteredMobility[0]?.id ?? '');
+  const [pedestrianRoute, setPedestrianRoute] = useState<Coordinate[] | null>(null);
+  const [routeDistanceMeters, setRouteDistanceMeters] = useState<number | null>(null);
+  const [routeDurationSeconds, setRouteDurationSeconds] = useState<number | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [voiceGuidanceEnabled, setVoiceGuidanceEnabled] = useState(true);
   const selected = filteredMobility.find((item) => item.id === selectedId) ?? filteredMobility[0] ?? null;
+  const selectedDestination = selected
+    ? selected.latitude != null && selected.longitude != null
+      ? { latitude: selected.latitude, longitude: selected.longitude }
+      : null
+    : null;
   const mapTitle = venueName ?? ([city, country].filter(Boolean).join(', ') || t(locale, 'common.destination'));
   const mobilityMarkers = useMemo(
     () =>
@@ -92,16 +103,117 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
 
   useEffect(() => {
     let mounted = true;
+    (async () => {
+      try {
+        const enabled = await loadVoiceGuidanceEnabled();
+        if (mounted) {
+          setVoiceGuidanceEnabled(enabled);
+        }
+      } catch {
+        if (mounted) {
+          setVoiceGuidanceEnabled(true);
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
     void requestCurrentCoordinates().then((coordinate) => {
       if (mounted) {
         setCurrentLocation(coordinate);
       }
     });
 
+    let watchId: number | null = null;
+    try {
+      const Geolocation = require('react-native-geolocation-service').default;
+      watchId = Geolocation.watchPosition(
+        (position: { coords?: { latitude?: number; longitude?: number } }) => {
+          const latitude = position.coords?.latitude;
+          const longitude = position.coords?.longitude;
+          if (typeof latitude === 'number' && typeof longitude === 'number') {
+            setCurrentLocation({ latitude, longitude });
+          }
+        },
+        () => undefined,
+        {
+          enableHighAccuracy: true,
+          distanceFilter: 15,
+          interval: 8000,
+          fastestInterval: 4000,
+          showsBackgroundLocationIndicator: false,
+        },
+      );
+    } catch {
+      watchId = null;
+    }
+
+    return () => {
+      mounted = false;
+      if (watchId != null) {
+        try {
+          const Geolocation = require('react-native-geolocation-service').default;
+          Geolocation.clearWatch(watchId);
+        } catch {
+          // noop
+        }
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selected && selectedDestination && currentLocation && voiceGuidanceEnabled) {
+      const km = routeDistanceMeters != null ? Math.max(0.1, routeDistanceMeters / 1000) : null;
+      const minutes = routeDurationSeconds != null ? Math.max(1, Math.round(routeDurationSeconds / 60)) : null;
+      const summary = km && minutes
+        ? `${selected.mode}. Marche de ${km.toFixed(1)} kilomètres, environ ${minutes} minutes.`
+        : `${selected.mode}. Navigation piétonne activée.`;
+      speakVoiceGuidance(summary, locale);
+    }
+    return () => stopVoiceGuidance();
+  }, [currentLocation, locale, routeDistanceMeters, routeDurationSeconds, selected, selectedDestination, voiceGuidanceEnabled]);
+
+  useEffect(() => {
+    if (!selected || !selectedDestination || !currentLocation) {
+      setPedestrianRoute(null);
+      setRouteDistanceMeters(null);
+      setRouteDurationSeconds(null);
+      return;
+    }
+
+    let mounted = true;
+    setRouteLoading(true);
+    (async () => {
+      try {
+        const route = await fetchPedestrianRoute(currentLocation, selectedDestination);
+        if (!mounted) return;
+        if (route) {
+          setPedestrianRoute(route.coordinates);
+          setRouteDistanceMeters(route.distanceMeters);
+          setRouteDurationSeconds(route.durationSeconds);
+        } else {
+          setPedestrianRoute([currentLocation, selectedDestination]);
+          setRouteDistanceMeters(null);
+          setRouteDurationSeconds(null);
+        }
+      } catch {
+        if (!mounted) return;
+        setPedestrianRoute([currentLocation, selectedDestination]);
+        setRouteDistanceMeters(null);
+        setRouteDurationSeconds(null);
+      } finally {
+        if (mounted) setRouteLoading(false);
+      }
+    })();
+
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [currentLocation, selected, selectedDestination]);
 
   useEffect(() => {
     if (!filteredMobility.length) {
@@ -124,6 +236,11 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
   }
 
   const selectedLabel = selected ? mobilityLabel(locale, selected) : null;
+  const routeSummary = selected
+    ? routeDistanceMeters != null && routeDurationSeconds != null
+      ? `${(routeDistanceMeters / 1000).toFixed(1)} km · ${Math.max(1, Math.round(routeDurationSeconds / 60))} min`
+      : t(locale, 'common.live')
+    : t(locale, 'common.backendUnavailable');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -180,15 +297,29 @@ export function MicroMobilityScreen({ locale, data, venueName, city, country }: 
         </View>
 
         <Card title={t(locale, 'common.liveMap')} subtitle={t(locale, 'common.pickupTracking')} wide>
+          {selected ? (
+            <View style={heroStyles.navigationSummary}>
+              <Text style={heroStyles.navigationSummaryTitle}>
+                {routeLoading ? 'Navigation piétonne en cours' : 'Navigation piétonne prête'}
+              </Text>
+              <Text style={heroStyles.navigationSummaryBody}>
+                {selectedLabel?.label ?? selected.mode} · {routeSummary}
+              </Text>
+            </View>
+          ) : null}
           <MapboxNaviView
             height={390}
             origin={currentLocation}
-            destination={
-              selected?.latitude != null && selected.longitude != null
-                ? { latitude: selected.latitude, longitude: selected.longitude }
-                : currentLocation ?? undefined
-            }
-            markers={mobilityMarkers}
+            destination={selectedDestination ?? currentLocation ?? undefined}
+            route={pedestrianRoute ?? undefined}
+            markers={[
+              ...(currentLocation
+                ? [{ id: 'you', coordinate: currentLocation, icon: 'walk', label: 'Vous', accentColor: '#4ade80', iconColor: '#09111f' }]
+                : []),
+              ...(selectedDestination && selected
+                ? [{ id: `mobility-${selected.id}`, coordinate: selectedDestination, icon: selected.mode.toLowerCase().includes('scooter') ? 'scooter' : 'bicycle', label: selectedLabel?.label ?? selected.mode, accentColor: selected.mode.toLowerCase().includes('scooter') ? '#c8f36a' : '#22d3ee', iconColor: '#09111f' }]
+                : []),
+            ]}
             title={selectedLabel?.label ?? mapTitle}
             subtitle={selected ? `${selected.mode}${selected.stationAddress ? ` · ${selected.stationAddress}` : ''}` : mapTitle}
             liveLabel={selected ? `${selected.duration} · ${selected.price}` : t(locale, 'common.backendUnavailable')}
@@ -404,6 +535,26 @@ const heroStyles = StyleSheet.create({
     borderColor: 'rgba(157, 245, 255, 0.14)',
   },
   heroChipText: { color: '#9df5ff', fontFamily: 'Poppins-SemiBold', fontSize: 11 },
+  navigationSummary: {
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 18,
+    backgroundColor: '#0b1220',
+    borderWidth: 1,
+    borderColor: 'rgba(201, 243, 106, 0.16)',
+    gap: 4,
+  },
+  navigationSummaryTitle: {
+    color: '#f8fbff',
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 13,
+  },
+  navigationSummaryBody: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
