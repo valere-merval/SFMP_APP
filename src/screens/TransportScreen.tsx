@@ -4,7 +4,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import MapboxNaviView from '../components/MapboxNaviView';
 import { requestCurrentCoordinates, type Coordinate } from '../location';
-import { loadTransportAvailability, loadTransportProfile, saveTransportAvailability, listPublicTransportProfiles, type TransportAvailabilityView, type TransportProfileView } from '../api';
+import { loadTransportAvailability, loadTransportProfile, saveTransportAvailability, listTransportProviders, type TransportAvailabilityView, type TransportProfileView } from '../api';
 import { type LiveData, type TransportProviderView } from '../types';
 import { Card, EmptyState, PrimaryButton, SecondaryButton, styles as uiStyles } from '../ui';
 import { t, type Locale } from '../i18n';
@@ -183,7 +183,7 @@ export function TransportScreen({
     setProvidersLoading(true);
     (async () => {
       try {
-        const live = await listPublicTransportProfiles(matchId || undefined);
+        const live = await listTransportProviders(matchId || undefined);
         if (!mounted) return;
         setPublicProviders(live);
       } catch {

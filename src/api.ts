@@ -241,6 +241,11 @@ export async function listPublicTransportProfiles(matchId?: string): Promise<Tra
   return requestJson<TransportProviderView[]>(`/api/v1/transport-profiles/public${suffix}`);
 }
 
+export async function listTransportProviders(matchId?: string): Promise<TransportProviderView[]> {
+  const suffix = matchId ? `?matchId=${encodeURIComponent(matchId)}` : '';
+  return requestJson<TransportProviderView[]>(`/api/v1/transport-providers${suffix}`);
+}
+
 export async function createRideRequest(payload: {
   matchId: string;
   matchTitle: string;
