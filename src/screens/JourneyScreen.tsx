@@ -48,9 +48,20 @@ const floatingExpandButtonStyle = {
   borderColor: 'rgba(0, 229, 255, 0.18)',
 } as const;
 
-const statusBadgeStyle = { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999 } as const;
+const statusBadgeStyle = {
+  paddingHorizontal: 14,
+  paddingVertical: 9,
+  borderRadius: 999,
+  backgroundColor: 'rgba(7, 13, 24, 0.88)',
+  borderWidth: 1,
+  borderColor: 'rgba(0, 229, 255, 0.14)',
+} as const;
 
-const statusTextStyle = { fontFamily: 'Poppins-SemiBold' } as const;
+const statusTextStyle = {
+  fontFamily: 'Poppins-SemiBold',
+  color: '#f8fbff',
+  fontSize: 12,
+} as const;
 
 const compactPageStyle = { paddingTop: 12 } as const;
 const compactHeaderStyle = { marginBottom: 0 } as const;
