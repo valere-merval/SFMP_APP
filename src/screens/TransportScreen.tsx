@@ -8,7 +8,8 @@ import { loadTransportAvailability, loadTransportProfile, saveTransportAvailabil
 import { type LiveData, type TransportProviderView } from '../types';
 import { Card, EmptyState, PrimaryButton, SecondaryButton, styles as uiStyles } from '../ui';
 import { t, type Locale } from '../i18n';
-import { openGoogleMapsDirections } from '../maps';
+import { fetchPedestrianRoute, openGoogleMapsDirections } from '../maps';
+import { speakVoiceGuidance, stopVoiceGuidance } from '../voice';
 
 type TransitFilter = 'all' | 'train' | 'tram' | 'metro' | 'bus';
 
@@ -38,6 +39,17 @@ const providerDestination = (provider: TransportProviderView) => {
 
 const providerMapLabel = (provider: TransportProviderView) =>
   provider.stationAddress?.trim() || `${provider.city}, ${provider.country}`;
+
+const formatWalkingDistance = (meters: number | null) => {
+  if (meters == null) return 'Distance en direct';
+  if (meters >= 1000) return `${(meters / 1000).toFixed(1)} km`;
+  return `${Math.round(meters)} m`;
+};
+
+const formatWalkingDuration = (seconds: number | null) => {
+  if (seconds == null) return 'Temps en direct';
+  return `${Math.max(1, Math.round(seconds / 60))} min`;
+};
 
 const isTransitProvider = (providerType: string) => /train|tram|metro|subway|bus/i.test(providerType);
 
@@ -132,6 +144,125 @@ export function TransportScreen({
     [providersToShow, selectedProviderId],
   );
   const selectedDestination = selectedProvider ? providerDestination(selectedProvider) : null;
+  const [pedestrianRoute, setPedestrianRoute] = useState<Coordinate[] | null>(null);
+  const [routeDistanceMeters, setRouteDistanceMeters] = useState<number | null>(null);
+  const [routeDurationSeconds, setRouteDurationSeconds] = useState<number | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [voiceGuidanceEnabled, setVoiceGuidanceEnabled] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const enabled = await import('../voice').then((module) => module.loadVoiceGuidanceEnabled());
+        if (mounted) {
+          setVoiceGuidanceEnabled(enabled);
+        }
+      } catch {
+        if (mounted) {
+          setVoiceGuidanceEnabled(true);
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedProvider && selectedDestination && currentLocation && voiceGuidanceEnabled) {
+      const distanceKm = routeDistanceMeters != null ? Math.max(0.1, routeDistanceMeters / 1000) : null;
+      const minutes = routeDurationSeconds != null ? Math.max(1, Math.round(routeDurationSeconds / 60)) : null;
+      const walkSummary = distanceKm && minutes
+        ? `${selectedProvider.displayName}. Marche piétonne de ${distanceKm.toFixed(1)} kilomètres, environ ${minutes} minutes.`
+        : `${selectedProvider.displayName}. Navigation piétonne activée.`;
+      speakVoiceGuidance(walkSummary, locale);
+    }
+    return () => stopVoiceGuidance();
+  }, [currentLocation, locale, routeDistanceMeters, routeDurationSeconds, selectedDestination, selectedProvider, voiceGuidanceEnabled]);
+
+  useEffect(() => {
+    if (!selectedProvider || !selectedDestination || !currentLocation) {
+      setPedestrianRoute(null);
+      setRouteDistanceMeters(null);
+      setRouteDurationSeconds(null);
+      return;
+    }
+
+    let mounted = true;
+    setRouteLoading(true);
+    (async () => {
+      try {
+        const route = await fetchPedestrianRoute(currentLocation, selectedDestination);
+        if (!mounted) return;
+        if (route) {
+          setPedestrianRoute(route.coordinates);
+          setRouteDistanceMeters(route.distanceMeters);
+          setRouteDurationSeconds(route.durationSeconds);
+        } else {
+          setPedestrianRoute([currentLocation, selectedDestination]);
+          setRouteDistanceMeters(null);
+          setRouteDurationSeconds(null);
+        }
+      } catch {
+        if (!mounted) return;
+        setPedestrianRoute([currentLocation, selectedDestination]);
+        setRouteDistanceMeters(null);
+        setRouteDurationSeconds(null);
+      } finally {
+        if (mounted) setRouteLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [currentLocation, selectedDestination, selectedProvider]);
+
+  useEffect(() => {
+    let watchId: number | null = null;
+    let mounted = true;
+
+    void requestCurrentCoordinates().then((coords) => {
+      if (mounted) {
+        setCurrentLocation(coords);
+      }
+    });
+
+    try {
+      const Geolocation = require('react-native-geolocation-service').default;
+      watchId = Geolocation.watchPosition(
+        (position: { coords?: { latitude?: number; longitude?: number } }) => {
+          const latitude = position.coords?.latitude;
+          const longitude = position.coords?.longitude;
+          if (typeof latitude === 'number' && typeof longitude === 'number') {
+            setCurrentLocation({ latitude, longitude });
+          }
+        },
+        () => undefined,
+        {
+          enableHighAccuracy: true,
+          distanceFilter: 15,
+          interval: 8000,
+          fastestInterval: 4000,
+          showsBackgroundLocationIndicator: false,
+        },
+      );
+    } catch {
+      watchId = null;
+    }
+
+    return () => {
+      mounted = false;
+      if (watchId != null) {
+        try {
+          const Geolocation = require('react-native-geolocation-service').default;
+          Geolocation.clearWatch(watchId);
+        } catch {
+          // noop
+        }
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -151,6 +282,7 @@ export function TransportScreen({
       mounted = false;
     };
   }, []);
+
 
   useEffect(() => {
     if (!matches.length) return;
@@ -417,9 +549,35 @@ export function TransportScreen({
                 })}
               </View>
 
+              {selectedProvider ? (
+                <View style={screenStyles.navigationSummary}>
+                  <Text style={screenStyles.navigationSummaryTitle}>
+                    {routeLoading ? 'Navigation piétonne en cours' : 'Navigation piétonne prête'}
+                  </Text>
+                  <Text style={screenStyles.navigationSummaryBody}>
+                    {providerMapLabel(selectedProvider)} · {formatWalkingDistance(routeDistanceMeters)} · {formatWalkingDuration(routeDurationSeconds)}
+                  </Text>
+                </View>
+              ) : null}
               <MapboxNaviView
                 origin={currentLocation}
                 destination={selectedDestination}
+                route={pedestrianRoute ?? undefined}
+                markers={[
+                  ...(currentLocation
+                    ? [{ id: 'you', coordinate: currentLocation, icon: 'walk', label: 'Vous', accentColor: '#4ade80', iconColor: '#09111f' }]
+                    : []),
+                  ...(selectedDestination && selectedProvider
+                    ? [{
+                        id: `dest-${selectedProvider.id}`,
+                        coordinate: selectedDestination,
+                        icon: transitIcon(selectedProvider.providerType),
+                        label: providerMapLabel(selectedProvider),
+                        accentColor: '#c8f36a',
+                        iconColor: '#09111f',
+                      }]
+                    : []),
+                ]}
                 height={290}
                 title={selectedProvider ? selectedProvider.displayName : 'Ligne sélectionnée'}
                 subtitle={selectedProvider ? `${modeLabel(locale, selectedProvider.providerType)} · ${providerMapLabel(selectedProvider)}` : 'Sélectionne une ligne pour activer la navigation'}
@@ -469,6 +627,24 @@ const screenStyles = StyleSheet.create({
   },
   rowGap: { gap: 12 },
   listGap: { gap: 12 },
+  navigationSummary: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(200, 243, 106, 0.25)',
+    backgroundColor: '#0b1220',
+    padding: 14,
+    gap: 4,
+  },
+  navigationSummaryTitle: {
+    color: '#f8fafc',
+    fontFamily: 'Poppins-Bold',
+    fontSize: 14,
+  },
+  navigationSummaryBody: {
+    color: '#9fb2cb',
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+  },
   driverSummary: {
     backgroundColor: '#0b1220',
     borderRadius: 18,

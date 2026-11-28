@@ -57,6 +57,53 @@ export async function openGoogleMapsSearch(query: string) {
   await Linking.openURL(googleMapsSearchUrl(query));
 }
 
+export type PedestrianRoute = {
+  coordinates: MapCoordinate[];
+  distanceMeters: number;
+  durationSeconds: number;
+};
+
+export async function fetchPedestrianRoute(origin: MapCoordinate, destination: MapCoordinate): Promise<PedestrianRoute | null> {
+  const token = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.MAPBOX_ACCESS_TOKEN
+    || (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.RN_MAPBOX_ACCESS_TOKEN;
+
+  if (!token) {
+    return null;
+  }
+
+  const url = new URL(`https://api.mapbox.com/directions/v5/mapbox/walking/${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}`);
+  url.searchParams.set('alternatives', 'false');
+  url.searchParams.set('geometries', 'geojson');
+  url.searchParams.set('overview', 'full');
+  url.searchParams.set('steps', 'false');
+  url.searchParams.set('access_token', token);
+
+  const response = await fetch(url.toString());
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as {
+    routes?: Array<{
+      distance?: number;
+      duration?: number;
+      geometry?: { coordinates?: Array<[number, number]> };
+    }>;
+  };
+
+  const route = payload.routes?.[0];
+  const coordinates = route?.geometry?.coordinates?.map(([longitude, latitude]) => ({ latitude, longitude })) ?? [];
+  if (coordinates.length < 2 || typeof route?.distance !== 'number' || typeof route?.duration !== 'number') {
+    return null;
+  }
+
+  return {
+    coordinates,
+    distanceMeters: route.distance,
+    durationSeconds: route.duration,
+  };
+}
+
 export async function openGoogleMapsDirections(destination: string, origin?: string) {
   await Linking.openURL(googleMapsDirectionsUrl(destination, origin));
 }
