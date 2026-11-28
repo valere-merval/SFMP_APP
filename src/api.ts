@@ -1,13 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
 import type { RideRequestView, TransportProviderView } from './types';
 
-const API_BASE =
-  Platform.select({
-    android: 'http://192.168.0.202:8080',
-    ios: 'http://192.168.0.202:8080',
-    default: 'http://192.168.0.202:8080',
-  }) ?? 'http://192.168.0.202:8080';
+const API_BASE = 'https://sfmp.nearhall.com';
 
 const TOKEN_KEY = 'sfmp_token';
 const USER_KEY = 'sfmp_user';
